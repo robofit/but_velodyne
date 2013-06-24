@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-f /velodyne -d $(find but_velodyne)/config/points.rviz" />
+
+</launch>
+

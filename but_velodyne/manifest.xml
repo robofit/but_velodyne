@@ -1,0 +1,14 @@
+<package>
+  <description brief="but_velodyne">
+
+ROS nodes and nodelets for 3D LIDAR Velodyne HDL-32e which provide point cloud publishing and processing.
+
+  </description>
+  <author>Michal Spanel (spanel@fit.vutbr.cz)</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+
+  <depend package="velodyne_pointcloud"/>
+
+</package>
