@@ -1,0 +1,9 @@
+<library path="lib/libbutvelo_laserscan_nodelet">
+  <class name="but_velodyne/LaserScanNodelet"
+         type="but_velodyne::LaserScanNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Simulates a single laser scan from Velodyne 3D LIDAR point cloud.
+    </description>
+  </class>
+</library>

@@ -1,0 +1,9 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b but_velodyne 
+package contains ROS nodes and nodelets for Velodyne 3D LIDARs HDL-32e which provide point cloud publishing and processing.
+
+*/
+
