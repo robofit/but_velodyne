@@ -1,0 +1,18 @@
+<package>
+  <description brief="rt_road_detection">
+
+     TBD
+
+  </description>
+  <author></author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url></url>
+  <depend package="sensor_msgs"/>
+  <depend package="roscpp"/>
+  <!--depend package=""/>
+  <depend package=""/-->
+
+</package>
+
+
