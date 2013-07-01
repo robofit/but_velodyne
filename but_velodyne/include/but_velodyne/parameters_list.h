@@ -3,13 +3,13 @@
  *
  * $Id:$
  *
- * Copyright (C) Brno University of Technology (BUT)
+ * Copyright (C) Brno University of Technology
  *
  * This file is part of software developed by Robo@FIT group.
  *
  * Author: Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
- * Date: 28/06/2013
+ * Date: 01/07/2013
  *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -25,36 +25,20 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ros/ros.h>
-#include <pluginlib/class_list_macros.h>
-#include <nodelet/nodelet.h>
+#pragma once
+#ifndef BUT_VELODYNE_PARAMETERS_LIST_H
+#define BUT_VELODYNE_PARAMETERS_LIST_H
 
-#include <but_velodyne/laser_scan.h>
-
+#include <string>
 
 namespace but_velodyne
 {
+    /**
+     * laser scan - parameters
+     */
+    const std::string FRAME_ID_PARAM    = "frame_id";
+    const std::string MIN_Z_PARAM       = "min_z";
+    const std::string MAX_Z_PARAM       = "max_z";
+}
 
-class LaserScanNodelet: public nodelet::Nodelet
-{
-    public:
-    LaserScanNodelet() {}
-    ~LaserScanNodelet() {}
-
-private:
-    virtual void onInit()
-    {
-        laser_scan_.reset( new LaserScan(getNodeHandle(), getPrivateNodeHandle()) );
-    }
-
-    boost::shared_ptr<LaserScan> laser_scan_;
-};
-
-} // namespace but_velodyne
-
-
-// Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_DECLARE_CLASS(but_velodyne,
-                        LaserScanNodelet,
-                        but_velodyne::LaserScanNodelet,
-                        nodelet::Nodelet);
+#endif // BUT_VELODYNE_PARAMETERS_LIST_H

@@ -25,67 +25,88 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// include guard
+// Include guard
 #ifndef but_velodyne_laser_scan_H
 #define but_velodyne_laser_scan_H
 
-
 #include <ros/ros.h>
-#include "tf/message_filter.h"
-#include "message_filters/subscriber.h"
+#include <tf/message_filter.h>
+#include <message_filters/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/LaserScan.h>
 
-#include <velodyne_pointcloud/rawdata.h>
 #include <velodyne_pointcloud/point_types.h>
 
-// include template implementations to transform a custom point cloud
+// Include template implementations to transform a custom point cloud
 #include <pcl_ros/impl/transforms.hpp>
 
-/** types of point and cloud to work with */
-typedef velodyne_rawdata::VPoint VPoint;
-typedef velodyne_rawdata::VPointCloud VPointCloud;
 
-// instantiate template for transforming a VPointCloud
-template bool
-  pcl_ros::transformPointCloud<VPoint>(const std::string &,
-                                       const VPointCloud &,
-                                       VPointCloud &,
-                                       const tf::TransformListener &);
+// Types of point and cloud to work with
+typedef velodyne_pointcloud::PointXYZIR VPoint;
+typedef pcl::PointCloud<VPoint> VPointCloud;
 
-namespace velodyne_pointcloud
+// Instantiate template for transforming a VPointCloud
+template bool pcl_ros::transformPointCloud<VPoint>(const std::string &, const VPointCloud &, VPointCloud &, const tf::TransformListener &);
+
+
+namespace but_velodyne
 {
-  class Transform
-  {
-  public:
 
-    Transform(ros::NodeHandle node, ros::NodeHandle private_nh);
-    ~Transform() {}
+/******************************************************************************
+ *!
+ * Simulation of sensor_msgs::LaserScan messages using point clouds
+ * coming from Velodyne 3D LIDAR.
+ */
+class LaserScan
+{
+public:
+    //! Configuration parameters
+    struct Params
+    {
+        //! Target frame ID
+        //! - An empty value means to use the same frame ID as the input point cloud has...
+        std::string frame_id_;
 
-  private:
+        //! Range to accumulate particular Velodyne scans
+        //! - Specifying two exactly similar values means to accumulate all the Velodyne points...
+        double min_z_, max_z_;
 
-    void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
+        //! Default constructor
+        Params() : frame_id_(""), min_z_(0.0), max_z_(0.0) {}
+    };
 
-    boost::shared_ptr<velodyne_rawdata::RawData> data_;
-    message_filters::Subscriber<velodyne_msgs::VelodyneScan> velodyne_scan_;
-    tf::MessageFilter<velodyne_msgs::VelodyneScan> *tf_filter_;
-    ros::Publisher output_;
+public:
+    //! Default constructor.
+    LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh);
+
+    //! Virtual destructor.
+    virtual ~LaserScan() {}
+
+    //! Processes input Velodyne point cloud and publishes the output message
+    virtual void process(const sensor_msgs::PointCloud2::ConstPtr &cloud);
+
+private:
+    //! Node handle
+    ros::NodeHandle nh_, private_nh_;
+
+    //! Parameters...
+    Params params_;
+
+    //! Point cloud buffer to avoid reallocation on every message.
+    VPointCloud pcl_in_;
+
+    //! Ouput scan
+    sensor_msgs::LaserScan scan_out_;
+
+    // TF, message filters, etc.
+    message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
+    tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter_;
+    ros::Publisher scan_pub_;
+    ros::Subscriber points_sub_;
     tf::TransformListener listener_;
-
-    /// configuration parameters
-    typedef struct {
-      std::string frame_id;          ///< target frame ID
-    } Config;
-    Config config_;
-
-    // Point cloud buffers for collecting points within a packet.  The
-    // inPc_ and tfPc_ are class members only to avoid reallocation on
-    // every message.
-    VPointCloud inPc_;              ///< input packet point cloud
-    VPointCloud tfPc_;              ///< transformed packet point cloud
-  };
+};
 
 
 } // namespace but_velodyne
 
 #endif // but_velodyne_laser_scan_H
-

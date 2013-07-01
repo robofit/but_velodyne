@@ -33,15 +33,9 @@
 /** Main node entry point. */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "transform_node");
-
-  // create conversion class, which subscribes to raw data
-  velodyne_pointcloud::Transform transform(ros::NodeHandle(),
-                                           ros::NodeHandle("~"));
-
-  // handle callbacks until shut down
+  ros::init( argc, argv, "but_velodyne_laser_scan_node" );
+  but_velodyne::LaserScan scan( ros::NodeHandle(), ros::NodeHandle("~") );
   ros::spin();
 
   return 0;
 }
-

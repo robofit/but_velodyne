@@ -26,69 +26,69 @@
  */
 
 #include <but_velodyne/laser_scan.h>
+#include <but_velodyne/parameters_list.h>
+#include <but_velodyne/topics_list.h>
 
 namespace but_velodyne
 {
-  /** @brief Constructor. */
-  Transform::Transform(ros::NodeHandle node, ros::NodeHandle private_nh):
-    data_(new velodyne_rawdata::RawData())
-  {
-    private_nh.param("frame_id", config_.frame_id, std::string("odom"));
-    std::string tf_prefix = tf::getPrefixParam(private_nh);
-    config_.frame_id = tf::resolve(tf_prefix, config_.frame_id);
-    ROS_INFO_STREAM("target frame ID: " << config_.frame_id);
 
-    data_->setup(private_nh);
+/******************************************************************************
+ */
 
-    // advertise output point cloud (before subscribing to input data)
-    output_ =
-      node.advertise<sensor_msgs::PointCloud2>("velodyne_points", 10);
+LaserScan::LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh)
+    : nh_(nh)
+    , private_nh_(private_nh)
+{
+    // Load parameters
+    private_nh_.param( FRAME_ID_PARAM, params_.frame_id_, params_.frame_id_ );
+    private_nh_.param( MIN_Z_PARAM, params_.min_z_, params_.min_z_ );
+    private_nh_.param( MAX_Z_PARAM, params_.max_z_, params_.max_z_ );
 
-    // subscribe to VelodyneScan packets using transform filter
-    velodyne_scan_.subscribe(node, "velodyne_packets", 10);
-    tf_filter_ =
-      new tf::MessageFilter<velodyne_msgs::VelodyneScan>(velodyne_scan_,
-                                                         listener_,
-                                                         config_.frame_id, 10);
-    tf_filter_->registerCallback(boost::bind(&Transform::processScan, this, _1));
-  }
+    // If a tf_prefix param is specified, it will be added to the beginning of the frame ID
+    std::string tf_prefix = tf::getPrefixParam( private_nh_ );
+    params_.frame_id_ = tf::resolve( tf_prefix, params_.frame_id_ );
 
-  /** @brief Callback for raw scan messages.
-   *
-   *  @pre TF message filter has already waited until the transform to
-   *       the configured @c frame_id can succeed.
-   */
-  void
-    Transform::processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg)
-  {
-    if (output_.getNumSubscribers() == 0)         // no one listening?
-      return;                                     // avoid much work
+    ROS_INFO_STREAM( FRAME_ID_PARAM << " parameter: " << params_.frame_id_ );
+    ROS_INFO_STREAM( MIN_Z_PARAM << " parameter: " << params_.min_z_ );
+    ROS_INFO_STREAM( MAX_Z_PARAM << " parameter: " << params_.max_z_ );
+
+    // Advertise output laser scan
+    scan_pub_ = nh_.advertise<sensor_msgs::PointCloud2>( OUTPUT_LASER_SCAN_TOPIC, 10 );
+
+    // Subscribe to Velodyne point cloud
+    if( params_.frame_id_.empty() )
+    {
+        // No TF frame ID conversion required
+//        points_sub_ = nh_.subscribe(INPUT_POINT_CLOUD_TOPIC, 1, boost::bind(&LaserScan::process, this, _1) );
+        points_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(INPUT_POINT_CLOUD_TOPIC, 1, &LaserScan::process, this );
+    }
+    else
+    {
+        points_sub_filtered_.subscribe(nh_, INPUT_POINT_CLOUD_TOPIC, 10);
+        tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>( points_sub_filtered_, listener_, params_.frame_id_, 10 );
+        tf_filter_->registerCallback( boost::bind(&LaserScan::process, this, _1) );
+    }
+}
+
+
+/******************************************************************************
+ */
+void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
+{
+    if( scan_pub_.getNumSubscribers() == 0 )
+    {
+        return;
+    }
+
+    // Copy message header
+    scan_out_.header.stamp = cloud->header.stamp;
+    scan_out_.header.frame_id = params_.frame_id_;
 
     // allocate an output point cloud with same time as raw data
-    VPointCloud::Ptr outMsg(new VPointCloud());
+/*    VPointCloud::Ptr outMsg(new VPointCloud());
     outMsg->header.stamp = scanMsg->header.stamp;
     outMsg->header.frame_id = config_.frame_id;
     outMsg->height = 1;
-
-    // process each packet provided by the driver
-    for (size_t next = 0; next < scanMsg->packets.size(); ++next)
-      {
-        // clear input point cloud to handle this packet
-        inPc_.points.clear();
-        inPc_.width = 0;
-        inPc_.height = 1;
-        inPc_.header.frame_id = scanMsg->header.frame_id;
-        inPc_.header.stamp = scanMsg->packets[next].stamp;
-
-        // unpack the raw data
-        data_->unpack(scanMsg->packets[next], inPc_);
-
-        // clear transform point cloud for this packet
-        tfPc_.points.clear();           // is this needed?
-        tfPc_.width = 0;
-        tfPc_.height = 1;
-        tfPc_.header.stamp = scanMsg->packets[next].stamp;
-        tfPc_.header.frame_id = config_.frame_id;
 
         // transform the packet point cloud into the target frame
         try
@@ -109,19 +109,12 @@ namespace but_velodyne
             // only log tf error once every 100 times
             ROS_WARN_THROTTLE(100, "%s", ex.what());
             continue;                   // skip this packet
-          }
+          }*/
 
-        // append transformed packet data to end of output message
-        outMsg->points.insert(outMsg->points.end(),
-                             tfPc_.points.begin(),
-                             tfPc_.points.end());
-        outMsg->width += tfPc_.points.size();
-      }
+    // Publish the accumulated laser scan
+    ROS_DEBUG_STREAM_ONCE("Publishing laser scan " << scan_out_.header.stamp);
+//    scan_pub_.publish(scan_out_);
+}
 
-    // publish the accumulated cloud message
-    ROS_DEBUG_STREAM("Publishing " << outMsg->height * outMsg->width
-                     << " Velodyne points, time: " << outMsg->header.stamp);
-    output_.publish(outMsg);
-  }
 
 } // namespace velodyne_pointcloud
