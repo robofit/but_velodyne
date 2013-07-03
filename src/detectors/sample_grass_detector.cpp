@@ -48,20 +48,27 @@ bool SampleRoadDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr 
 
 	cv::Mat hsv;
 
-	//in->image.convertTo(hsv, CV_32FC1);
+	//in->image.convertTo(hsv, CV_16UC3);
 
-	hsv = in->image;
+	if (in->encoding == "rgb8") cv::cvtColor( in->image, hsv, CV_RGB2HSV ); // Hue in range 0-360
+	else if ((in->encoding == "bgr8")) cv::cvtColor( in->image, hsv, CV_BGR2HSV );
+	else {
 
-	cv::cvtColor( hsv, hsv, CV_BGR2HSV_FULL ); // Hue in range 0-360
+		ROS_WARN_THROTTLE(1,"Strange encoding!");
+		return false;
+	}
 
 	std::vector<cv::Mat> hsv_vec;
 	cv::split(hsv,hsv_vec);
 
-	//cv::equalizeHist(hsv_vec[0],hsv_vec[0]);
-
 	cv::Mat bin_mask(hsv_vec[0]);
 
 	//cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(3,3),0);
+
+	uchar c = (hue_max_ - hue_min_)/2; // middle value
+
+	float fh_min = (float)hue_min_;
+	float fh_max = (float)hue_max_;
 
 	for(int row = 0; row < hsv_vec[0].rows; ++row) {
 	    uchar* p = hsv_vec[0].ptr(row);
@@ -70,10 +77,17 @@ bool SampleRoadDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr 
 	    	if (*p < hue_min_ || *p > hue_max_) bin_mask.at<uchar>(row,col) = 0;
 	    	else {
 
-	    		double min = (double)(*p - hue_min_);
-	    		double max = (double)(hue_max_ - hue_min_);
+	    		if (*p == c) bin_mask.at<uchar>(row,col) = 255;
+	    		else {
 
-	    		bin_mask.at<uchar>(row,col) = (uchar)floor((min/max)*255.0);
+	    			float v = (float)*p;
+	    			float fc = (float)c;
+
+	    			if (v > fc) v -= 2*(v-fc); // shift everything to the left side of middle value
+
+	    			bin_mask.at<uchar>(row,col) = (uchar)floor( ((v-fh_min) / (fh_max-fh_min))*255.0 );
+
+	    		}
 
 	    	}
 
