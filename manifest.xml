@@ -7,11 +7,12 @@
   <author></author>
   <license>GPL</license>
   <review status="unreviewed" notes=""/>
-  <url></url>
+  <url>https://github.com/robofit/robotour</url>
   <depend package="sensor_msgs"/>
   <depend package="roscpp"/>
-  <!--depend package=""/>
-  <depend package=""/-->
+  <depend package="image_transport"/>
+  <depend package="opencv2"/>
+  <depend package="cv_bridge"/>
 
 </package>
 

@@ -13,8 +13,14 @@ rosbuild_init()
 
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#rosbuild_add_executable(LMS100 src/LMS1xx_node.cpp)
-#rosbuild_add_executable(set_config src/setConfig.cpp)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+
+include_directories( include/rt_road_detection )
+
+rosbuild_add_library(sample_grass_detector src/detectors/sample_grass_detector.cpp)
+
+rosbuild_add_executable(sample_grass_detector_node src/nodes/sample_grass_detector_node.cpp)
+target_link_libraries(sample_grass_detector_node sample_grass_detector)
 
 # Parse check all the launch/*.launch files
 # rosbuild_add_roslaunch_check(launch)
