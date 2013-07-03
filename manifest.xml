@@ -1,10 +1,8 @@
 <package>
   <description brief="rt_road_detection">
-
      TBD
-
   </description>
-  <author></author>
+  <author>Robo@FIT</author>
   <license>GPL</license>
   <review status="unreviewed" notes=""/>
   <url>https://github.com/robofit/robotour</url>
@@ -13,6 +11,11 @@
   <depend package="image_transport"/>
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
+  <depend package="nodelet"/>
+  
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
 
 </package>
 
