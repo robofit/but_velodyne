@@ -85,7 +85,8 @@ bool SampleRoadDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr 
 
 	    			if (v > fc) v -= 2*(v-fc); // shift everything to the left side of middle value
 
-	    			bin_mask.at<uchar>(row,col) = (uchar)floor( ((v-fh_min) / (fh_max-fh_min))*255.0 );
+	    			// TODO there is probably some bug... check it later!
+	    			bin_mask.at<uchar>(row,col) = (uchar)floor( ((v-fh_min) / ((float)c-fh_min))*255.0 );
 
 	    		}
 
