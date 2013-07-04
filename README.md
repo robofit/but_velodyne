@@ -18,6 +18,6 @@ rt_road_detection
  * there should be always both - node and nodelet variant of code
 
 
-* TODOS
+* TODOs
  * node/nodelet for projection of masks to ground plane (should it work with depth somehow??)
  * plugin to navigation stack for building costmap from these detections (taking into account detector type)
