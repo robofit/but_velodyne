@@ -33,9 +33,9 @@ using namespace rt_road_detection;
 SampleRoadDetector::SampleRoadDetector(int hsv_min, int hsv_max, int median_blur_ks) {
 
 
-	hue_min_ = hsv_min;
-	hue_max_ = hsv_max;
-	median_blur_ks_ = median_blur_ks;
+  hue_min_ = hsv_min;
+  hue_max_ = hsv_max;
+  median_blur_ks_ = median_blur_ks;
 
 }
 
@@ -46,69 +46,69 @@ SampleRoadDetector::~SampleRoadDetector() {
 
 bool SampleRoadDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr out) {
 
-	cv::Mat hsv;
+  cv::Mat hsv;
 
-	//in->image.convertTo(hsv, CV_16UC3);
+  //in->image.convertTo(hsv, CV_16UC3);
 
-	if (in->encoding == "rgb8") cv::cvtColor( in->image, hsv, CV_RGB2HSV ); // Hue in range 0-360
-	else if ((in->encoding == "bgr8")) cv::cvtColor( in->image, hsv, CV_BGR2HSV );
-	else {
+  if (in->encoding == "rgb8") cv::cvtColor( in->image, hsv, CV_RGB2HSV ); // Hue in range 0-360
+  else if ((in->encoding == "bgr8")) cv::cvtColor( in->image, hsv, CV_BGR2HSV );
+  else {
 
-		ROS_WARN_THROTTLE(1,"Strange encoding!");
-		return false;
-	}
+    ROS_WARN_THROTTLE(1,"Strange encoding!");
+    return false;
+  }
 
-	std::vector<cv::Mat> hsv_vec;
-	cv::split(hsv,hsv_vec);
+  std::vector<cv::Mat> hsv_vec;
+  cv::split(hsv,hsv_vec);
 
-	cv::Mat bin_mask(hsv_vec[0]);
+  cv::Mat bin_mask(hsv_vec[0]);
 
-	//cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(3,3),0);
+  cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(3,3),0);
 
-	uchar c = (hue_max_ - hue_min_)/2; // middle value
+  uchar c = (hue_max_ - hue_min_)/2; // middle value
 
-	float fh_min = (float)hue_min_;
-	float fh_max = (float)hue_max_;
+  float fh_min = (float)hue_min_;
+  float fh_max = (float)hue_max_;
 
-	for(int row = 0; row < hsv_vec[0].rows; ++row) {
-	    uchar* p = hsv_vec[0].ptr(row);
-	    for(int col = 0; col < hsv_vec[0].cols; ++col) {
+  for(int row = 0; row < hsv_vec[0].rows; ++row) {
+      uchar* p = hsv_vec[0].ptr(row);
+      for(int col = 0; col < hsv_vec[0].cols; ++col) {
 
-	    	if (*p < hue_min_ || *p > hue_max_) bin_mask.at<uchar>(row,col) = 0;
-	    	else {
+        if (*p < hue_min_ || *p > hue_max_) bin_mask.at<uchar>(row,col) = 0;
+        else {
 
-	    		if (*p == c) bin_mask.at<uchar>(row,col) = 255;
-	    		else {
+          if (*p == c) bin_mask.at<uchar>(row,col) = 255;
+          else {
 
-	    			float v = (float)*p;
-	    			float fc = (float)c;
+            float v = (float)*p;
+            float fc = (float)c;
 
-	    			if (v > fc) v -= 2*(v-fc); // shift everything to the left side of middle value
+            if (v > fc) v -= 2*(v-fc); // shift everything to the left side of middle value
 
-	    			// TODO there is probably some bug... check it later!
-	    			bin_mask.at<uchar>(row,col) = (uchar)floor( ((v-fh_min) / ((float)c-fh_min))*255.0 );
+            // TODO there is probably some bug... check it later!
+            bin_mask.at<uchar>(row,col) = (uchar)floor( ((v-fh_min) / ((float)c-fh_min))*255.0 );
 
-	    		}
+          }
 
-	    	}
+        }
 
-	    	p++;  //points to each pixel value in turn assuming a CV_8UC1 greyscale image
+        p++;  //points to each pixel value in turn assuming a CV_8UC1 greyscale image
 
-	    }
+      }
 
-	}
+  }
 
-	//cv::inRange(hsv_vec[0],cv::Scalar(hue_min_),cv::Scalar(hue_max_),bin_mask);
+  //cv::inRange(hsv_vec[0],cv::Scalar(hue_min_),cv::Scalar(hue_max_),bin_mask);
 
-	cv::medianBlur(bin_mask,bin_mask,median_blur_ks_);
+  cv::medianBlur(bin_mask,bin_mask,median_blur_ks_);
 
-	//bin_mask /= 255.0;
+  //bin_mask /= 255.0;
 
-	//out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
-	out->encoding = sensor_msgs::image_encodings::MONO8;
-	out->header = in->header;
-	out->image = bin_mask;
+  //out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+  out->encoding = sensor_msgs::image_encodings::MONO8;
+  out->header = in->header;
+  out->image = bin_mask;
 
-	return true;
+  return true;
 
 }
