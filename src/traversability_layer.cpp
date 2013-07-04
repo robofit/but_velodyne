@@ -32,7 +32,8 @@ void TraversabilityLayer::onInitialize()
 void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double origin_yaw, double* min_x,
                                           double* min_y, double* max_x, double* max_y) {
 
-
+	// rolling window
+	updateOrigin(origin_x - getSizeInMetersX() / 2, origin_y - getSizeInMetersY() / 2);
 
 }
 

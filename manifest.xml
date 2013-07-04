@@ -16,6 +16,8 @@
   <depend package="nav_msgs"/>
   <depend package="tf"/>
   <depend package="message_filters"/>
+  <depend package="image_geometry"/>
+  <depend package="stereo_msgs"/>
   
   <export>
     <costmap_2d plugin="${prefix}/costmap_plugins.xml"/>
