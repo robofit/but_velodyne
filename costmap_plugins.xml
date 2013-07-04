@@ -1,0 +1,7 @@
+<class_libraries>
+  <library path="liblayers">
+    <class type="rt_road_detection::TraversabilityLayer"  base_class_type="costmap_2d::Layer">
+      <description>Uses image-based road detection to build costmap.</description>
+    </class>
+  </library>
+</class_libraries>
