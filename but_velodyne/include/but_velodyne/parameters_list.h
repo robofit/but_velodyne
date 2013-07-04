@@ -39,6 +39,7 @@ namespace but_velodyne
     const std::string FRAME_ID_PARAM    = "frame_id";
     const std::string MIN_Z_PARAM       = "min_z";
     const std::string MAX_Z_PARAM       = "max_z";
+    const std::string ANGULAR_RES_PARAM = "angular_res";
 }
 
 #endif // BUT_VELODYNE_PARAMETERS_LIST_H
