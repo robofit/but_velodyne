@@ -65,14 +65,29 @@ public:
     {
         //! Target frame ID
         //! - An empty value means to use the same frame ID as the input point cloud has...
-        std::string frame_id_;
+        std::string frame_id;
 
         //! Range to accumulate particular Velodyne scans
         //! - Specifying two exactly similar values means to accumulate all the Velodyne points...
-        double min_z_, max_z_;
+        double min_z, max_z;
+
+        //! Angular resolution [degrees]
+        double angular_res;
 
         //! Default constructor
-        Params() : frame_id_(""), min_z_(0.0), max_z_(0.0) {}
+        Params()
+            : frame_id("")
+            , min_z(getDefaultMinZ())
+            , max_z(getDefaultMaxZ())
+            , angular_res(getDefaultAngularRes())
+        {}
+
+        //! Returns default value of the min_z and max_z parameters.
+        static double getDefaultMinZ() { return 0.0; }
+        static double getDefaultMaxZ() { return 0.0; }
+
+        //! Returns default value of the angular_res parameter.
+        static double getDefaultAngularRes() { return 0.1; }
     };
 
 public:

@@ -33,7 +33,7 @@
 /** Main node entry point. */
 int main(int argc, char **argv)
 {
-  ros::init( argc, argv, "but_velodyne_laser_scan_node" );
+  ros::init( argc, argv, "but_velodyne_laserscan_node" );
   but_velodyne::LaserScan scan( ros::NodeHandle(), ros::NodeHandle("~") );
   ros::spin();
 
