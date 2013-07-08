@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- FOR TESTING ONLY !!! -->
+
+  <include file="$(find rt_road_detection)/launch/test_grass_det_node.launch"/>
+  
+  <node pkg="rt_road_detection" name="det2costmap" type="costmap_node" output="screen">
+    <remap from="not_road_in" to="/detectors/not_road/sample_grass"/> <!-- there will be list of topics in YAML file -->
+  </node>
+
+</launch>
