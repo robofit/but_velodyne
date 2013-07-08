@@ -6,18 +6,12 @@
   <license>GPL</license>
   <review status="unreviewed" notes=""/>
   <url>https://github.com/robofit/robotour</url>
-  <depend package="sensor_msgs"/>
   <depend package="roscpp"/>
-  <depend package="image_transport"/>
-  <depend package="opencv2"/>
-  <depend package="cv_bridge"/>
   <depend package="nodelet"/>
   <depend package="costmap_2d"/>
   <depend package="nav_msgs"/>
   <depend package="tf"/>
-  <depend package="message_filters"/>
-  <depend package="image_geometry"/>
-  <depend package="stereo_msgs"/>
+
   
   <export>
     <costmap_2d plugin="${prefix}/costmap_plugins.xml"/>

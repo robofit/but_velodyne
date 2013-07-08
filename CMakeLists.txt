@@ -18,13 +18,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 include_directories( include/rt_traversability_layer )
 
-rosbuild_add_library(traversability_costmap src/costmap.cpp)
-
 rosbuild_add_library(traversability_layer src/traversability_layer.cpp)
 target_link_libraries( traversability_layer costmap_2d )
 
-rosbuild_add_executable( costmap_node src/costmap_node.cpp )
-target_link_libraries( costmap_node traversability_costmap )
+
 
 # Parse check all the launch/*.launch files
 # rosbuild_add_roslaunch_check(launch)
