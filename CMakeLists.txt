@@ -26,5 +26,9 @@ target_link_libraries(sample_grass_detector_node sample_grass_detector)
 rosbuild_add_library(sample_grass_detector_nodelet src/nodelets/sample_grass_detector_nodelet.cpp)
 target_link_libraries( sample_grass_detector_nodelet sample_grass_detector )
 
+rosbuild_add_library(traversability_costmap src/costmap.cpp)
+rosbuild_add_executable( costmap_node src/nodes/costmap_node.cpp )
+target_link_libraries( costmap_node traversability_costmap )
+
 # Parse check all the launch/*.launch files
 rosbuild_add_roslaunch_check(launch)

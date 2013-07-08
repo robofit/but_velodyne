@@ -12,6 +12,10 @@
   <depend package="opencv2"/>
   <depend package="cv_bridge"/>
   <depend package="nodelet"/>
+  <depend package="message_filters"/>
+  <depend package="image_geometry"/>
+  <depend package="stereo_msgs"/>
+  <depend package="nav_msgs"/>
   
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />
