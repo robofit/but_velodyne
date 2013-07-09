@@ -18,13 +18,13 @@
 namespace rt_road_detection {
 
 
-	class SampleRoadDetector {
+	class SampleHueDetector {
 
 
 		public:
 
-			SampleRoadDetector(int hue_min, int hue_max, int median_blur_ks);
-			~SampleRoadDetector();
+			SampleHueDetector(int hue_min, int hue_max, int median_blur_ks);
+			~SampleHueDetector();
 			bool detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr out);
 
 		protected:

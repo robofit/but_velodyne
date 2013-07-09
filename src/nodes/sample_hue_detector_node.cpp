@@ -1,10 +1,10 @@
-#include "rt_road_detection/sample_grass_detector.h"
+#include "rt_road_detection/detectors/sample_hue_detector.h"
 
 using namespace rt_road_detection;
 using namespace std;
 
 image_transport::Publisher pub;
-SampleRoadDetector *det;
+SampleHueDetector *det;
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -40,7 +40,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "grass_detector_node");
+  ros::init(argc, argv, "hue_detector_node");
   ros::NodeHandle nh("~");
 
   int hue_min,hue_max,median_ks;
@@ -48,6 +48,8 @@ int main(int argc, char **argv)
   ros::param::param("~hue_min",hue_min,90);
   ros::param::param("~hue_max",hue_max,130);
   ros::param::param("~median_ks",median_ks,11);
+
+  ROS_INFO("Detecting HUE in range (%d,%d).",hue_min,hue_max);
 
   string top_rgb_in = "rgb_in";
   string top_det_out = "det_out";
@@ -58,7 +60,7 @@ int main(int argc, char **argv)
   if (top_det_out == ros::names::remap(top_det_out)) ROS_WARN("Topic %s was not remapped!",top_det_out.c_str());
   else ROS_INFO("Topic %s remapped to %s.",top_det_out.c_str(),ros::names::remap(top_det_out).c_str());
 
-  det = new SampleRoadDetector(hue_min,hue_max,median_ks);
+  det = new SampleHueDetector(hue_min,hue_max,median_ks);
 
   image_transport::ImageTransport it(nh);
 

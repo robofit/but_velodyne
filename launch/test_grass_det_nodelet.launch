@@ -5,9 +5,12 @@
   
     <node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager" output="screen"/>
 
-    <node pkg="nodelet" type="nodelet" name="SampleGrassDetectorNodelet" args="load rt_road_detection/SampleGrassDetectorNodelet standalone_nodelet" output="screen">
+    <node pkg="nodelet" type="nodelet" name="SampleHueDetectorNodelet" args="load rt_road_detection/SampleHueDetectorNodelet standalone_nodelet" output="screen">
       <remap from="rgb_in" to="/stereo/left/image_color"/>
       <remap from="det_out" to="/detectors/not_road/sample_grass"/>
+      <param name="hue_min" value="35"/> <!-- hue values for grass -->
+      <param name="hue_max" value="51"/>
+      <param name="median_ks" value="5"/>
     </node>   
   
   </group>   
