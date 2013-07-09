@@ -26,11 +26,11 @@
  */
 
 
-#include "rt_road_detection/sample_grass_detector.h"
+#include "rt_road_detection/detectors/sample_hue_detector.h"
 
 using namespace rt_road_detection;
 
-SampleRoadDetector::SampleRoadDetector(int hsv_min, int hsv_max, int median_blur_ks) {
+SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int median_blur_ks) {
 
 
   hue_min_ = hsv_min;
@@ -39,12 +39,12 @@ SampleRoadDetector::SampleRoadDetector(int hsv_min, int hsv_max, int median_blur
 
 }
 
-SampleRoadDetector::~SampleRoadDetector() {
+SampleHueDetector::~SampleHueDetector() {
 
 
 }
 
-bool SampleRoadDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr out) {
+bool SampleHueDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr out) {
 
   cv::Mat hsv;
 

@@ -18,13 +18,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 include_directories( include/rt_road_detection )
 
 # Sample grass detector
-rosbuild_add_library(sample_grass_detector src/detectors/sample_grass_detector.cpp)
+rosbuild_add_library(sample_hue_detector src/detectors/sample_hue_detector.cpp)
 
-rosbuild_add_executable(sample_grass_detector_node src/nodes/sample_grass_detector_node.cpp)
-target_link_libraries(sample_grass_detector_node sample_grass_detector)
+rosbuild_add_executable(sample_hue_detector_node src/nodes/sample_hue_detector_node.cpp)
+target_link_libraries(sample_hue_detector_node sample_hue_detector)
 
-rosbuild_add_library(sample_grass_detector_nodelet src/nodelets/sample_grass_detector_nodelet.cpp)
-target_link_libraries( sample_grass_detector_nodelet sample_grass_detector )
+rosbuild_add_library(sample_hue_detector_nodelet src/nodelets/sample_hue_detector_nodelet.cpp)
+target_link_libraries( sample_hue_detector_nodelet sample_hue_detector )
 
 rosbuild_add_library(traversability_costmap src/costmap.cpp)
 rosbuild_add_executable( costmap_node src/nodes/costmap_node.cpp )

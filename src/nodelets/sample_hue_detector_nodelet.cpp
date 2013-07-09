@@ -26,15 +26,15 @@
  */
 
 #include <nodelet/nodelet.h>
-#include "rt_road_detection/sample_grass_detector.h"
+#include "rt_road_detection/detectors/sample_hue_detector.h"
 
 namespace rt_road_detection {
 
-	class SampleGrassDetectorNodelet : public nodelet::Nodelet
+	class SampleHueDetectorNodelet : public nodelet::Nodelet
 	   {
 
 		   boost::shared_ptr<image_transport::ImageTransport> it_;
-		   boost::shared_ptr<SampleRoadDetector> det_;
+		   boost::shared_ptr<SampleHueDetector> det_;
 
 		   image_transport::Publisher pub_;
 		   image_transport::Subscriber sub_;
@@ -47,7 +47,7 @@ namespace rt_road_detection {
 	   };
 
 
-	void SampleGrassDetectorNodelet::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
+	void SampleHueDetectorNodelet::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 		cv_bridge::CvImagePtr rgb;
 
@@ -76,7 +76,7 @@ namespace rt_road_detection {
 
 	}
 
-	void SampleGrassDetectorNodelet::onInit() {
+	void SampleHueDetectorNodelet::onInit() {
 
 		ros::NodeHandle &nh = getNodeHandle();
 		ros::NodeHandle &private_nh = getPrivateNodeHandle();
@@ -88,7 +88,7 @@ namespace rt_road_detection {
 		private_nh.param("hue_max",hue_max,70);
 		private_nh.param("median_ks",median_ks,7);
 
-		det_.reset(new SampleRoadDetector(hue_min,hue_max,median_ks));
+		det_.reset(new SampleHueDetector(hue_min,hue_max,median_ks));
 
 		std::string top_rgb_in = "rgb_in";
 		std::string top_det_out = "det_out";
@@ -100,10 +100,10 @@ namespace rt_road_detection {
 		else ROS_INFO("Topic %s remapped to %s.",top_det_out.c_str(),ros::names::remap(top_det_out).c_str());
 
 		//image_transport::TransportHints hints("raw", ros::TransportHints(), getPrivateNodeHandle());
-		sub_ = it_->subscribe(top_rgb_in, 1, &SampleGrassDetectorNodelet::imageCallback,this);
+		sub_ = it_->subscribe(top_rgb_in, 1, &SampleHueDetectorNodelet::imageCallback,this);
 		pub_ = it_->advertise(top_det_out,1);
 
-		NODELET_INFO("SampleGrassDetectorNodelet loaded.");
+		NODELET_INFO("SampleHueDetectorNodelet loaded.");
 
 	}
 
@@ -113,4 +113,4 @@ namespace rt_road_detection {
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_EXPORT_CLASS(rt_road_detection::SampleGrassDetectorNodelet,nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(rt_road_detection::SampleHueDetectorNodelet,nodelet::Nodelet)
