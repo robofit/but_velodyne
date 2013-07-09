@@ -42,7 +42,6 @@ namespace rt_road_detection {
 
 		protected:
 
-			//image_geometry::PinholeCameraModel model_;
 			image_geometry::StereoCameraModel model_;
 
 			void camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam_info_left, const sensor_msgs::CameraInfoConstPtr& cam_info_right);
@@ -52,9 +51,12 @@ namespace rt_road_detection {
 
 			ros::NodeHandle nh_;
 
-			//std::vector< boost::shared_ptr<image_transport::Subscriber> > not_road_sub_;
 
-			image_transport::SubscriberFilter not_road_sub_; // TODO make vector...
+			std::vector< boost::shared_ptr<image_transport::SubscriberFilter> > sub_list_;
+			std::vector< boost::shared_ptr<ApproximateSync> > approximate_sync_list_;
+
+			int queue_length_;
+
 			message_filters::Subscriber<stereo_msgs::DisparityImage> disparity_sub_;
 
 			boost::shared_ptr<ApproximateSync> approximate_sync_;
@@ -67,9 +69,9 @@ namespace rt_road_detection {
 
 			bool cam_info_received_;
 
-			//ros::Publisher map_update_pub_;
+			cv::Mat_<float> occ_grid_;
 
-			boost::shared_ptr<nav_msgs::OccupancyGrid> occ_grid_update_;
+			boost::shared_ptr<nav_msgs::OccupancyGrid> occ_grid_update_; // this is just for publishing
 
 			ros::Publisher occ_grid_pub_;
 
@@ -79,6 +81,16 @@ namespace rt_road_detection {
 			float map_size_;
 
 			tf::TransformListener tfl_;
+
+			void updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, bool road);
+
+			void subscribe(std::string topic, bool road);
+
+			std::string sensor_frame_;
+
+			void timer(const ros::TimerEvent& ev);
+
+			ros::Timer timer_;
 
 	};
 

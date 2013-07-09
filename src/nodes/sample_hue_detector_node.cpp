@@ -49,6 +49,8 @@ int main(int argc, char **argv)
   ros::param::param("~hue_max",hue_max,130);
   ros::param::param("~median_ks",median_ks,11);
 
+  ROS_INFO("Detecting HUE in range (%d,%d).",hue_min,hue_max);
+
   string top_rgb_in = "rgb_in";
   string top_det_out = "det_out";
 
