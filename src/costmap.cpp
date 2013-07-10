@@ -13,7 +13,7 @@ using namespace std;
 
 TraversabilityCostmap::TraversabilityCostmap() {
 
-	ros::param::param<float>("~map_res",map_res_,0.2);
+	ros::param::param<float>("~map_res",map_res_,0.1);
 	ros::param::param<float>("~map_size",map_size_,20.0);
 	ros::param::param("~queue_length",queue_length_,5);
 
@@ -126,7 +126,6 @@ void TraversabilityCostmap::camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam
 
 void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, bool road) {
 
-
 	if (!tfl_.waitForTransform(map_frame_,img->header.frame_id, img->header.stamp, ros::Duration(0.25))) {
 
 		ROS_INFO_THROTTLE(1.0,"Waiting for TF...");
@@ -137,7 +136,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 	const sensor_msgs::Image& dimage = disp->image;
 	const cv::Mat_<float> dmat(dimage.height, dimage.width, (float*)&dimage.data[0], dimage.step);
 
-	const cv::Mat_<uint8_t> imat(img->height, img->width, (uint8_t*)&img->data[0], img->step);
+	// TODO add some check if incoming message is in right encoding!!!
+	const cv::Mat_<float> imat(img->height, img->width, (float*)&img->data[0], img->step);
 
 	cv::Mat_<cv::Vec3f> points;
 
@@ -180,7 +180,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 		  }
 
 		  // skip points which are too low or too high
-		  if (pt.point.z < -0.2 || pt.point.z > 0.5) continue; // TODO make this configurable / use some plane detection???
+		  if (pt.point.z < -0.5 || pt.point.z > 0.5) continue; // TODO make this configurable / use some plane detection???
 
 		  // skip points which are outside of our internal occupancy map
 		  // TODO consider origin of the map???
@@ -201,21 +201,25 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 		  }
 
-		  float val = (float)imat(u,v);
-
-		  val /= 255.0; // normalize to 0.1
+		  float val = imat(u,v);
 
 		  // if val is zero, detector doesn't know anything about that area
-		  if (val == 0.0) continue;
+		  //if (val == 0.0) continue;
 
 		  p_used++;
 
-		  // 1.0 means occupied (det. produce 255 for road so, we need to do 1-val)
-		  // for road we want to lower the probability that area is occupied
-		  if (road) val = 1.0 - val;
+
+		  if (road) {
+
+			  // 1.0 means occupied (det. produce 255 for road so, we need to do 1-val)
+			  val = 1.0 - val;
+
+
+		  }
 
 		  // update of occupancy grid
 		  // TODO check if this is ok
+		  // TODO update also some neighborhood pixels??????
 		  occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
 
 		  if (occ_grid_(x,y) > prob_max_) occ_grid_(x,y) = prob_max_;
@@ -238,7 +242,7 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 
 		ROS_INFO_ONCE("Filtering map.");
 
-		cv::GaussianBlur(occ_grid_,occ,cv::Size(3,3), 0.01); // TODO play with sigma value
+		cv::GaussianBlur(occ_grid_,occ,cv::Size(3,3), 1.5); // TODO check sigma value!!!!!
 
 	} else ROS_INFO_ONCE("Not filtering map.");
 
@@ -299,6 +303,13 @@ void TraversabilityCostmap::notRoadCB(const sensor_msgs::ImageConstPtr& img, con
 
 	if (!cam_info_received_) return;
 
+	if (img->encoding != sensor_msgs::image_encodings::TYPE_32FC1) {
+
+			ROS_ERROR_THROTTLE(1.0, "Wrong detector image (%d) encoding! Float (TYPE_32FC1) in range <0,1> required!", idx);
+			return;
+
+		}
+
 	//cout << "not_road det ID " << idx << endl;
 
 	updateIntOccupancyGrid(img,disp,false);
@@ -310,6 +321,13 @@ void TraversabilityCostmap::roadCB(const sensor_msgs::ImageConstPtr& img, const 
 	ROS_INFO_ONCE("road CB");
 
 	if (!cam_info_received_) return;
+
+	if (img->encoding != sensor_msgs::image_encodings::TYPE_32FC1) {
+
+		ROS_ERROR_THROTTLE(1.0, "Wrong detector image (%d) encoding! Float (TYPE_32FC1) in range <0,1> required!", idx);
+		return;
+
+	}
 
 	//cout << "not_road det ID " << idx << endl;
 

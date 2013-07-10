@@ -61,34 +61,19 @@ bool SampleHueDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr o
   std::vector<cv::Mat> hsv_vec;
   cv::split(hsv,hsv_vec);
 
-  cv::Mat bin_mask(hsv_vec[0]);
+  cv::Mat_<float> bin_mask(hsv_vec[0]);
 
   cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(3,3),0);
 
-  uchar c = (hue_max_ - hue_min_)/2; // middle value
-
-  float fh_min = (float)hue_min_;
-  float fh_max = (float)hue_max_;
 
   for(int row = 0; row < hsv_vec[0].rows; ++row) {
       uchar* p = hsv_vec[0].ptr(row);
       for(int col = 0; col < hsv_vec[0].cols; ++col) {
 
-        if (*p < hue_min_ || *p > hue_max_) bin_mask.at<uchar>(row,col) = 0;
+        if (*p < hue_min_ || *p > hue_max_) bin_mask(row,col) = 0.3;
         else {
 
-          if (*p == c) bin_mask.at<uchar>(row,col) = 255;
-          else {
-
-            float v = (float)*p;
-            float fc = (float)c;
-
-            if (v > fc) v -= 2*(v-fc); // shift everything to the left side of middle value
-
-            // TODO there is probably some bug... check it later!
-            bin_mask.at<uchar>(row,col) = (uchar)floor( ((v-fh_min) / ((float)c-fh_min))*255.0 );
-
-          }
+        	bin_mask(row,col) = 0.7;
 
         }
 
@@ -98,14 +83,10 @@ bool SampleHueDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr o
 
   }
 
-  //cv::inRange(hsv_vec[0],cv::Scalar(hue_min_),cv::Scalar(hue_max_),bin_mask);
-
   cv::medianBlur(bin_mask,bin_mask,median_blur_ks_);
 
-  //bin_mask /= 255.0;
-
-  //out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
-  out->encoding = sensor_msgs::image_encodings::MONO8;
+  out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+  //out->encoding = sensor_msgs::image_encodings::MONO8;
   out->header = in->header;
   out->image = bin_mask;
 
