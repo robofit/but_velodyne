@@ -9,7 +9,7 @@
 #include "rt_road_detection/costmap.h"
 
 using namespace rt_road_detection;
-
+using namespace std;
 
 TraversabilityCostmap::TraversabilityCostmap() {
 
@@ -75,7 +75,7 @@ TraversabilityCostmap::TraversabilityCostmap() {
 
 }
 
-void TraversabilityCostmap::subscribe(std::string topic, bool road) {
+void TraversabilityCostmap::subscribe(string topic, bool road) {
 
 	if (road) ROS_INFO("Subscribing to %s topic (road).",ros::names::remap(topic).c_str());
 	else ROS_INFO("Subscribing to %s topic (not_road).",ros::names::remap(topic).c_str());
@@ -89,8 +89,8 @@ void TraversabilityCostmap::subscribe(std::string topic, bool road) {
 
 	sub->subscribe(*it_,ros::names::remap(topic),queue_length_,hints);
 
-	if (road) sync->registerCallback(boost::bind(&TraversabilityCostmap::roadCB, this, _1, _2));
-	else sync->registerCallback(boost::bind(&TraversabilityCostmap::notRoadCB, this, _1, _2));
+	if (road) sync->registerCallback(boost::bind(&TraversabilityCostmap::roadCB, this, _1, _2, sub_list_.size()));
+	else sync->registerCallback(boost::bind(&TraversabilityCostmap::notRoadCB, this, _1, _2, sub_list_.size()));
 
 	sub_list_.push_back(sub);
 	approximate_sync_list_.push_back(sync);
@@ -119,7 +119,7 @@ void TraversabilityCostmap::camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam
 
 void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, bool road) {
 
-	std::string target_frame = img->header.frame_id;
+	string target_frame = img->header.frame_id;
 
 	if (sensor_frame_ != "") target_frame = sensor_frame_;
 
@@ -183,12 +183,12 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 		  ROS_INFO_ONCE("Some points... ;)");
 
-		  //std::cout << pt.point.x << " " << pt.point.y << " " << pt.point.z << std::endl;
+		  //cout << pt.point.x << " " << pt.point.y << " " << pt.point.z << endl;
 
 		  uint32_t x  = (uint32_t)floor(pt.point.x/map_res_ + ((map_size_/2.0)/map_res_));
 		  uint32_t y  = (uint32_t)floor(pt.point.y/map_res_ + ((map_size_/2.0)/map_res_));
 
-		  if (x > occ_grid_update_->info.width || y > occ_grid_update_->info.width) std::cout << "idx out of occ map!!!" << std::endl;
+		  if (x > occ_grid_update_->info.width || y > occ_grid_update_->info.width) cout << "idx out of occ map!!!" << endl;
 
 		  float val = (float)imat(u,v);
 
@@ -201,8 +201,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 		  if (!road) val = 1.0 - val; // 1.0 means occupied (det. produce 255 for road), normalize to range 0-100
 
-		  //if (road) std::cout << x << " " << y << " " << val << "(road)" << std::endl;
-		  //else std::cout << x << " " << y << " " << val << "(not_road)" << std::endl;
+		  //if (road) cout << x << " " << y << " " << val << "(road)" << endl;
+		  //else cout << x << " " << y << " " << val << "(not_road)" << endl;
 
 		  // TODO update occupancy grid
 		  //  !!!!! this is only for testing with one detector !!!!!!! updating in smarter way (probabilistic?) needed...
@@ -213,8 +213,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 	} // for rows
 
-	if (road) std::cout << p_valid << "/" << p_used << " valid/used points (road)." << std::endl;
-	else std::cout << p_valid << "/" << p_used << " valid/used points (not_road)." << std::endl;
+	if (road) cout << p_valid << "/" << p_used << " valid/used points (road)." << endl;
+	else cout << p_valid << "/" << p_used << " valid/used points (not_road)." << endl;
 
 }
 
@@ -253,21 +253,25 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 }
 
-void TraversabilityCostmap::notRoadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp) {
+void TraversabilityCostmap::notRoadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx) {
 
 	ROS_INFO_ONCE("not_road CB");
 
 	if (!cam_info_received_) return;
 
+	//cout << "not_road det ID " << idx << endl;
+
 	updateIntOccupancyGrid(img,disp,false);
 
 }
 
-void TraversabilityCostmap::roadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp) {
+void TraversabilityCostmap::roadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx) {
 
 	ROS_INFO_ONCE("road CB");
 
 	if (!cam_info_received_) return;
+
+	//cout << "not_road det ID " << idx << endl;
 
 	updateIntOccupancyGrid(img,disp,true);
 
@@ -275,6 +279,6 @@ void TraversabilityCostmap::roadCB(const sensor_msgs::ImageConstPtr& img, const 
 
 inline bool TraversabilityCostmap::isValidPoint(const cv::Vec3f& pt) {
 
-	return pt[2] != image_geometry::StereoCameraModel::MISSING_Z && !std::isinf(pt[2]);
+	return pt[2] != image_geometry::StereoCameraModel::MISSING_Z && !isinf(pt[2]);
 
 }
