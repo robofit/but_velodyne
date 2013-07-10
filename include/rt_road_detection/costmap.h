@@ -22,6 +22,7 @@
 #include <stereo_msgs/DisparityImage.h>
 #include <message_filters/subscriber.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/GetMap.h>
 //#include <image_geometry/stereo_camera_model.h>
 #include <tf/transform_listener.h>
 
@@ -42,11 +43,18 @@ namespace rt_road_detection {
 
 		protected:
 
+			// thresholds for probability
+			float prob_max_;
+			float prob_min_;
+
 			image_geometry::StereoCameraModel model_;
 
 			void camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam_info_left, const sensor_msgs::CameraInfoConstPtr& cam_info_right);
 
+			// callback for detectors detecting non-traversable areas
 			void notRoadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
+
+			// callback for detectors detecting traversable areas (e.g. roads / pavements)
 			void roadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
 
 			ros::NodeHandle nh_;
@@ -69,16 +77,20 @@ namespace rt_road_detection {
 
 			bool cam_info_received_;
 
+			// this is internal representation of occupancy grid, where 1.0 means occupied
+			// TODO consider some filtering / hole filling???
 			cv::Mat_<float> occ_grid_;
 
-			boost::shared_ptr<nav_msgs::OccupancyGrid> occ_grid_update_; // this is just for publishing
+			bool occ_grid_filter_;
 
+			nav_msgs::MapMetaData occ_grid_meta_;
 			ros::Publisher occ_grid_pub_;
 
 			inline bool isValidPoint(const cv::Vec3f& pt);
 
 			float map_res_;
 			float map_size_;
+			std::string map_frame_;
 
 			tf::TransformListener tfl_;
 
@@ -86,11 +98,16 @@ namespace rt_road_detection {
 
 			void subscribe(std::string topic, bool road);
 
-			std::string sensor_frame_;
-
 			void timer(const ros::TimerEvent& ev);
 
+			// timer for periodical publishing of occupancy grid
 			ros::Timer timer_;
+
+			ros::ServiceServer srv_get_map_;
+
+			bool getMap(nav_msgs::GetMap::Request& req, nav_msgs::GetMap::Response& res);
+
+			void createOccGridMsg(nav_msgs::OccupancyGrid& grid);
 
 	};
 
