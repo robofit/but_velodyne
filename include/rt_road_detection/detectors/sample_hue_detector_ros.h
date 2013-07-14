@@ -36,6 +36,9 @@ class SampleHueDetectorRos
 
 			ros::NodeHandle nh_;
 
+			dynamic_reconfigure::Server<SampleHueDetectorConfig> dyn_reconf_srv_;
+			dynamic_reconfigure::Server<SampleHueDetectorConfig>::CallbackType dyn_reconf_f_;
+
 	   };
 
 }

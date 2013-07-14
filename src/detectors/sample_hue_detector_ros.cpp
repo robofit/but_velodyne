@@ -34,9 +34,11 @@ SampleHueDetectorRos::SampleHueDetectorRos(ros::NodeHandle private_nh) {
 	else ROS_INFO("Topic %s remapped to %s.",top_det_out.c_str(),ros::names::remap(top_det_out).c_str());
 
 	//image_transport::TransportHints hints("raw", ros::TransportHints(), getPrivateNodeHandle());
-	sub_ = it_->subscribe(top_rgb_in, 1, &SampleHueDetectorRos::imageCallback,this);
-	pub_ = it_->advertise(top_det_out,1);
+	sub_ = it_->subscribe(ros::names::remap(top_rgb_in), 1, &SampleHueDetectorRos::imageCallback,this);
+	pub_ = it_->advertise(ros::names::remap(top_det_out), 1);
 
+	dyn_reconf_f_ = boost::bind(&SampleHueDetectorRos::reconfigureCallback, this, _1, _2);
+	dyn_reconf_srv_.setCallback(dyn_reconf_f_);
 
 }
 
