@@ -44,7 +44,20 @@ SampleHueDetector::~SampleHueDetector() {
 
 }
 
-bool SampleHueDetector::detect(cv_bridge::CvImagePtr in, cv_bridge::CvImagePtr out) {
+bool SampleHueDetector::setParams(int hue_min, int hue_max, int median_blur_ks) {
+
+	// TODO check param values
+	hue_min_ = hue_min;
+	hue_max_ = hue_max;
+	median_blur_ks_ = median_blur_ks;
+
+	return true;
+
+}
+
+
+
+bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out) {
 
   cv::Mat hsv;
 

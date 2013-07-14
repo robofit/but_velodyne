@@ -267,7 +267,7 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 
 			  } else {
 
-				  // TODO recalculate range <prob_min,prob_max> to <0,1>
+				  // TODO recalculate range <prob_min,prob_max> to <0,1> ??
 				  float new_val = occ(u,v);
 
 				  if (new_val == prob_max_) new_val = 1.0;

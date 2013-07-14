@@ -17,6 +17,7 @@
   <depend package="stereo_msgs"/>
   <depend package="nav_msgs"/>
   <depend package="tf"/>
+  <depend package="dynamic_reconfigure"/>
   
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />
