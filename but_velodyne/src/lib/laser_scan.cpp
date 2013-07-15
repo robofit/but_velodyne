@@ -189,7 +189,7 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     scan_out_.angle_increment = angular_res / rad_to_deg;
     scan_out_.range_min = range_min;
     scan_out_.range_max = range_max;
-    scan_out_.scan_time = 60 / 10;      // TODO: get the value from Velodyne, fixed to 10Hz for now
+    scan_out_.scan_time = 0.1;      // TODO: get the value from Velodyne, fixed to 10Hz for now
     scan_out_.time_increment = scan_out_.scan_time / float(num_of_bins);
 
     // Publish the accumulated laser scan
