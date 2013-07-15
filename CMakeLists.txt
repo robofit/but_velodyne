@@ -15,16 +15,21 @@ rosbuild_init()
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+# generate dynamic reconfigure stuff
+rosbuild_find_ros_package(dynamic_reconfigure)
+include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg()
+
 include_directories( include/rt_road_detection )
 
-# Sample grass detector
-rosbuild_add_library(sample_hue_detector src/detectors/sample_hue_detector.cpp)
+# Sample hue detector
+rosbuild_add_library(sample_hue_detector_ros src/detectors/sample_hue_detector.cpp src/detectors/sample_hue_detector_ros.cpp)
 
 rosbuild_add_executable(sample_hue_detector_node src/nodes/sample_hue_detector_node.cpp)
-target_link_libraries(sample_hue_detector_node sample_hue_detector)
+target_link_libraries(sample_hue_detector_node sample_hue_detector_ros)
 
 rosbuild_add_library(sample_hue_detector_nodelet src/nodelets/sample_hue_detector_nodelet.cpp)
-target_link_libraries( sample_hue_detector_nodelet sample_hue_detector )
+target_link_libraries( sample_hue_detector_nodelet sample_hue_detector_ros)
 
 rosbuild_add_library(traversability_costmap src/costmap.cpp)
 rosbuild_add_executable( costmap_node src/nodes/costmap_node.cpp )

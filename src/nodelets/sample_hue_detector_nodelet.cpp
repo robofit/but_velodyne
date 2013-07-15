@@ -26,82 +26,25 @@
  */
 
 #include <nodelet/nodelet.h>
-#include "rt_road_detection/detectors/sample_hue_detector.h"
+#include "rt_road_detection/detectors/sample_hue_detector_ros.h"
 
 namespace rt_road_detection {
 
 	class SampleHueDetectorNodelet : public nodelet::Nodelet
 	   {
 
-		   boost::shared_ptr<image_transport::ImageTransport> it_;
-		   boost::shared_ptr<SampleHueDetector> det_;
+		boost::shared_ptr<SampleHueDetectorRos> det_;
 
-		   image_transport::Publisher pub_;
-		   image_transport::Subscriber sub_;
-
-		   void imageCallback(const sensor_msgs::ImageConstPtr& msg);
-
-		   virtual void onInit();
-
+		virtual void onInit();
 
 	   };
 
 
-	void SampleHueDetectorNodelet::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
-
-		cv_bridge::CvImagePtr rgb;
-
-		try {
-
-			rgb = cv_bridge::toCvCopy(msg, msg->encoding);
-
-		}
-		catch (cv_bridge::Exception& e)
-		{
-		  NODELET_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
-		  return;
-		}
-
-		NODELET_INFO_ONCE("Received first RGB image.");
-
-		if (pub_.getNumSubscribers() == 0) return;
-
-		NODELET_INFO_ONCE("Publishing first detection.");
-
-		cv_bridge::CvImagePtr out_msg(new cv_bridge::CvImage);
-
-		det_->detect(rgb,out_msg);
-
-		pub_.publish(out_msg->toImageMsg());
-
-	}
-
 	void SampleHueDetectorNodelet::onInit() {
 
-		ros::NodeHandle &nh = getNodeHandle();
 		ros::NodeHandle &private_nh = getPrivateNodeHandle();
-		it_.reset(new image_transport::ImageTransport(private_nh));
 
-		int hue_min,hue_max,median_ks;
-
-		private_nh.param("hue_min",hue_min,30);
-		private_nh.param("hue_max",hue_max,70);
-		private_nh.param("median_ks",median_ks,7);
-
-		det_.reset(new SampleHueDetector(hue_min,hue_max,median_ks));
-
-		std::string top_rgb_in = "rgb_in";
-		std::string top_det_out = "det_out";
-
-		if (top_rgb_in == ros::names::remap(top_rgb_in)) ROS_WARN("Topic %s was not remapped!",top_rgb_in.c_str());
-		else ROS_INFO("Topic %s remapped to %s.",top_rgb_in.c_str(),ros::names::remap(top_rgb_in).c_str());
-
-		if (top_det_out == ros::names::remap(top_det_out)) ROS_WARN("Topic %s was not remapped!",top_det_out.c_str());
-		else ROS_INFO("Topic %s remapped to %s.",top_det_out.c_str(),ros::names::remap(top_det_out).c_str());
-
-		//image_transport::TransportHints hints("raw", ros::TransportHints(), getPrivateNodeHandle());
-		sub_ = it_->subscribe(top_rgb_in, 1, &SampleHueDetectorNodelet::imageCallback,this);
-		pub_ = it_->advertise(top_det_out,1);
+		det_.reset(new SampleHueDetectorRos(private_nh));
 
 		NODELET_INFO("SampleHueDetectorNodelet loaded.");
 
