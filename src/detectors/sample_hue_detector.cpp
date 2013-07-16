@@ -30,17 +30,30 @@
 
 using namespace rt_road_detection;
 
-SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int median_blur_ks) {
+SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int median_blur_ks, double hit, double miss) {
 
 
   hue_min_ = hsv_min;
   hue_max_ = hsv_max;
   median_blur_ks_ = median_blur_ks;
 
+  prob_hit_ = hit;
+  prob_miss_ = miss;
+
+
 }
 
 SampleHueDetector::~SampleHueDetector() {
 
+
+}
+
+bool SampleHueDetector::setProbs(double hit, double miss) {
+
+	prob_hit_ = hit;
+	prob_miss_ = miss;
+
+	return true;
 
 }
 
@@ -83,10 +96,10 @@ bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImage
       uchar* p = hsv_vec[0].ptr(row);
       for(int col = 0; col < hsv_vec[0].cols; ++col) {
 
-        if (*p < hue_min_ || *p > hue_max_) bin_mask(row,col) = 0.3;
+        if (*p < hue_min_ || *p > hue_max_) bin_mask(row,col) = prob_miss_;
         else {
 
-        	bin_mask(row,col) = 0.7;
+        	bin_mask(row,col) = prob_hit_;
 
         }
 
