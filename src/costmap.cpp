@@ -55,8 +55,8 @@ TraversabilityCostmap::TraversabilityCostmap() {
 	disparity_sub_.subscribe(nh_,"/stereo/disparity",queue_length_);
 
 	// TODO read list of detectors from YAML
-	subscribe("/detectors/not_road/sample_grass");
-	subscribe("/detectors/road/sample_asphalt");
+	subscribe("/detectors/sample_grass");
+	subscribe("/detectors/sample_asphalt");
 
 	sub_l_info_.subscribe(nh_,"/stereo/left/camera_info",queue_length_);
 	sub_r_info_.subscribe(nh_,"/stereo/right/camera_info",5);
@@ -69,6 +69,84 @@ TraversabilityCostmap::TraversabilityCostmap() {
 	srv_get_map_ = nh_.advertiseService("get_map",&TraversabilityCostmap::getMap,this);
 	srv_reset_map_ = nh_.advertiseService("reset_map",&TraversabilityCostmap::resetMap,this);
 
+	geometry_msgs::PoseStamped p;
+	robotPose(p);
+
+	// initialize map origin using current position of the robot
+	occ_grid_meta_.origin.position.x = p.pose.position.x - map_size_/2.0;
+	occ_grid_meta_.origin.position.y = p.pose.position.y - map_size_/2.0;
+
+
+
+}
+
+// TODO fix this method!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+bool TraversabilityCostmap::updateMapOrigin() {
+
+	robotPose(map_origin_);
+
+	geometry_msgs::Point old_pos;
+
+	old_pos.x = occ_grid_meta_.origin.position.x;
+	old_pos.y = occ_grid_meta_.origin.position.y;
+
+	occ_grid_meta_.origin.position.x = map_origin_.pose.position.x - map_size_/2.0;
+	occ_grid_meta_.origin.position.y = map_origin_.pose.position.y - map_size_/2.0;
+
+	toccmap new_map;
+
+	new_map = cv::Mat::ones(occ_grid_meta_.width, occ_grid_meta_.height,CV_32FC1);
+	new_map *= 0.5;
+
+	int dx = (occ_grid_meta_.origin.position.x - old_pos.x) / map_res_;
+	int dy = (occ_grid_meta_.origin.position.y - old_pos.y) / map_res_;
+
+	toccmap tmp = occ_grid_.colRange(0,dx).rowRange(0,dy);
+
+	tmp.copyTo(new_map);
+
+	occ_grid_ = new_map.clone();
+
+	return true;
+
+}
+
+bool TraversabilityCostmap::robotPose(geometry_msgs::PoseStamped& pose) {
+
+	geometry_msgs::PoseStamped p;
+
+	p.header.frame_id = "base_link"; // just for initialization
+	p.header.stamp = ros::Time::now();
+	p.pose.position.x = 0;
+	p.pose.position.y = 0;
+	p.pose.position.z = 0;
+	p.pose.orientation.x = 0;
+	p.pose.orientation.y = 0;
+	p.pose.orientation.z = 0;
+	p.pose.orientation.w = 1;
+
+	if (tfl_.waitForTransform(map_frame_, p.header.frame_id, p.header.stamp, ros::Duration(1.0))) {
+
+		bool tr = false;
+
+		try {
+
+		  tfl_.transformPose(map_frame_,p, pose);
+		  tr = true;
+
+		} catch(tf::TransformException& ex) {
+		  ROS_WARN("TF exception:\n%s", ex.what());
+
+		}
+
+		return tr;
+
+
+	} else {
+
+		return false;
+
+	}
 
 }
 
@@ -90,6 +168,8 @@ bool TraversabilityCostmap::resetMap(std_srvs::Empty::Request& req, std_srvs::Em
 
 	occ_grid_ = cv::Mat::ones(occ_grid_meta_.width, occ_grid_meta_.height,CV_32FC1);
 	occ_grid_ *= 0.5;
+
+	updateMapOrigin();
 
 	return true;
 
@@ -254,7 +334,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 	        	  // check if indexes are ok, if not skip the point
 				  if (x > occ_grid_meta_.width || y > occ_grid_meta_.width)  {
 
-					  ROS_WARN_THROTTLE(0.5, "idx out of occ map!!!");
+					  ROS_WARN_THROTTLE(1.0, "idx out of occ map!!!");
 					  continue;
 
 				  }
@@ -296,7 +376,7 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 
 		ROS_INFO_ONCE("Filtering map.");
 
-		cv::GaussianBlur(occ_grid_,occ,cv::Size(3,3),0); // TODO check sigma value!!!!!
+		cv::GaussianBlur(occ,occ,cv::Size(5,5),0); // TODO check sigma value?
 
 	} else ROS_INFO_ONCE("Not filtering map.");
 
@@ -345,6 +425,18 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 	nav_msgs::OccupancyGrid grid;
 
 	createOccGridMsg(grid);
+
+	geometry_msgs::PoseStamped p;
+	robotPose(p);
+
+	double dist = sqrt(pow(p.pose.position.x - map_origin_.pose.position.x,2) + pow(p.pose.position.y - map_origin_.pose.position.y,2));
+
+	/*if (dist > 1.0) {
+
+		ROS_INFO("Robot traveled %f meters. Updating map origin.",dist);
+		updateMapOrigin();
+
+	}*/
 
 	if (occ_grid_pub_.getNumSubscribers() > 0)
 			occ_grid_pub_.publish(grid);

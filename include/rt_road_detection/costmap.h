@@ -35,6 +35,8 @@ namespace rt_road_detection {
 	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> CamInfoApproximatePolicy;
 	typedef message_filters::Synchronizer<CamInfoApproximatePolicy> CamInfoApproximateSync;
 
+	typedef cv::Mat_<float> toccmap;
+
 	class TraversabilityCostmap {
 
 		public:
@@ -43,6 +45,8 @@ namespace rt_road_detection {
 			~TraversabilityCostmap();
 
 		protected:
+
+			geometry_msgs::PoseStamped map_origin_;
 
 			// thresholds for probability
 			float prob_max_;
@@ -77,7 +81,7 @@ namespace rt_road_detection {
 
 			// this is internal representation of occupancy grid, where 1.0 means occupied
 			// TODO consider some filtering / hole filling???
-			cv::Mat_<float> occ_grid_;
+			toccmap occ_grid_;
 
 			bool occ_grid_filter_;
 
@@ -110,6 +114,9 @@ namespace rt_road_detection {
 			void createOccGridMsg(nav_msgs::OccupancyGrid& grid);
 
 			void normalize(cv::Point3d& v);
+
+			bool robotPose(geometry_msgs::PoseStamped& pose);
+			bool updateMapOrigin();
 
 	};
 
