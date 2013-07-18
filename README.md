@@ -1,23 +1,12 @@
 rt_road_detection
 ===========
 
-* there will be set of road/not_road detectors
-* output of detector is a mask with 8bit values (0-255)
-* road detector
- * 255 for regions with road
- * publishing to topic /detectors/road/detector_name
-* not_road detector
- * 255 for regions which are not traversable
- * publishing to topic /detectors/not_road/detector_name
-
-
-* sample_grass_detector
- * is an dumb example of not_road detector
- * it works only with left camera image
- * please follow proposed code structure
- * there should be always both - node and nodelet variant of code
-
-
-* TODOs
- * node/nodelet for projection of masks to ground plane (should it work with depth somehow??)
- * plugin to navigation stack for building costmap from these detections (taking into account detector type)
+* there will be set of detectors publishing images (masks) with values from zero to one
+* values > 0.5 are for pixels/places which are occupied (grass etc.)
+* values < 0.5 are for places which are traversable (pavement etc.)
+* 0.5 for unknown
+* fusion of detectors' outputs is done using Bayes formula and output is probabilistic 2D occupancy map
+* detectors should use only RGB image (depth is used in fusion stage)
+* all detectors should be configurable using parameters and dynamic reconfigure
+* for all detectors there should be node and nodelet version
+* when writing a new detector please, check provided code sample (sample_hue_detector)
