@@ -23,17 +23,21 @@ namespace rt_road_detection {
 
 		public:
 
-			SampleHueDetector(int hue_min, int hue_max, int median_blur_ks);
+			SampleHueDetector(int hue_min, int hue_max, int median_blur_ks, double hit, double miss);
 			~SampleHueDetector();
 			bool detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out);
 
 			bool setParams(int hue_min, int hue_max, int median_blur_ks);
+			bool setProbs(double hit, double miss);
 
 		protected:
 
 			int hue_min_;
 			int hue_max_;
 			int median_blur_ks_;
+
+			double prob_hit_;
+			double prob_miss_;
 
 		private:
 

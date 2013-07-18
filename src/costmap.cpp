@@ -11,7 +11,7 @@
 using namespace rt_road_detection;
 using namespace std;
 
-TraversabilityCostmap::TraversabilityCostmap() {
+TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	ros::param::param<float>("~map_res",map_res_,0.1);
 	ros::param::param<float>("~map_size",map_size_,20.0);
@@ -43,7 +43,7 @@ TraversabilityCostmap::TraversabilityCostmap() {
 	occ_grid_ = cv::Mat::ones(occ_grid_meta_.width, occ_grid_meta_.height,CV_32FC1);
 	occ_grid_ *= 0.5;
 
-	nh_ = ros::NodeHandle("~");
+	nh_ = priv_nh;
 
 	occ_grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("occ_map",10);
 
@@ -55,8 +55,8 @@ TraversabilityCostmap::TraversabilityCostmap() {
 	disparity_sub_.subscribe(nh_,"/stereo/disparity",queue_length_);
 
 	// TODO read list of detectors from YAML
-	subscribe("/detectors/not_road/sample_grass",false);
-	subscribe("/detectors/road/sample_asphalt",true);
+	subscribe("/detectors/sample_grass");
+	subscribe("/detectors/sample_asphalt");
 
 	sub_l_info_.subscribe(nh_,"/stereo/left/camera_info",queue_length_);
 	sub_r_info_.subscribe(nh_,"/stereo/right/camera_info",5);
@@ -67,6 +67,86 @@ TraversabilityCostmap::TraversabilityCostmap() {
 	timer_ = nh_.createTimer(ros::Duration(1.0), &TraversabilityCostmap::timer, this);
 
 	srv_get_map_ = nh_.advertiseService("get_map",&TraversabilityCostmap::getMap,this);
+	srv_reset_map_ = nh_.advertiseService("reset_map",&TraversabilityCostmap::resetMap,this);
+
+	geometry_msgs::PoseStamped p;
+	robotPose(p);
+
+	// initialize map origin using current position of the robot
+	occ_grid_meta_.origin.position.x = p.pose.position.x - map_size_/2.0;
+	occ_grid_meta_.origin.position.y = p.pose.position.y - map_size_/2.0;
+
+
+
+}
+
+// TODO fix this method!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+bool TraversabilityCostmap::updateMapOrigin() {
+
+	robotPose(map_origin_);
+
+	geometry_msgs::Point old_pos;
+
+	old_pos.x = occ_grid_meta_.origin.position.x;
+	old_pos.y = occ_grid_meta_.origin.position.y;
+
+	occ_grid_meta_.origin.position.x = map_origin_.pose.position.x - map_size_/2.0;
+	occ_grid_meta_.origin.position.y = map_origin_.pose.position.y - map_size_/2.0;
+
+	toccmap new_map;
+
+	new_map = cv::Mat::ones(occ_grid_meta_.width, occ_grid_meta_.height,CV_32FC1);
+	new_map *= 0.5;
+
+	int dx = (occ_grid_meta_.origin.position.x - old_pos.x) / map_res_;
+	int dy = (occ_grid_meta_.origin.position.y - old_pos.y) / map_res_;
+
+	toccmap tmp = occ_grid_.colRange(0,dx).rowRange(0,dy);
+
+	tmp.copyTo(new_map);
+
+	occ_grid_ = new_map.clone();
+
+	return true;
+
+}
+
+bool TraversabilityCostmap::robotPose(geometry_msgs::PoseStamped& pose) {
+
+	geometry_msgs::PoseStamped p;
+
+	p.header.frame_id = "base_link"; // just for initialization
+	p.header.stamp = ros::Time::now();
+	p.pose.position.x = 0;
+	p.pose.position.y = 0;
+	p.pose.position.z = 0;
+	p.pose.orientation.x = 0;
+	p.pose.orientation.y = 0;
+	p.pose.orientation.z = 0;
+	p.pose.orientation.w = 1;
+
+	if (tfl_.waitForTransform(map_frame_, p.header.frame_id, p.header.stamp, ros::Duration(1.0))) {
+
+		bool tr = false;
+
+		try {
+
+		  tfl_.transformPose(map_frame_,p, pose);
+		  tr = true;
+
+		} catch(tf::TransformException& ex) {
+		  ROS_WARN("TF exception:\n%s", ex.what());
+
+		}
+
+		return tr;
+
+
+	} else {
+
+		return false;
+
+	}
 
 }
 
@@ -82,10 +162,22 @@ bool TraversabilityCostmap::getMap(nav_msgs::GetMap::Request& req, nav_msgs::Get
 
 }
 
-void TraversabilityCostmap::subscribe(string topic, bool road) {
+bool TraversabilityCostmap::resetMap(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
 
-	if (road) ROS_INFO("Subscribing to %s topic (road).",ros::names::remap(topic).c_str());
-	else ROS_INFO("Subscribing to %s topic (not_road).",ros::names::remap(topic).c_str());
+	ROS_INFO("Reseting occupancy map.");
+
+	occ_grid_ = cv::Mat::ones(occ_grid_meta_.width, occ_grid_meta_.height,CV_32FC1);
+	occ_grid_ *= 0.5;
+
+	updateMapOrigin();
+
+	return true;
+
+}
+
+void TraversabilityCostmap::subscribe(string topic) {
+
+	ROS_INFO("Subscribing to %s topic.",ros::names::remap(topic).c_str());
 
 	boost::shared_ptr<image_transport::SubscriberFilter> sub;
 	boost::shared_ptr<ApproximateSync> sync;
@@ -96,8 +188,7 @@ void TraversabilityCostmap::subscribe(string topic, bool road) {
 
 	sub->subscribe(*it_,ros::names::remap(topic),queue_length_,hints);
 
-	if (road) sync->registerCallback(boost::bind(&TraversabilityCostmap::roadCB, this, _1, _2, sub_list_.size()));
-	else sync->registerCallback(boost::bind(&TraversabilityCostmap::notRoadCB, this, _1, _2, sub_list_.size()));
+	sync->registerCallback(boost::bind(&TraversabilityCostmap::detectorCB, this, _1, _2, sub_list_.size()));
 
 	sub_list_.push_back(sub);
 	approximate_sync_list_.push_back(sync);
@@ -124,7 +215,15 @@ void TraversabilityCostmap::camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam
 
 }
 
-void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, bool road) {
+void TraversabilityCostmap::normalize(cv::Point3d& v)
+{
+  double len = norm(v);
+  v.x /= len;
+  v.y /= len;
+  v.z /= len;
+}
+
+void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp) {
 
 	if (!tfl_.waitForTransform(map_frame_,img->header.frame_id, img->header.stamp, ros::Duration(0.25))) {
 
@@ -144,90 +243,125 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 	// it's so easy to get 3D points ;)
 	model_.projectDisparityImageTo3d(dmat, points, true);
 
-	uint32_t p_valid = 0;
-	uint32_t p_used = 0;
+	tf::StampedTransform tBaseToCam;
 
-	int i = 0;
-	for (int32_t u = 0; u < points.rows; ++u) {
-	  for (int32_t v = 0; v < points.cols; ++v, ++i) {
+	try {
 
-		  // a lot of points in pointcloud are not valid -> let's skip them
-		  if (!isValidPoint(points(u,v))) {
+	      tfl_.lookupTransform(map_frame_, img->header.frame_id, img->header.stamp, tBaseToCam);
 
-			  continue;
+	    } catch(tf::TransformException& ex) {
+	      ROS_WARN("TF exception:\n%s", ex.what());
+	      return;
+	    }
 
-		  }
+	 tf::Vector3 cameraOrigin = tBaseToCam.getOrigin();
+	 //cameraOrigin.setY(cameraOrigin.getY()); // Was adding + 0.14 to it because it was using the wide_stereo
 
-		  p_valid++;
+	 float cameraHeight = cameraOrigin.getZ();
 
-		  geometry_msgs::PointStamped pt;
-		  pt.header.frame_id = img->header.frame_id;
-		  pt.header.stamp = img->header.stamp;
-		  pt.point.x = points(u,v).val[0];
-		  pt.point.y = points(u,v).val[1];
-		  pt.point.z = points(u,v).val[2];
+	 //printf("Camera origin = %.2f %.2f %.2f\n", cameraOrigin.getX(), cameraOrigin.getY(), cameraOrigin.getZ());
+	 //printf("Camera height = %.2fm\n", cameraHeight);
 
-		  // transform valid points from sensor frame to odom frame
-		  try {
+	 for (int32_t u = 0; u < points.rows; ++u) {
+	 	for (int32_t v = 0; v < points.cols; ++v) {
 
-			  tfl_.transformPoint(map_frame_,pt,pt);
 
-		  } catch (tf::TransformException& ex) {
+	 	  // for points where we have depth information
+	 	  // skip points which are too high
+		  if (isValidPoint(points(u,v))) {
 
-			  ROS_ERROR("%s",ex.what());
-			  continue;
+			  geometry_msgs::PointStamped pt;
+			  pt.header.frame_id = img->header.frame_id;
+			  pt.header.stamp = img->header.stamp;
+			  pt.point.x = points(u,v).val[0];
+			  pt.point.y = points(u,v).val[1];
+			  pt.point.z = points(u,v).val[2];
 
-		  }
+			  // transform valid points from sensor frame to odom frame
+			  try {
 
-		  // skip points which are too low or too high
-		  if (pt.point.z < -0.5 || pt.point.z > 0.5) continue; // TODO make this configurable / use some plane detection???
+				  tfl_.transformPoint(map_frame_,pt,pt);
 
-		  // skip points which are outside of our internal occupancy map
-		  // TODO consider origin of the map???
-		  if (pt.point.x < 0.1 || (pt.point.x > map_size_/2.0) ) continue;
-		  if ( (pt.point.y < (-map_size_/2.0)) || (pt.point.y > map_size_/2.0) ) continue; // robot is in the center of map
+			  } catch (tf::TransformException& ex) {
 
-		  ROS_INFO_ONCE("Some points... ;)");
+				  ROS_ERROR("%s",ex.what());
+				  continue;
 
-		  // convert point coordinates from world to map space
-		  uint32_t x  = (uint32_t)floor(pt.point.x/map_res_ + ((map_size_/2.0)/map_res_));
-		  uint32_t y  = (uint32_t)floor(pt.point.y/map_res_ + ((map_size_/2.0)/map_res_));
+			  }
 
-		  // check if indexes are ok, if not skip the point
-		  if (x > occ_grid_meta_.width || y > occ_grid_meta_.width)  {
-
-			  ROS_ERROR("idx out of occ map!!!");
-			  continue;
+			  // skip points which are too high
+			  if (pt.point.z > 0.5) continue;
 
 		  }
 
-		  float val = imat(u,v);
+		  // following code taken from https://mediabox.grasp.upenn.edu/svn/penn-ros-pkgs/pr2_poop_scoop/trunk/perceive_poo/src/perceive_poo.cpp
+		  // something similar: http://gt-ros-pkg.googlecode.com/svn/trunk/hrl/hrl_behaviors/hrl_move_floor_detect/src/move_floor_detect.cpp
+		  // and http://ua-ros-pkg.googlecode.com/svn-history/r766/trunk/arrg/ua_vision/object_tracking/src/object_tracker.cpp
+	 		cv::Point3d ray = model_.left().projectPixelTo3dRay(cv::Point(v,u));
 
-		  // if val is zero, detector doesn't know anything about that area
-		  //if (val == 0.0) continue;
+	 		normalize(ray);
 
-		  p_used++;
+	 	 	tf::Vector3 cameraRay, baseRay;
+
+			cameraRay.setX(ray.x);
+			cameraRay.setY(ray.y);
+			cameraRay.setZ(ray.z);
+
+	        baseRay = tBaseToCam(cameraRay);
+
+	        // We want the ray relative to the camera origin in the
+	        // base coordinate frame
+	        baseRay -= cameraOrigin;
+
+	        // We are interested in the point where the ray hits the ground
+	        if(baseRay.getZ() < 0)
+	        {
+	          float s = cameraHeight / -baseRay.getZ();
+	          geometry_msgs::Point32 pt;
+	          pt.x = cameraOrigin.getX() + baseRay.getX() * s;
+	          pt.y = cameraOrigin.getY() + baseRay.getY() * s;
+	          float dx = pt.x - cameraOrigin.getX();
+	          float dy = pt.y - cameraOrigin.getY();
+	          double dist = sqrt(dx*dx + dy*dy);
+
+	          //printf("x: %f, y: %f, dist = %f\n", poo.x, poo.y, dist);
+
+	          if (dist < 6) {
+
+	        	  uint32_t x  = (uint32_t)floor(pt.x/map_res_ + ((map_size_/2.0)/map_res_));
+	        	  uint32_t y  = (uint32_t)floor(pt.y/map_res_ + ((map_size_/2.0)/map_res_));
+
+	        	  // check if indexes are ok, if not skip the point
+				  if (x > occ_grid_meta_.width || y > occ_grid_meta_.width)  {
+
+					  ROS_WARN_THROTTLE(1.0, "idx out of occ map!!!");
+					  continue;
+
+				  }
+
+				  float val = imat(u,v);
+
+				  // if val is zero, detector doesn't know anything about that area
+				  //if (val == 0.0) continue;
+
+				  //p_used++;
+
+				  // update of occupancy grid
+				  // TODO check if this is ok
+				  // TODO update also some neighborhood pixels??????
+				  occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
+
+				  if (occ_grid_(x,y) > prob_max_) occ_grid_(x,y) = prob_max_;
+				  if (occ_grid_(x,y) < prob_min_) occ_grid_(x,y) = prob_min_;
+
+	          }
+
+	       }
+
+	 	} // for
+	 } // for
 
 
-		  if (road) {
-
-			  // 1.0 means occupied (det. produce 255 for road so, we need to do 1-val)
-			  val = 1.0 - val;
-
-
-		  }
-
-		  // update of occupancy grid
-		  // TODO check if this is ok
-		  // TODO update also some neighborhood pixels??????
-		  occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
-
-		  if (occ_grid_(x,y) > prob_max_) occ_grid_(x,y) = prob_max_;
-		  if (occ_grid_(x,y) < prob_min_) occ_grid_(x,y) = prob_min_;
-
-		} // for cols
-
-	} // for rows
 
 	/*if (road) cout << p_valid << "/" << p_used << " valid/used points (road)." << endl;
 	else cout << p_valid << "/" << p_used << " valid/used points (not_road)." << endl;*/
@@ -242,7 +376,7 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 
 		ROS_INFO_ONCE("Filtering map.");
 
-		cv::GaussianBlur(occ_grid_,occ,cv::Size(3,3), 1.5); // TODO check sigma value!!!!!
+		cv::GaussianBlur(occ,occ,cv::Size(5,5),0); // TODO check sigma value?
 
 	} else ROS_INFO_ONCE("Not filtering map.");
 
@@ -292,14 +426,26 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 	createOccGridMsg(grid);
 
+	geometry_msgs::PoseStamped p;
+	robotPose(p);
+
+	double dist = sqrt(pow(p.pose.position.x - map_origin_.pose.position.x,2) + pow(p.pose.position.y - map_origin_.pose.position.y,2));
+
+	/*if (dist > 1.0) {
+
+		ROS_INFO("Robot traveled %f meters. Updating map origin.",dist);
+		updateMapOrigin();
+
+	}*/
+
 	if (occ_grid_pub_.getNumSubscribers() > 0)
 			occ_grid_pub_.publish(grid);
 
 }
 
-void TraversabilityCostmap::notRoadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx) {
+void TraversabilityCostmap::detectorCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx) {
 
-	ROS_INFO_ONCE("not_road CB");
+	ROS_INFO_ONCE("detector callback");
 
 	if (!cam_info_received_) return;
 
@@ -310,30 +456,11 @@ void TraversabilityCostmap::notRoadCB(const sensor_msgs::ImageConstPtr& img, con
 
 		}
 
-	//cout << "not_road det ID " << idx << endl;
 
-	updateIntOccupancyGrid(img,disp,false);
-
-}
-
-void TraversabilityCostmap::roadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx) {
-
-	ROS_INFO_ONCE("road CB");
-
-	if (!cam_info_received_) return;
-
-	if (img->encoding != sensor_msgs::image_encodings::TYPE_32FC1) {
-
-		ROS_ERROR_THROTTLE(1.0, "Wrong detector image (%d) encoding! Float (TYPE_32FC1) in range <0,1> required!", idx);
-		return;
-
-	}
-
-	//cout << "not_road det ID " << idx << endl;
-
-	updateIntOccupancyGrid(img,disp,true);
+	updateIntOccupancyGrid(img,disp);
 
 }
+
 
 inline bool TraversabilityCostmap::isValidPoint(const cv::Vec3f& pt) {
 

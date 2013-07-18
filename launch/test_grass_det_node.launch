@@ -3,11 +3,13 @@
 
   <!-- this node detects grass -->
   <node pkg="rt_road_detection" name="grass_detector_node" type="sample_hue_detector_node" output="screen" ns="detectors">
-   <remap from="rgb_in" to="/stereo/left/image_color"/>
-   <remap from="det_out" to="/detectors/not_road/sample_grass"/>
+   <remap from="rgb_in" to="/stereo/left/image_rect_color"/>
+   <remap from="det_out" to="/detectors/sample_grass"/>
    <param name="hue_min" value="35"/> <!-- hue values for grass (46) -->
    <param name="hue_max" value="51"/>
    <param name="median_ks" value="5"/>
+   <param name="prob_hit" value="0.55"/>
+   <param name="prob_miss" value="0.45"/>
   </node>
 
 </launch>

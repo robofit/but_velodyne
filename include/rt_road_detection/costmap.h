@@ -23,6 +23,7 @@
 #include <message_filters/subscriber.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/GetMap.h>
+#include <std_srvs/Empty.h>
 //#include <image_geometry/stereo_camera_model.h>
 #include <tf/transform_listener.h>
 
@@ -34,14 +35,18 @@ namespace rt_road_detection {
 	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> CamInfoApproximatePolicy;
 	typedef message_filters::Synchronizer<CamInfoApproximatePolicy> CamInfoApproximateSync;
 
+	typedef cv::Mat_<float> toccmap;
+
 	class TraversabilityCostmap {
 
 		public:
 
-			TraversabilityCostmap();
+			TraversabilityCostmap(ros::NodeHandle priv_nh);
 			~TraversabilityCostmap();
 
 		protected:
+
+			geometry_msgs::PoseStamped map_origin_;
 
 			// thresholds for probability
 			float prob_max_;
@@ -51,11 +56,8 @@ namespace rt_road_detection {
 
 			void camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam_info_left, const sensor_msgs::CameraInfoConstPtr& cam_info_right);
 
-			// callback for detectors detecting non-traversable areas
-			void notRoadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
-
 			// callback for detectors detecting traversable areas (e.g. roads / pavements)
-			void roadCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
+			void detectorCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
 
 			ros::NodeHandle nh_;
 
@@ -79,7 +81,7 @@ namespace rt_road_detection {
 
 			// this is internal representation of occupancy grid, where 1.0 means occupied
 			// TODO consider some filtering / hole filling???
-			cv::Mat_<float> occ_grid_;
+			toccmap occ_grid_;
 
 			bool occ_grid_filter_;
 
@@ -94,9 +96,9 @@ namespace rt_road_detection {
 
 			tf::TransformListener tfl_;
 
-			void updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, bool road);
+			void updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp);
 
-			void subscribe(std::string topic, bool road);
+			void subscribe(std::string topic);
 
 			void timer(const ros::TimerEvent& ev);
 
@@ -104,10 +106,17 @@ namespace rt_road_detection {
 			ros::Timer timer_;
 
 			ros::ServiceServer srv_get_map_;
+			ros::ServiceServer srv_reset_map_;
 
 			bool getMap(nav_msgs::GetMap::Request& req, nav_msgs::GetMap::Response& res);
+			bool resetMap(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res);
 
 			void createOccGridMsg(nav_msgs::OccupancyGrid& grid);
+
+			void normalize(cv::Point3d& v);
+
+			bool robotPose(geometry_msgs::PoseStamped& pose);
+			bool updateMapOrigin();
 
 	};
 

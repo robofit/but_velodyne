@@ -22,7 +22,10 @@ SampleHueDetectorRos::SampleHueDetectorRos(ros::NodeHandle private_nh) {
 	nh_.param("hue_max",hue_max,70);
 	nh_.param("median_ks",median_ks,7);
 
-	det_.reset(new SampleHueDetector(hue_min,hue_max,median_ks));
+	nh_.param("prob_hit",prob_hit_,0.5);
+	nh_.param("prob_miss",prob_miss_,0.5);
+
+	det_.reset(new SampleHueDetector(hue_min,hue_max,median_ks,prob_hit_,prob_miss_));
 
 	std::string top_rgb_in = "rgb_in";
 	std::string top_det_out = "det_out";
@@ -80,9 +83,24 @@ void SampleHueDetectorRos::reconfigureCallback(rt_road_detection::SampleHueDetec
 
 	ROS_INFO("Reconfigure request.");
 
-	// TODO check median ks size!!! + min < max etc
-	// TODO add prob_hit / prob_miss
+	if (config.hue_min < config.hue_max && (config.median_ks%2 == 1)) {
 
-	det_->setParams(config.hue_min,config.hue_max,config.median_ks);
+		det_->setParams(config.hue_min,config.hue_max,config.median_ks);
+
+	} else {
+
+		ROS_WARN("Parameter hue_min must be lower than hue_max and median_ks must be odd number.");
+
+	}
+
+	if (config.prob_hit > config.prob_miss) {
+
+		det_->setProbs(config.prob_hit, config.prob_miss);
+
+	} else {
+
+		ROS_WARN("Parameter prob_hit must be higher than prob_miss.");
+
+	}
 
 }
