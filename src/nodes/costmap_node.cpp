@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
   TraversabilityCostmap *tc;
 
-  tc = new TraversabilityCostmap;
+  tc = new TraversabilityCostmap(nh);
 
   ROS_INFO("Node started.");
   ros::spin();

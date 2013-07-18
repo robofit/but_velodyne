@@ -3,13 +3,13 @@
 
   <!-- this node detects road/asphalt -->
   <node pkg="rt_road_detection" name="asphalt_detector_node" type="sample_hue_detector_node" output="screen" ns="detectors">
-   <remap from="rgb_in" to="/stereo/left/image_color"/>
+   <remap from="rgb_in" to="/stereo/left/image_rect_color"/>
    <remap from="det_out" to="/detectors/sample_asphalt"/>
    <param name="hue_min" value="52"/> <!-- hue values for asphalt (104) -->
    <param name="hue_max" value="100"/>
    <param name="median_ks" value="5"/>
-   <param name="prob_hit" value="0.3"/>
-   <param name="prob_miss" value="0.7"/>
+   <param name="prob_hit" value="0.45"/>
+   <param name="prob_miss" value="0.55"/>
   </node>
 
 </launch>

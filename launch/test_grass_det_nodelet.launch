@@ -1,16 +1,18 @@
 <?xml version="1.0"?>
 <launch>
 
-  <group ns="detectors">
-  
-    <node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager" output="screen"/>
+  <arg name="manager_name" default="stereo_nodelet_manager"/>
 
-    <node pkg="nodelet" type="nodelet" name="SampleHueDetectorNodelet" args="load rt_road_detection/SampleHueDetectorNodelet standalone_nodelet" output="screen">
-      <remap from="rgb_in" to="/stereo/left/image_color"/>
-      <remap from="det_out" to="/detectors/not_road/sample_grass"/>
-      <param name="hue_min" value="35"/> <!-- hue values for grass -->
-      <param name="hue_max" value="51"/>
-      <param name="median_ks" value="5"/>
+  <group ns="detectors">
+
+    <node pkg="nodelet" type="nodelet" name="SampleGrassDetectorNodelet" args="load rt_road_detection/SampleHueDetectorNodelet /$(arg manager_name)" output="screen">
+     <remap from="rgb_in" to="/stereo/left/image_rect_color"/>
+     <remap from="det_out" to="/detectors/sample_grass"/>
+     <param name="hue_min" value="35"/> <!-- hue values for grass (46) -->
+     <param name="hue_max" value="51"/>
+     <param name="median_ks" value="5"/>
+     <param name="prob_hit" value="0.7"/>
+     <param name="prob_miss" value="0.3"/>
     </node>   
   
   </group>   

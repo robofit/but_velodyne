@@ -41,7 +41,7 @@ namespace rt_road_detection {
 
 		public:
 
-			TraversabilityCostmap();
+			TraversabilityCostmap(ros::NodeHandle priv_nh);
 			~TraversabilityCostmap();
 
 		protected:

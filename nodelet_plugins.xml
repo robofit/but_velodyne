@@ -1,7 +1,15 @@
-<library path="lib/libsample_grass_detector_nodelet">
-  <class name="rt_road_detection/SampleGrassDetectorNodelet" type="rt_road_detection::SampleGrassDetectorNodelet" base_class_type="nodelet::Nodelet">
+<library path="lib/lib_detector_nodelets">
+  <class name="rt_road_detection/SampleHueDetectorNodelet" type="rt_road_detection::SampleHueDetectorNodelet" base_class_type="nodelet::Nodelet">
   <description>
-  Sample grass detection plugin.
+  Sample hue detection plugin.
+  </description>
+  </class>
+</library>
+
+<library path="lib/lib_costmap_nodelet">
+  <class name="rt_road_detection/CostmapNodelet" type="rt_road_detection::CostmapNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  Costmap from detections.
   </description>
   </class>
 </library>

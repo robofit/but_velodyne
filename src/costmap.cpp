@@ -11,7 +11,7 @@
 using namespace rt_road_detection;
 using namespace std;
 
-TraversabilityCostmap::TraversabilityCostmap() {
+TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	ros::param::param<float>("~map_res",map_res_,0.1);
 	ros::param::param<float>("~map_size",map_size_,20.0);
@@ -43,7 +43,7 @@ TraversabilityCostmap::TraversabilityCostmap() {
 	occ_grid_ = cv::Mat::ones(occ_grid_meta_.width, occ_grid_meta_.height,CV_32FC1);
 	occ_grid_ *= 0.5;
 
-	nh_ = ros::NodeHandle("~");
+	nh_ = priv_nh;
 
 	occ_grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("occ_map",10);
 
