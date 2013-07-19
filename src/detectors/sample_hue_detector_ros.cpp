@@ -81,10 +81,10 @@ void SampleHueDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) 
 
 void SampleHueDetectorRos::reconfigureCallback(rt_road_detection::SampleHueDetectorConfig &config, uint32_t level) {
 
-	ROS_INFO("Reconfigure request.");
 
 	if (config.hue_min < config.hue_max && (config.median_ks%2 == 1)) {
 
+		ROS_INFO("New settings used.");
 		det_->setParams(config.hue_min,config.hue_max,config.median_ks);
 
 	} else {
@@ -95,6 +95,7 @@ void SampleHueDetectorRos::reconfigureCallback(rt_road_detection::SampleHueDetec
 
 	if (config.prob_hit > config.prob_miss) {
 
+		ROS_INFO("New settings used.");
 		det_->setProbs(config.prob_hit, config.prob_miss);
 
 	} else {

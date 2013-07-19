@@ -44,6 +44,9 @@ namespace rt_road_detection {
 			TraversabilityCostmap(ros::NodeHandle priv_nh);
 			~TraversabilityCostmap();
 
+			double round(double d);
+
+
 		protected:
 
 			geometry_msgs::PoseStamped map_origin_;
@@ -117,6 +120,16 @@ namespace rt_road_detection {
 
 			bool robotPose(geometry_msgs::PoseStamped& pose);
 			bool updateMapOrigin();
+
+			void worldToMap(geometry_msgs::Point& p);
+
+			bool initialized_;
+
+			bool filter_output_;
+
+			double max_proj_dist_;
+
+			bool use_disparity_;
 
 	};
 
