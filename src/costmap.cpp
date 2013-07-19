@@ -28,6 +28,14 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	ros::param::param<string>("~map_frame",map_frame_,"odom");
 
+	ros::param::param<double>("~origin_update_th",origin_update_th_,0.5);
+
+	ros::param::param<string>("~detectors_ns",detectors_ns_,"/detectors");
+
+
+	ros::param::param<int>("~morph_filter_ks_size",morph_filter_ks_size_,5);
+	ros::param::param<int>("~median_filter_ks_size",median_filter_ks_size_,5);
+	ros::param::param<int>("~morph_filter_iter",morph_filter_iter_,2);
 
 	occ_grid_meta_.resolution = map_res_;
 	occ_grid_meta_.origin.position.x = - map_size_/2.0; // initial position of a robot is filled later
@@ -54,11 +62,56 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	image_transport::TransportHints hints("raw", ros::TransportHints(), nh_);
 
-	disparity_sub_.subscribe(nh_,"/stereo/disparity",queue_length_);
+	if (use_disparity_) disparity_sub_.subscribe(nh_,"/stereo/disparity",queue_length_);
+
+	XmlRpc::XmlRpcValue pres;
+
+	if (nh_.getParam("detectors",pres)) {
+
+		ROS_ASSERT(pres.getType() == XmlRpc::XmlRpcValue::TypeArray);
+
+		ROS_INFO("We will use %d detectors.",pres.size());
+
+		for (int i=0; i < pres.size(); i++) {
+
+			XmlRpc::XmlRpcValue xpr = pres[i];
+
+			if (xpr.getType() != XmlRpc::XmlRpcValue::TypeStruct) {
+
+			  ROS_ERROR("Wrong syntax in YAML config.");
+			  continue;
+
+			}
+
+			// read the name
+			if (!xpr.hasMember("name")) {
+
+			  ROS_ERROR("Preset doesn't have 'name' property defined.");
+			  continue;
+
+			} else {
+
+			  XmlRpc::XmlRpcValue name = xpr["name"];
+
+			  std::string tmp = detectors_ns_ + "/" + static_cast<std::string>(name);
+
+			  subscribe(tmp);
+
+
+			}
+
+
+		} // for
+
+	} else {
+
+		ROS_ERROR("Can't get list of detectors.");
+
+	}
 
 	// TODO read list of detectors from YAML
-	subscribe("/detectors/sample_grass");
-	subscribe("/detectors/sample_asphalt");
+	/*subscribe("/detectors/sample_grass");
+	subscribe("/detectors/sample_asphalt");*/
 
 	sub_l_info_.subscribe(nh_,"/stereo/left/camera_info",queue_length_);
 	sub_r_info_.subscribe(nh_,"/stereo/right/camera_info",queue_length_);
@@ -195,19 +248,32 @@ void TraversabilityCostmap::subscribe(string topic) {
 
 	ROS_INFO("Subscribing to %s topic.",ros::names::remap(topic).c_str());
 
-	boost::shared_ptr<image_transport::SubscriberFilter> sub;
-	boost::shared_ptr<ApproximateSync> sync;
 	image_transport::TransportHints hints("raw", ros::TransportHints(), nh_);
 
-	sub.reset(new image_transport::SubscriberFilter);
-	sync.reset( new ApproximateSync(ApproximatePolicy(queue_length_), *sub, disparity_sub_) );
+	if (use_disparity_) {
 
-	sub->subscribe(*it_,ros::names::remap(topic),queue_length_,hints);
+		boost::shared_ptr<image_transport::SubscriberFilter> sub;
+		boost::shared_ptr<ApproximateSync> sync;
 
-	sync->registerCallback(boost::bind(&TraversabilityCostmap::detectorCB, this, _1, _2, sub_list_.size()));
+		sub.reset(new image_transport::SubscriberFilter);
+		sync.reset( new ApproximateSync(ApproximatePolicy(queue_length_), *sub, disparity_sub_) );
 
-	sub_list_.push_back(sub);
-	approximate_sync_list_.push_back(sync);
+		sub->subscribe(*it_,ros::names::remap(topic),queue_length_,hints);
+
+		sync->registerCallback(boost::bind(&TraversabilityCostmap::detectorCB, this, _1, _2, sub_list_.size()));
+
+		sub_list_.push_back(sub);
+		approximate_sync_list_.push_back(sync);
+
+	} else {
+
+		boost::shared_ptr<image_transport::Subscriber> sub;
+		sub.reset(new image_transport::Subscriber);
+		*sub = it_->subscribe(ros::names::remap(topic),queue_length_,boost::bind(&TraversabilityCostmap::detectorCBalt, this, _1, sub_list_wo_disp_.size())); // TODO add hints
+
+		sub_list_wo_disp_.push_back(sub);
+
+	}
 
 
 }
@@ -272,14 +338,22 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 	}
 
-	const sensor_msgs::Image& dimage = disp->image;
-	const cv::Mat_<float> dmat(dimage.height, dimage.width, (float*)&dimage.data[0], dimage.step);
 	const cv::Mat_<float> imat(img->height, img->width, (float*)&img->data[0], img->step);
 
 	cv::Mat_<cv::Vec3f> points;
 
 	// it's so easy to get 3D points ;)
-	if (use_disparity_) model_.projectDisparityImageTo3d(dmat, points, true);
+	if (use_disparity_){
+
+		const sensor_msgs::Image& dimage = disp->image;
+		const cv::Mat_<float> dmat(dimage.height, dimage.width, (float*)&dimage.data[0], dimage.step);
+
+		model_.projectDisparityImageTo3d(dmat, points, true);
+
+		ROS_ASSERT(points.rows == imat.rows);
+		ROS_ASSERT(points.cols == imat.cols);
+
+	}
 
 	tf::StampedTransform tBaseToCam;
 
@@ -300,11 +374,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 	 //printf("Camera origin = %.2f %.2f %.2f\n", cameraOrigin.getX(), cameraOrigin.getY(), cameraOrigin.getZ());
 	 //printf("Camera height = %.2fm\n", cameraHeight);
 
-	 ROS_ASSERT(points.rows == imat.rows);
-	 ROS_ASSERT(points.cols == imat.cols);
-
-	 for (int32_t u = 0; u < points.rows; u++) {
-	 	for (int32_t v = 0; v < points.cols; v++) {
+	 for (int32_t u = 0; u < imat.rows; u++) {
+	 	for (int32_t v = 0; v < imat.cols; v++) {
 
 
 	 	  // for points where we have depth information
@@ -338,7 +409,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 		  // following code taken from https://mediabox.grasp.upenn.edu/svn/penn-ros-pkgs/pr2_poop_scoop/trunk/perceive_poo/src/perceive_poo.cpp
 		  // something similar: http://gt-ros-pkg.googlecode.com/svn/trunk/hrl/hrl_behaviors/hrl_move_floor_detect/src/move_floor_detect.cpp
 		  // and http://ua-ros-pkg.googlecode.com/svn-history/r766/trunk/arrg/ua_vision/object_tracking/src/object_tracker.cpp
-	 		cv::Point3d ray = model_.left().projectPixelTo3dRay(cv::Point(v,u));
+
+		  cv::Point3d ray = model_.left().projectPixelTo3dRay(cv::Point(v,u)); // TODO check if it really should be like this (v,u)
 
 	 		normalize(ray);
 
@@ -411,22 +483,21 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 
 		occ = occ_grid_.clone();
 
-		//cv::GaussianBlur(occ,occ,cv::Size(5,5),0); // TODO check sigma value?
-
-		int erosion_size = 5;
-		int dilation_size = 5;
+		int erosion_size = morph_filter_ks_size_;
+		int dilation_size = morph_filter_ks_size_;
 
 		cv::Mat element = cv::getStructuringElement( cv::MORPH_CROSS,
 		                                       cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
 		                                       cv::Point( dilation_size, dilation_size ) );
 
-		cv::erode( occ, occ, element ); // TODO make it configurable (size / iterations)
-		cv::dilate( occ, occ, element );
+		for (int i=0; i < morph_filter_iter_; i++) {
 
-		cv::erode( occ, occ, element );
-		cv::dilate( occ, occ, element );
+			cv::erode( occ, occ, element );
+			cv::dilate( occ, occ, element );
 
-		cv::medianBlur(occ, occ, 3);
+		}
+
+		if (median_filter_ks_size_%2 == 1) cv::medianBlur(occ, occ, median_filter_ks_size_);
 
 
 	} else {
@@ -499,7 +570,7 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 	double dist = sqrt(pow(p.pose.position.x - map_origin_.pose.position.x,2) + pow(p.pose.position.y - map_origin_.pose.position.y,2));
 
-	if (dist > map_size_*0.05) { // TODO make configurable
+	if (dist > origin_update_th_) { // TODO make configurable
 
 		ROS_INFO("Robot traveled %f meters. Updating map origin.",dist);
 		updateMapOrigin();
@@ -533,6 +604,25 @@ void TraversabilityCostmap::detectorCB(const sensor_msgs::ImageConstPtr& img, co
 
 
 	updateIntOccupancyGrid(img,disp);
+
+}
+
+void TraversabilityCostmap::detectorCBalt(const sensor_msgs::ImageConstPtr& img, const int& idx) {
+
+	ROS_INFO_ONCE("detector callback (without disparity)");
+
+	if (!cam_info_received_) return;
+
+	if (img->encoding != sensor_msgs::image_encodings::TYPE_32FC1) {
+
+			ROS_ERROR_THROTTLE(1.0, "Wrong detector image (%d) encoding! Float (TYPE_32FC1) in range <0,1> required!", idx);
+			return;
+
+		}
+
+	const stereo_msgs::DisparityImageConstPtr ptr;
+
+	updateIntOccupancyGrid(img,ptr);
 
 }
 
