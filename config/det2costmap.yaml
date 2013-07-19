@@ -1,0 +1,25 @@
+proj_dist: 10.0
+
+morph_filter_ks_size: 3
+median_filter_ks_size: 3
+morph_filter_iter: 1
+
+use_disparity: false
+
+map_frame: "odom"
+map_size: 20
+map_res: 0.05
+
+
+detectors_ns: /detectors
+
+detectors:
+
+  -
+    name: sample_grass
+    # some more values...
+    
+  #- 
+  #name: sample_asphalt
+
+

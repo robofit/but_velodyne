@@ -44,6 +44,9 @@ namespace rt_road_detection {
 			TraversabilityCostmap(ros::NodeHandle priv_nh);
 			~TraversabilityCostmap();
 
+			double round(double d);
+
+
 		protected:
 
 			geometry_msgs::PoseStamped map_origin_;
@@ -58,10 +61,12 @@ namespace rt_road_detection {
 
 			// callback for detectors detecting traversable areas (e.g. roads / pavements)
 			void detectorCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
+			void detectorCBalt(const sensor_msgs::ImageConstPtr& img, const int& idx);
 
 			ros::NodeHandle nh_;
 
 
+			std::vector< boost::shared_ptr<image_transport::Subscriber> > sub_list_wo_disp_;
 			std::vector< boost::shared_ptr<image_transport::SubscriberFilter> > sub_list_;
 			std::vector< boost::shared_ptr<ApproximateSync> > approximate_sync_list_;
 
@@ -117,6 +122,24 @@ namespace rt_road_detection {
 
 			bool robotPose(geometry_msgs::PoseStamped& pose);
 			bool updateMapOrigin();
+
+			void worldToMap(geometry_msgs::Point& p);
+
+			bool initialized_;
+
+			bool filter_output_;
+
+			double max_proj_dist_;
+
+			bool use_disparity_;
+
+			double origin_update_th_;
+
+			int morph_filter_ks_size_;
+			int morph_filter_iter_;
+			int median_filter_ks_size_;
+
+			std::string detectors_ns_;
 
 	};
 

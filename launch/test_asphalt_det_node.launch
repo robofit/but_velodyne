@@ -9,7 +9,7 @@
    <param name="hue_max" value="100"/>
    <param name="median_ks" value="5"/>
    <param name="prob_hit" value="0.45"/>
-   <param name="prob_miss" value="0.55"/>
+   <param name="prob_miss" value="0.6"/>
   </node>
 
 </launch>

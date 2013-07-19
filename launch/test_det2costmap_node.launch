@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <launch>
 
+  <arg name="debug" default="false" />
+  <arg if="$(arg debug)" name="launch_prefix" value="xterm -e gdb --args" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+
   <!-- FOR TESTING ONLY !!! -->
 
-  <!--include file="$(find rt_road_detection)/launch/test_grass_det_node.launch"/>
-  <include file="$(find rt_road_detection)/launch/test_asphalt_det_node.launch"/-->
-  <include file="$(find rt_road_detection)/launch/test_office_floor_det_node.launch"/>
+  <include file="$(find rt_road_detection)/launch/test_grass_det_node.launch"/>
+  <include file="$(find rt_road_detection)/launch/test_asphalt_det_node.launch"/>
+  <!--include file="$(find rt_road_detection)/launch/test_office_floor_det_node.launch"/-->
   
-  <node pkg="rt_road_detection" name="det2costmap" type="costmap_node" output="screen">
+  <node pkg="rt_road_detection" name="det2costmap" type="costmap_node" output="screen" launch-prefix="$(arg launch_prefix)">
     
-    <param name="map_frame" value="odom"/>
-    <param name="map_res" value="0.05"/>
+    <rosparam file="$(find rt_road_detection)/config/det2costmap.yaml" command="load" />
     
-    <!-- there will be list of topics in YAML file -->
-    <!--remap from="not_road_in" to="/detectors/not_road/sample_grass"/>
-    <remap from="road_in" to="/detectors/road/sample_asphalt"/-->
   </node>
 
 </launch>
