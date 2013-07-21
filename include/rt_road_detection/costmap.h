@@ -26,6 +26,7 @@
 #include <std_srvs/Empty.h>
 //#include <image_geometry/stereo_camera_model.h>
 #include <tf/transform_listener.h>
+#include <boost/circular_buffer.hpp>
 
 namespace rt_road_detection {
 
@@ -36,6 +37,20 @@ namespace rt_road_detection {
 	typedef message_filters::Synchronizer<CamInfoApproximatePolicy> CamInfoApproximateSync;
 
 	typedef cv::Mat_<float> toccmap;
+
+	typedef struct {
+
+		ros::Time stamp;
+		std::vector< std::vector<bool> > disp_skip; // already transformed points
+		std::vector< std::vector<geometry_msgs::Point> > pts;
+		tf::StampedTransform tBaseToCam;
+
+		int used;
+
+	} tcache;
+
+	typedef boost::shared_ptr<tcache> tcache_ptr;
+	typedef boost::circular_buffer< tcache_ptr > tcache_buff;
 
 	class TraversabilityCostmap {
 
@@ -48,6 +63,9 @@ namespace rt_road_detection {
 
 
 		protected:
+
+			boost::shared_ptr<tcache_buff> cache_buff_;
+			//tcache_ptr cache_;
 
 			geometry_msgs::PoseStamped map_origin_;
 
