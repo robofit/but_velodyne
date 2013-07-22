@@ -28,15 +28,19 @@ rosbuild_add_library(sample_hue_detector_ros src/detectors/sample_hue_detector.c
 rosbuild_add_executable(sample_hue_detector_node src/nodes/sample_hue_detector_node.cpp)
 target_link_libraries(sample_hue_detector_node sample_hue_detector_ros)
 
-rosbuild_add_library( detector_nodelets src/nodelets/sample_hue_detector_nodelet.cpp)
-target_link_libraries( detector_nodelets sample_hue_detector_ros)
+#rosbuild_add_library( detector_nodelets src/nodelets/sample_hue_detector_nodelet.cpp)
+#target_link_libraries( detector_nodelets sample_hue_detector_ros)
 
 rosbuild_add_library(traversability_costmap src/costmap.cpp)
 rosbuild_add_executable( costmap_node src/nodes/costmap_node.cpp )
 target_link_libraries( costmap_node traversability_costmap )
 
-rosbuild_add_library(traversability_costmap_nodelet src/nodelets/costmap_nodelet.cpp)
-target_link_libraries( traversability_costmap_nodelet traversability_costmap )
+#rosbuild_add_library(traversability_costmap_nodelet src/nodelets/costmap_nodelet.cpp)
+#target_link_libraries( traversability_costmap_nodelet traversability_costmap )
+
+rosbuild_add_library(road_detection_nodelets src/nodelets/costmap_nodelet.cpp src/nodelets/sample_hue_detector_nodelet.cpp)
+target_link_libraries( road_detection_nodelets sample_hue_detector_ros traversability_costmap)
+
 
 # Parse check all the launch/*.launch files
 rosbuild_add_roslaunch_check(launch)

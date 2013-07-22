@@ -26,7 +26,15 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	ros::param::param("~grid_filter",occ_grid_filter_, true);
 
-	ros::param::param("~use_disparity",use_disparity_, true); // TODO don't subscribe to disparity when this set to false
+	ros::param::param("~use_disparity",use_disparity_, false); // TODO don't subscribe to disparity when this set to false
+	ros::param::param("~use_scan",use_scan_, true);
+
+	if (use_scan_ && use_disparity_) {
+
+		ROS_WARN("Can't use scan and disparity at the same time. Will use just scan.");
+		use_disparity_ = false;
+
+	}
 
 	ros::param::param<string>("~map_frame",map_frame_,"odom");
 
@@ -65,6 +73,7 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	image_transport::TransportHints hints("raw", ros::TransportHints(), nh_);
 
 	if (use_disparity_) disparity_sub_.subscribe(nh_,"/stereo/disparity",queue_length_);
+	if (use_scan_) scan_sub_.subscribe(nh_,"/velodyne/scan",queue_length_);
 
 	XmlRpc::XmlRpcValue pres;
 
@@ -267,6 +276,21 @@ void TraversabilityCostmap::subscribe(string topic) {
 		sub_list_.push_back(sub);
 		approximate_sync_list_.push_back(sync);
 
+	} else if (use_scan_) {
+
+		boost::shared_ptr<image_transport::SubscriberFilter> sub;
+		boost::shared_ptr<ApproximateSyncScan> sync;
+
+		sub.reset(new image_transport::SubscriberFilter);
+		sync.reset( new ApproximateSyncScan(ApproximatePolicyScan(queue_length_), *sub, scan_sub_) );
+
+		sub->subscribe(*it_,ros::names::remap(topic),queue_length_,hints);
+		sync->registerCallback(boost::bind(&TraversabilityCostmap::detectorCBscan, this, _1, _2, sub_list_.size()));
+
+		sub_list_.push_back(sub);
+		approximate_sync_scan_list_.push_back(sync);
+
+
 	} else {
 
 		boost::shared_ptr<image_transport::Subscriber> sub;
@@ -321,7 +345,7 @@ void TraversabilityCostmap::worldToMap(geometry_msgs::Point& p) {
 
 }
 
-void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp) {
+void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const sensor_msgs::LaserScanConstPtr& scan) {
 
 	if (!initialized_) return;
 
@@ -344,7 +368,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 	int cache_idx = -1;
 
-	for (int i = 0; i < cache_buff_->size(); i++) {
+	for (int i = 0; i < (int)cache_buff_->size(); i++) {
 
 		if ((*cache_buff_)[i]->stamp == img->header.stamp) {
 
@@ -369,7 +393,16 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 		// get transform between map_frame and camera frame
 		try {
 
-		  tfl_.lookupTransform(map_frame_, img->header.frame_id, img->header.stamp, cache->tBaseToCam);
+		  tfl_.lookupTransform(map_frame_, img->header.frame_id, img->header.stamp, cache->tCamToBase);
+
+		} catch(tf::TransformException& ex) {
+		  ROS_WARN("TF exception:\n%s", ex.what());
+		  return;
+		}
+
+		try {
+
+		  tfl_.lookupTransform(img->header.frame_id, map_frame_,img->header.stamp, cache->tBaseToCam);
 
 		} catch(tf::TransformException& ex) {
 		  ROS_WARN("TF exception:\n%s", ex.what());
@@ -427,8 +460,96 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 		} // if disp
 
-		tf::Vector3 cameraOrigin = cache->tBaseToCam.getOrigin();
+
+		tf::Vector3 cameraOrigin = cache->tCamToBase.getOrigin();
 		float cameraHeight = cameraOrigin.getZ();
+
+		vector<double> scan_dist;
+
+
+		if (use_scan_) {
+
+			scan_dist.resize(imat.cols,max_proj_dist_);
+
+			sensor_msgs::PointCloud cloud;
+
+			try {
+
+				projector_.transformLaserScanToPointCloud(map_frame_,*scan,cloud,tfl_);
+
+
+			} catch(tf::TransformException& ex) {
+			  ROS_WARN("TF exception:\n%s", ex.what());
+			  return;
+			}
+
+			for (int i=0; i < (int)cloud.points.size(); i++) {
+
+				tf::Vector3 map_pt, cam_pt;
+
+				map_pt.setX(cloud.points[i].x);
+				map_pt.setY(cloud.points[i].y);
+				map_pt.setZ(cloud.points[i].z - 0.8); // TODO read velodyne position using TF
+
+				//cout << "odo " << map_pt.getX() << " " << map_pt.getY() << " " << map_pt.getZ() << endl;
+
+				cam_pt = cache->tBaseToCam(map_pt);
+
+				//cout << "cam " << cam_pt.getX() << " " << cam_pt.getY() << " " << cam_pt.getZ() << endl;
+
+				// skip points behind camera
+				if (cam_pt.getZ() < 0.0) continue;
+
+				cv::Point3d pt;
+
+				pt.x = cam_pt.getX();
+				pt.y = cam_pt.getY();
+				pt.z = cam_pt.getZ();
+
+				cv::Point2d uv;
+
+				uv = model_.left().project3dToPixel(pt);
+
+				//cout << "img " << uv.x << " " << uv.y << endl;
+
+				if ( (uv.x >= 0.0) && (uv.y >= 0.0) && ((int)round(uv.x) < imat.cols) && ((int)round(uv.y) < imat.rows) ) {
+
+					//tf::Vector3 base_pt;
+					//base_pt = cache->tCamToBase(cam_pt);
+
+					// make point relative to a camera
+					//base_pt -= cameraOrigin;
+					map_pt -= cameraOrigin;
+
+					float dx = map_pt.getX() - cameraOrigin.getX();
+					float dy = map_pt.getY() - cameraOrigin.getY();
+					double dist = sqrt(dx*dx + dy*dy);
+
+					//cout << map_pt.getX() << " " <<  map_pt.getY() << " " <<  map_pt.getZ() << " col " << uv.x << " d: " << dist << endl;
+
+					int idx = (int)round(uv.x);
+
+					if (scan_dist[idx] > dist) {
+
+						scan_dist[idx] = dist;
+
+						if (idx-4 >= 0 && scan_dist[idx-4] > dist) scan_dist[idx-4] = dist;
+						if (idx-3 >= 0 && scan_dist[idx-3] > dist) scan_dist[idx-3] = dist;
+						if (idx-2 >= 0 && scan_dist[idx-2] > dist) scan_dist[idx-2] = dist;
+						if (idx-1 >= 0 && scan_dist[idx-1] > dist) scan_dist[idx-1] = dist;
+						if (idx+1 < (int)scan_dist.size() && scan_dist[idx+1] > dist) scan_dist[idx+1] = dist;
+						if (idx+2 < (int)scan_dist.size() && scan_dist[idx+2] > dist) scan_dist[idx+2] = dist;
+						if (idx+3 < (int)scan_dist.size() && scan_dist[idx+3] > dist) scan_dist[idx+3] = dist;
+						if (idx+4 < (int)scan_dist.size() && scan_dist[idx+4] > dist) scan_dist[idx+4] = dist;
+
+					}
+
+
+				}
+
+		} // for cloud
+
+		} // if use scan
 
 		cache->pts.clear();
 		cache->pts.resize(imat.rows, std::vector<geometry_msgs::Point>(imat.cols));
@@ -452,7 +573,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 			cameraRay.setY(ray.y);
 			cameraRay.setZ(ray.z);
 
-			baseRay = cache->tBaseToCam(cameraRay);
+			baseRay = cache->tCamToBase(cameraRay);
 
 
 			// We want the ray relative to the camera origin in the
@@ -472,9 +593,18 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 			  if (dist < max_proj_dist_) {
 
-				  worldToMap(pt);
+				  if (use_scan_ && (dist > scan_dist[v]) ) {
 
-				  cache->pts[u][v] = pt;
+					  //cout << "laser lim " << dist << " " << scan_dist[v] << endl;
+					  cache->pts[u][v].x = -1.0;
+
+				  } else {
+
+					  worldToMap(pt);
+
+					  cache->pts[u][v] = pt;
+
+				  }
 
 			  } else {
 
@@ -482,8 +612,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 			  }
 
+			} // if baseRay
 
-		}
 
 		} // for for
 
@@ -665,8 +795,9 @@ void TraversabilityCostmap::detectorCB(const sensor_msgs::ImageConstPtr& img, co
 
 		}
 
+	const sensor_msgs::LaserScanConstPtr scan;
 
-	updateIntOccupancyGrid(img,disp);
+	updateIntOccupancyGrid(img,disp,scan);
 
 }
 
@@ -684,8 +815,28 @@ void TraversabilityCostmap::detectorCBalt(const sensor_msgs::ImageConstPtr& img,
 		}
 
 	const stereo_msgs::DisparityImageConstPtr ptr;
+	const sensor_msgs::LaserScanConstPtr scan;
 
-	updateIntOccupancyGrid(img,ptr);
+	updateIntOccupancyGrid(img,ptr,scan);
+
+}
+
+void TraversabilityCostmap::detectorCBscan(const sensor_msgs::ImageConstPtr& img, const sensor_msgs::LaserScanConstPtr& scan, const int& idx) {
+
+	ROS_INFO_ONCE("detector callback (with scan)");
+
+	if (!cam_info_received_) return;
+
+	if (img->encoding != sensor_msgs::image_encodings::TYPE_32FC1) {
+
+			ROS_ERROR_THROTTLE(1.0, "Wrong detector image (%d) encoding! Float (TYPE_32FC1) in range <0,1> required!", idx);
+			return;
+
+		}
+
+	const stereo_msgs::DisparityImageConstPtr ptr;
+
+	updateIntOccupancyGrid(img,ptr,scan);
 
 }
 

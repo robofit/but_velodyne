@@ -30,16 +30,17 @@
 
 using namespace rt_road_detection;
 
-SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int median_blur_ks, double hit, double miss) {
+SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int sat_min, int median_blur_ks, double hit, double miss) {
 
 
   hue_min_ = hsv_min;
   hue_max_ = hsv_max;
+  sat_min_ = sat_min;
+
   median_blur_ks_ = median_blur_ks;
 
   prob_hit_ = hit;
   prob_miss_ = miss;
-
 
 }
 
@@ -89,26 +90,42 @@ bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImage
 
   cv::Mat_<float> bin_mask(hsv_vec[0]);
 
-  cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(3,3),0);
+  // hue channel is quite noisy... and we don't need high level of details
+  cv::medianBlur(hsv_vec[0],hsv_vec[0],median_blur_ks_);
+  cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(5,5),0);
 
 
-  for(int row = 0; row < hsv_vec[0].rows; ++row) {
-      uchar* p = hsv_vec[0].ptr(row);
-      for(int col = 0; col < hsv_vec[0].cols; ++col) {
+  for(int row = 0; row < hsv_vec[0].rows; row++) {
+      uchar* h = hsv_vec[0].ptr(row);
+      uchar* s = hsv_vec[1].ptr(row);
+      for(int col = 0; col < hsv_vec[0].cols; col++) {
+    	int overexposed = 0;
 
-        if (*p < hue_min_ || *p > hue_max_) bin_mask(row,col) = prob_miss_;
-        else {
+    	if (in->image.at<cv::Vec3b>(row,col)[0] > 253) overexposed++;
+    	if (in->image.at<cv::Vec3b>(row,col)[1] > 253) overexposed++;
+    	if (in->image.at<cv::Vec3b>(row,col)[2] > 253) overexposed++;
 
-        	bin_mask(row,col) = prob_hit_;
+    	// deal with overexposed areas
+    	if (overexposed > 1) {
 
-        }
+    		bin_mask(row,col) = 0.5;
 
-        p++;  //points to each pixel value in turn assuming a CV_8UC1 greyscale image
+    	} else {
+
+    		if (*h > hue_min_ && *h < hue_max_ && *s > 25) bin_mask(row,col) = prob_hit_;
+    		else bin_mask(row,col) = prob_miss_;
+
+
+    	}
+
+        h++;  //points to each pixel value in turn assuming a CV_8UC1 greyscale image
+        s++;
 
       }
 
   }
 
+  // post-filter some small mess in mask
   cv::medianBlur(bin_mask,bin_mask,median_blur_ks_);
 
   out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
