@@ -90,32 +90,37 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         return;
     }
 
+    //! Ouput scan
+    sensor_msgs::LaserScan::Ptr scan_out;
+
+    scan_out = boost::make_shared<sensor_msgs::LaserScan>();
+
     // Retrieve the input point cloud
     pcl::fromROSMsg( *cloud, pcl_in_ );
 
     // Copy message header
-    scan_out_.header.stamp = cloud->header.stamp;
+    scan_out->header.stamp = cloud->header.stamp;
 
     // Target TF frame ID
     if( params_.frame_id.empty() )
     {
         // No TF transformation required
-        scan_out_.header.frame_id = cloud->header.frame_id;
+        scan_out->header.frame_id = cloud->header.frame_id;
     }
     else
     {
         // Prescribed frame ID
-        scan_out_.header.frame_id = params_.frame_id;
-        if( scan_out_.header.frame_id != cloud->header.frame_id )
+        scan_out->header.frame_id = params_.frame_id;
+        if( scan_out->header.frame_id != cloud->header.frame_id )
         {
             // Get TF transform
             tf::StampedTransform to_target_frame_tf;
             try
             {
                 ROS_INFO_STREAM_ONCE( "Transforming point cloud from " << cloud->header.frame_id
-                                << " to " << scan_out_.header.frame_id
+                                << " to " << scan_out->header.frame_id
                                 );
-                pcl_ros::transformPointCloud( scan_out_.header.frame_id, pcl_in_, pcl_in_, listener_ );
+                pcl_ros::transformPointCloud( scan_out->header.frame_id, pcl_in_, pcl_in_, listener_ );
             }
             catch( tf::TransformException ex )
             {
@@ -133,12 +138,12 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     float range_min = 1e7f, range_max = -1e7f;
 
     // Initialize the simulated laser scan
-    scan_out_.ranges.resize(num_of_bins);
-    scan_out_.intensities.resize(num_of_bins);
+    scan_out->ranges.resize(num_of_bins);
+    scan_out->intensities.resize(num_of_bins);
     for( int i = 0; i < num_of_bins; ++i )
     {
-        scan_out_.ranges[i] = range_min;
-        scan_out_.intensities[i] = 0.0f;
+        scan_out->ranges[i] = range_min;
+        scan_out->intensities[i] = 0.0f;
     }
 
     // Create the simulated laser scan
@@ -172,10 +177,10 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //        ROS_INFO_STREAM("Bin num.: " << n);
 
         // Accumulate the value
-        if( mag < scan_out_.ranges[n] )
+        if( mag < scan_out->ranges[n] )
         {
-            scan_out_.ranges[n] = mag;
-            scan_out_.intensities[n] = it->intensity;
+            scan_out->ranges[n] = mag;
+            scan_out->intensities[n] = it->intensity;
         }
 
         // Overall stats
@@ -184,18 +189,18 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     }
 
     // Fill in all message members
-    scan_out_.angle_min = -float(CV_PI);
-    scan_out_.angle_max = float(CV_PI);
-    scan_out_.angle_increment = angular_res / rad_to_deg;
-    scan_out_.range_min = range_min;
-    scan_out_.range_max = range_max;
-    scan_out_.scan_time = 0.1;      // TODO: get the value from Velodyne, fixed to 10Hz for now
-    scan_out_.time_increment = scan_out_.scan_time / float(num_of_bins);
+    scan_out->angle_min = -float(CV_PI);
+    scan_out->angle_max = float(CV_PI);
+    scan_out->angle_increment = angular_res / rad_to_deg;
+    scan_out->range_min = range_min;
+    scan_out->range_max = range_max;
+    scan_out->scan_time = 0.1;      // TODO: get the value from Velodyne, fixed to 10Hz for now
+    scan_out->time_increment = scan_out->scan_time / float(num_of_bins);
 
     // Publish the accumulated laser scan
-    ROS_INFO_STREAM_ONCE( "Publishing laser scan " << scan_out_.header.stamp );
+    ROS_INFO_STREAM_ONCE( "Publishing laser scan " << scan_out->header.stamp );
 
-    scan_pub_.publish(scan_out_);
+    scan_pub_.publish(scan_out);
 }
 
 

@@ -110,9 +110,6 @@ private:
     //! Point cloud buffer to avoid reallocation on every message.
     VPointCloud pcl_in_;
 
-    //! Ouput scan
-    sensor_msgs::LaserScan scan_out_;
-
     // TF, message filters, etc.
     message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
     tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter_;
