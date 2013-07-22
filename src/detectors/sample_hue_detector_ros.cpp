@@ -26,6 +26,10 @@ SampleHueDetectorRos::SampleHueDetectorRos(ros::NodeHandle private_nh) {
 	nh_.param("prob_hit",prob_hit_,0.5);
 	nh_.param("prob_miss",prob_miss_,0.5);
 
+	nh_.param("frame_skip",frame_skip_,2);
+
+	skiped_ = 0;
+
 	det_.reset(new SampleHueDetector(hue_min,hue_max,sat_min,median_ks,prob_hit_,prob_miss_));
 
 	std::string top_rgb_in = "rgb_in";
@@ -52,6 +56,13 @@ SampleHueDetectorRos::~SampleHueDetectorRos() {
 }
 
 void SampleHueDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
+
+	if (skiped_ < frame_skip_) {
+
+		skiped_++;
+		return;
+
+	} else skiped_ = 0;
 
 	cv_bridge::CvImageConstPtr rgb;
 

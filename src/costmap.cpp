@@ -134,11 +134,6 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	cache_buff_.reset(new tcache_buff(5));
 
-	/*cache_.reset(new tcache);
-	cache_->stamp = ros::Time(0);
-	cache_->used = 0;*/
-
-
 }
 
 double TraversabilityCostmap::round(double d)
@@ -483,6 +478,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 			  return;
 			}
 
+			//int pt_cnt = 0;
+
 			for (int i=0; i < (int)cloud.points.size(); i++) {
 
 				tf::Vector3 map_pt, cam_pt;
@@ -514,11 +511,9 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 				if ( (uv.x >= 0.0) && (uv.y >= 0.0) && ((int)round(uv.x) < imat.cols) && ((int)round(uv.y) < imat.rows) ) {
 
-					//tf::Vector3 base_pt;
-					//base_pt = cache->tCamToBase(cam_pt);
+					//pt_cnt++;
 
 					// make point relative to a camera
-					//base_pt -= cameraOrigin;
 					map_pt -= cameraOrigin;
 
 					float dx = map_pt.getX() - cameraOrigin.getX();
@@ -529,30 +524,43 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 					int idx = (int)round(uv.x);
 
-					if (scan_dist[idx] > dist) {
+					if (scan_dist[idx] > dist) scan_dist[idx] = dist;
 
-						scan_dist[idx] = dist;
-
-						if (idx-4 >= 0 && scan_dist[idx-4] > dist) scan_dist[idx-4] = dist;
-						if (idx-3 >= 0 && scan_dist[idx-3] > dist) scan_dist[idx-3] = dist;
-						if (idx-2 >= 0 && scan_dist[idx-2] > dist) scan_dist[idx-2] = dist;
-						if (idx-1 >= 0 && scan_dist[idx-1] > dist) scan_dist[idx-1] = dist;
-						if (idx+1 < (int)scan_dist.size() && scan_dist[idx+1] > dist) scan_dist[idx+1] = dist;
-						if (idx+2 < (int)scan_dist.size() && scan_dist[idx+2] > dist) scan_dist[idx+2] = dist;
-						if (idx+3 < (int)scan_dist.size() && scan_dist[idx+3] > dist) scan_dist[idx+3] = dist;
-						if (idx+4 < (int)scan_dist.size() && scan_dist[idx+4] > dist) scan_dist[idx+4] = dist;
-
-					}
+					// update also some points in neighborhood
+					if (idx-5 >= 0 && scan_dist[idx-5] > dist) scan_dist[idx-5] = dist;
+					if (idx-4 >= 0 && scan_dist[idx-4] > dist) scan_dist[idx-4] = dist;
+					if (idx-3 >= 0 && scan_dist[idx-3] > dist) scan_dist[idx-3] = dist;
+					if (idx-2 >= 0 && scan_dist[idx-2] > dist) scan_dist[idx-2] = dist;
+					if (idx-1 >= 0 && scan_dist[idx-1] > dist) scan_dist[idx-1] = dist;
+					if (idx+1 < (int)scan_dist.size() && scan_dist[idx+1] > dist) scan_dist[idx+1] = dist;
+					if (idx+2 < (int)scan_dist.size() && scan_dist[idx+2] > dist) scan_dist[idx+2] = dist;
+					if (idx+3 < (int)scan_dist.size() && scan_dist[idx+3] > dist) scan_dist[idx+3] = dist;
+					if (idx+4 < (int)scan_dist.size() && scan_dist[idx+4] > dist) scan_dist[idx+4] = dist;
+					if (idx+5 < (int)scan_dist.size() && scan_dist[idx+5] > dist) scan_dist[idx+5] = dist;
 
 
 				}
 
 		} // for cloud
 
+		//cout << "points in fov: " << pt_cnt << endl;
+
+		/*int unused_dists = 0;
+
+		for (int i=0; i < (int)scan_dist.size(); i++) {
+
+			if (scan_dist[i] == max_proj_dist_) unused_dists++;
+
+		}
+
+		cout << "unused cols: " << unused_dists << endl;*/
+
 		} // if use scan
 
 		cache->pts.clear();
 		cache->pts.resize(imat.rows, std::vector<geometry_msgs::Point>(imat.cols));
+
+		//int lim_pts = 0;
 
 		// cache rays
 		for (int32_t u = 0; u < imat.rows; u++)
@@ -595,7 +603,9 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 				  if (use_scan_ && (dist > scan_dist[v]) ) {
 
-					  //cout << "laser lim " << dist << " " << scan_dist[v] << endl;
+					  //lim_pts++;
+
+					  //cout << "ll " << dist << " " << scan_dist[v] << endl;
 					  cache->pts[u][v].x = -1.0;
 
 				  } else {
@@ -616,6 +626,8 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 
 		} // for for
+
+		//cout << "lim pts " << lim_pts << endl;
 
 		cache_buff_->push_back(cache);
 		cache_idx = cache_buff_->size() - 1;
@@ -657,7 +669,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 			  // update of occupancy grid
 			  // TODO should we limit also value of occ_grid_(x,y)????
-			  occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
+			  if (val != 0.5) occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
 
 
 		  } // if cache pts

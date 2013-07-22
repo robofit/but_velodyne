@@ -173,6 +173,9 @@ namespace rt_road_detection {
 
 			laser_geometry::LaserProjection projector_;
 
+			/*bool publish_dbg_img_;
+			image_transport::Publisher dbg_img_pub_;*/
+
 	};
 
 
