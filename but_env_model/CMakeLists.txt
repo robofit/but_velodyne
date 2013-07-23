@@ -19,6 +19,10 @@ find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 #target_link_libraries( my_awesome_library ${OpenCV_LIBRARIES} )
 
+find_package( octomap REQUIRED )
+include_directories(${OCTOMAP_INCLUDE_DIRS})
+#link_libraries( ${OCTOMAP_LIBRARIES} )
+
 rosbuild_init()
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -60,7 +64,7 @@ set( SERVER_SOURCES src/env_model/env_model_server.cpp
                     )
                     
 set( CPC_SOURCES src/env_model/compressed_pc_publisher.cpp
-                 src/but_cpc_node.cpp
+                 src/cpc_node.cpp
                  )
 
 set( OBJTREE_SOURCE_FILES src/env_model/objtree/bbox.cpp
@@ -84,10 +88,10 @@ rosbuild_add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
 # Add environment model server executable
 rosbuild_add_executable( but_env_model_node ${SERVER_SOURCES} src/server_node.cpp )
 target_link_libraries( but_env_model_node octomap_ros ${OBJTREE_LIB_NAME} )
-target_link_libraries( but_env_model_node ${OpenCV_LIBRARIES} )
+target_link_libraries( but_env_model_node ${OpenCV_LIBRARIES} ${OCTOMAP_LIBRARIES} )
 
 
 # Add compressed pc subscriber-publisher executable
 rosbuild_add_executable( but_cpc_node ${CPC_SOURCES} )
-target_link_libraries( but_cpc_node ${OpenCV_LIBRARIES} )
+target_link_libraries( but_cpc_node ${OpenCV_LIBRARIES} ${OCTOMAP_LIBRARIES} )
 
