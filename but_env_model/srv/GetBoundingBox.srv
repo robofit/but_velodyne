@@ -1,0 +1,4 @@
+uint32 object_id
+---
+geometry_msgs/Pose pose
+geometry_msgs/Vector3 scale

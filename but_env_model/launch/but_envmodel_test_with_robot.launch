@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Run our dynamic scene model server node -->
+    <include file="$(find srs_env_model)/launch/but_envmodel_robot.launch" />
+
+    <!-- Run our interactive teleop -->
+    <!-- include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" /-->
+
+    <!-- Run our GUI nodes -->
+    <!-- include file="$(find srs_interaction_primitives)/launch/interaction_primitives.launch" /-->
+
+</launch>
+

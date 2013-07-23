@@ -1,0 +1,4 @@
+int32 my_version
+---
+int32 current_version
+arm_navigation_msgs/CollisionMap map

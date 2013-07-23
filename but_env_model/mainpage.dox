@@ -1,0 +1,17 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+ROS dynamic environment model provided by Robo@FIT group:
+- global voxel-based 3D map of the environment based on OctoMap library
+- octree for objects (bounding boxes, planes, etc.)
+
+<!--
+\section xyz ...
+
+\subsection xyz ...
+-->
+
+
+*/
+
