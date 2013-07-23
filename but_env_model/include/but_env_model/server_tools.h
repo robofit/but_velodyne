@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,7 +28,7 @@
 #ifndef SERVER_TOOLS_H_INCLUDED
 #define SERVER_TOOLS_H_INCLUDED
 
-#include <srs_env_model/but_server/octonode.h>
+#include <but_env_model/octonode.h>
 
 #include <boost/signal.hpp>
 #include <boost/thread/mutex.hpp>
@@ -46,7 +46,7 @@ template <typename tpType> bool isSmall( tpType x ) { return abs( x ) < SMALL_DO
 //! Is absolute value of the given number greater than SMALL_DOUBLE?
 template <typename tpType> bool isGreat( tpType x ) { return abs( x ) > SMALL_DOUBLE; }
 
-namespace srs_env_model
+namespace but_env_model
 {
 	//! ROS octomap type
 	typedef octomap::ButOctomapROS< srs_env_model::EMOcTree > tButServerOcMap;
@@ -281,7 +281,7 @@ namespace srs_env_model
 		boost::mutex m_lockData;
 	};
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 /*
 POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::PointXYZRGB,
@@ -291,5 +291,6 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(pcl::PointXYZRGB,
 		(uint32_t, rgb, rgb)
 )
 */
+
 // SERVER_TOOLS_H_INCLUDED
 #endif

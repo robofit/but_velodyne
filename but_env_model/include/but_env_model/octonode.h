@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,10 +28,11 @@
 #ifndef OCTONODE_H
 #define OCTONODE_H
 
-#include "ButOctomapRos.h"
+#include "but_octomap_ros.h"
 #include <octomap/OcTreeStamped.h>
 
-namespace srs_env_model {
+namespace but_env_model
+{
 
 /**
  * Nodes to be used in a environment model server.
@@ -274,6 +275,6 @@ protected:
 }; // class EMOcTree
 
 }
-; // namespace srs_env_model
+; // namespace but_env_model
 
 #endif // OCTONODE_H

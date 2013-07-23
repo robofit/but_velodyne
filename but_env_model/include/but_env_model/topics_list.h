@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -31,8 +31,9 @@
 
 #include "services_list.h"
 
-namespace srs_env_model
+namespace but_env_model
 {
+
 /**
  * but_server
  */
@@ -125,11 +126,6 @@ static const std::string CPC_INPUT_TOPIC_NAME = "input"; // /but_env_model/octom
 static const std::string CPC_OUTPUT_TOPIC_NAME = "output"; //PACKAGE_NAME_PREFIX + std::string("/cpc_pointcloud_centers");
 static const std::string CPC_CAMERA_FRAME = std::string("/head_cam3d_link");
 static const std::string CPC_WORLD_FRAME = std::string("/map");
-
-/**
- * Context Server - topics
- */
-static const std::string ContextChanged_TOPIC = PACKAGE_NAME_PREFIX + std::string("/context/changed");
 
 }
 

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -26,12 +26,12 @@
  */
 
 #pragma once
-#ifndef SRS_ENV_MODEL_PARAMETERS_LIST_H
-#define SRS_ENV_MODEL_PARAMETERS_LIST_H
+#ifndef BUT_ENV_MODEL_PARAMETERS_LIST_H
+#define BUT_ENV_MODEL_PARAMETERS_LIST_H
 
 #include <string>
 
-namespace srs_env_model
+namespace but_env_model
 {
     /**
      * env. model - parameters
@@ -43,4 +43,4 @@ namespace srs_env_model
 
 }
 
-#endif // SRS_ENV_MODEL_PARAMETERS_LIST_H
+#endif // BUT_ENV_MODEL_PARAMETERS_LIST_H

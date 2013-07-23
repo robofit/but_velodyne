@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Jan Gorig (xgorig01@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -26,21 +26,21 @@
  */
 
 #pragma once
-#ifndef SRS_ENV_MODEL_SERVICES_LIST_H
-#define SRS_ENV_MODEL_SERVICES_LIST_H
+#ifndef BUT_ENV_MODEL_SERVICES_LIST_H
+#define BUT_ENV_MODEL_SERVICES_LIST_H
 
 #include <string>
 
-namespace srs_env_model
+namespace but_env_model
 {
     static const std::string PACKAGE_NAME_PREFIX  = "/but_env_model";
 
     /**
      * env. model - services
      */
-    static const std::string ServerReset_SRV = PACKAGE_NAME_PREFIX + std::string("/server_reset");
-    static const std::string ServerPause_SRV = PACKAGE_NAME_PREFIX + std::string("/server_pause");
-    static const std::string ServerUseInputColor_SRV = PACKAGE_NAME_PREFIX + std::string("/server_use_input_color");
+    static const std::string EnvModelReset_SRV = PACKAGE_NAME_PREFIX + std::string("/env_model_reset");
+    static const std::string EnvModelPause_SRV = PACKAGE_NAME_PREFIX + std::string("/env_model_pause");
+    static const std::string EnvModelUseInputColor_SRV = PACKAGE_NAME_PREFIX + std::string("/env_model_use_input_color");
 
     /**
      * objtree - services
@@ -88,15 +88,9 @@ namespace srs_env_model
     static const std::string SaveFullMap_SRV = PACKAGE_NAME_PREFIX + std::string("/save_octomap_full");
 
     /**
-     * Context server - services
-     */
-    static const std::string GetContext_SRV = PACKAGE_NAME_PREFIX + std::string("/context/get");
-    static const std::string SetContext_SRV = PACKAGE_NAME_PREFIX + std::string("/context/set");
-
-    /**
      * Compressed pointcloud plugin
      */
     static const std::string SetNumIncompleteFrames_SRV = PACKAGE_NAME_PREFIX + std::string("/set_num_incomplete_frames");
 }
 
-#endif //SRS_ENV_MODEL_SERVICES_LIST_H
+#endif // BUT_ENV_MODEL_SERVICES_LIST_H

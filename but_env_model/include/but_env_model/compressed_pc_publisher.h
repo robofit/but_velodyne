@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -31,7 +31,7 @@
 
 #include "ros/ros.h"
 #include <sensor_msgs/PointCloud2.h>
-#include <srs_env_model/OctomapUpdates.h>
+#include <but_env_model_msgs/OctomapUpdates.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <image_geometry/pinhole_camera_model.h>
@@ -40,7 +40,7 @@
 #include <message_filters/subscriber.h>
 
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 /**
@@ -134,7 +134,7 @@ public:
 };
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 // COMPRESSED_PC_PUBLISHER_H_INCLUDED
 #endif

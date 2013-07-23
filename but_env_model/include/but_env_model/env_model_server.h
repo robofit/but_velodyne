@@ -3,7 +3,7 @@
  *
  * $Id: but_server.h 2537 2013-02-21 15:57:57Z stancl $
  *
- * Modified by dcgm-robotics@FIT group
+ * Modified by Robo@FIT group
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -58,36 +58,30 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
 
-//#include <sensor_msgs/CameraInfo.h>
-//#include <std_srvs/Empty.h>
+#include <but_env_model/plugins/cmap_plugin.h>
+#include <but_env_model/plugins/point_cloud_plugin.h>
+#include <but_env_model/plugins/octomap_plugin.h>
+#include <but_env_model/plugins/collision_object_plugin.h>
+#include <but_env_model/plugins/imarkers_plugin.h>
+#include <but_env_model/plugins/marker_array_plugin.h>
+#include <but_env_model/plugins/limited_point_cloud_plugin.h>
+#include <but_env_model/plugins/compressed_point_cloud_plugin.h>
+#include <but_env_model/plugins/objtree_plugin.h>
+#include <but_env_model/plugins/collision_grid_plugin.h>
 
-//#include <pcl/point_types.h>
-//#include <pcl/io/pcd_io.h>
-
-#include <srs_env_model/but_server/plugins/cmap_plugin.h>
-#include <srs_env_model/but_server/plugins/point_cloud_plugin.h>
-#include <srs_env_model/but_server/plugins/octomap_plugin.h>
-#include <srs_env_model/but_server/plugins/collision_object_plugin.h>
-#include <srs_env_model/but_server/plugins/imarkers_plugin.h>
-#include <srs_env_model/but_server/plugins/marker_array_plugin.h>
-#include <srs_env_model/but_server/plugins/limited_point_cloud_plugin.h>
-#include <srs_env_model/but_server/plugins/compressed_point_cloud_plugin.h>
-#include <srs_env_model/but_server/plugins/objtree_plugin.h>
-#include <srs_env_model/but_server/plugins/collision_grid_plugin.h>
-
-#include <srs_env_model/ButServerPause.h>
-#include <srs_env_model/UseInputColor.h>
+#include <but_env_model/EnvModelPause.h>
+#include <but_env_model/UseInputColor.h>
 
 // Old interactive markers plugin used for testing
-#include <srs_env_model/but_server/plugins/old_imarkers_plugin.h>
+#include <but_env_model/plugins/old_imarkers_plugin.h>
 
 #define _EXAMPLES_
 #ifdef _EXAMPLES_
-#	include <srs_env_model/but_server/plugins/example_plugin.h>
+#	include <but_env_model/plugins/example_plugin.h>
 #endif
 
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 /**
@@ -226,6 +220,6 @@ protected:
 };
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 #endif // SERVER_H

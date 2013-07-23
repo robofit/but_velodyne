@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology (BUT)
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Jan Gorig (xgorig01@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -29,9 +29,9 @@
 #ifndef OBJTREE_PLANE_H
 #define OBJTREE_PLANE_H
 
-#include <srs_env_model/but_server/objtree/object.h>
-#include <srs_env_model/but_server/objtree/box.h>
-#include <srs_env_model/but_server/objtree/types.h>
+#include <but_env_model/objtree/object.h>
+#include <but_env_model/objtree/box.h>
+#include <but_env_model/objtree/types.h>
 
 namespace objtree
 {
