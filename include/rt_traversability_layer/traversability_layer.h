@@ -46,10 +46,22 @@ public:
   virtual void activate();
   virtual void deactivate();
 
+  bool isDiscretized()
+    {
+      return true;
+    }
+
 
 protected:
 
   std::string global_frame_; ///< @brief The global frame for the costmap
+
+  void incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map);
+  bool map_recieved_, map_initialized_;
+  ros::Subscriber map_sub_;
+
+  unsigned char lethal_threshold_, unknown_cost_value_;
+
 
 };
 }
