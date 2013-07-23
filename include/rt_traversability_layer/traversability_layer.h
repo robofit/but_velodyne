@@ -28,7 +28,7 @@
 
 namespace rt_traversability_layer
 {
-class TraversabilityLayer : public costmap_2d::Layer, public costmap_2d::Costmap2D
+class TraversabilityLayer : public Layer, public Costmap2D
 {
 public:
 
@@ -45,6 +45,11 @@ public:
 
   virtual void activate();
   virtual void deactivate();
+
+  bool isDiscretized()
+    {
+      return true;
+    }
 
 
 protected:
