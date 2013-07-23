@@ -42,6 +42,10 @@ class SampleHueDetectorRos
 			double prob_hit_;
 			double prob_miss_;
 
+			int frame_skip_;
+
+			int skiped_;
+
 	   };
 
 }

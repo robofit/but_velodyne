@@ -1,14 +1,18 @@
-proj_dist: 10.0
+proj_dist: 20.0
 
 morph_filter_ks_size: 3
 median_filter_ks_size: 3
 morph_filter_iter: 1
 
+grid_filter: false
+
 use_disparity: false
+use_scan: true
 
 map_frame: "odom"
-map_size: 20
-map_res: 0.05
+map_size: 50
+map_res: 0.25
+origin_update_th: 2.0
 
 
 detectors_ns: /detectors
@@ -20,6 +24,6 @@ detectors:
     # some more values...
     
   #- 
-  #name: sample_asphalt
+  #  name: sample_asphalt
 
 

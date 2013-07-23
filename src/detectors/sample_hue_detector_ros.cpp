@@ -16,16 +16,21 @@ SampleHueDetectorRos::SampleHueDetectorRos(ros::NodeHandle private_nh) {
 
 	it_.reset(new image_transport::ImageTransport(nh_));
 
-	int hue_min,hue_max,median_ks;
+	int hue_min,hue_max,sat_min,median_ks;
 
 	nh_.param("hue_min",hue_min,30);
 	nh_.param("hue_max",hue_max,70);
 	nh_.param("median_ks",median_ks,7);
+	nh_.param("sat_min",sat_min,20);
 
 	nh_.param("prob_hit",prob_hit_,0.5);
 	nh_.param("prob_miss",prob_miss_,0.5);
 
-	det_.reset(new SampleHueDetector(hue_min,hue_max,median_ks,prob_hit_,prob_miss_));
+	nh_.param("frame_skip",frame_skip_,2);
+
+	skiped_ = 0;
+
+	det_.reset(new SampleHueDetector(hue_min,hue_max,sat_min,median_ks,prob_hit_,prob_miss_));
 
 	std::string top_rgb_in = "rgb_in";
 	std::string top_det_out = "det_out";
@@ -51,6 +56,13 @@ SampleHueDetectorRos::~SampleHueDetectorRos() {
 }
 
 void SampleHueDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
+
+	if (skiped_ < frame_skip_) {
+
+		skiped_++;
+		return;
+
+	} else skiped_ = 0;
 
 	cv_bridge::CvImageConstPtr rgb;
 

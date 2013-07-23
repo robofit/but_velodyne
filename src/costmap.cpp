@@ -13,6 +13,8 @@ using namespace std;
 
 TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
+	initialized_ = false;
+
 	ros::param::param<float>("~map_res",map_res_,0.2);
 	ros::param::param<float>("~map_size",map_size_,10.0);
 	ros::param::param("~queue_length",queue_length_,10);
@@ -24,7 +26,15 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	ros::param::param("~grid_filter",occ_grid_filter_, true);
 
-	ros::param::param("~use_disparity",use_disparity_, true); // TODO don't subscribe to disparity when this set to false
+	ros::param::param("~use_disparity",use_disparity_, false); // TODO don't subscribe to disparity when this set to false
+	ros::param::param("~use_scan",use_scan_, true);
+
+	if (use_scan_ && use_disparity_) {
+
+		ROS_WARN("Can't use scan and disparity at the same time. Will use just scan.");
+		use_disparity_ = false;
+
+	}
 
 	ros::param::param<string>("~map_frame",map_frame_,"odom");
 
@@ -63,6 +73,7 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	image_transport::TransportHints hints("raw", ros::TransportHints(), nh_);
 
 	if (use_disparity_) disparity_sub_.subscribe(nh_,"/stereo/disparity",queue_length_);
+	if (use_scan_) scan_sub_.subscribe(nh_,"/velodyne/scan",queue_length_);
 
 	XmlRpc::XmlRpcValue pres;
 
@@ -109,9 +120,6 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	}
 
-	// TODO read list of detectors from YAML
-	/*subscribe("/detectors/sample_grass");
-	subscribe("/detectors/sample_asphalt");*/
 
 	sub_l_info_.subscribe(nh_,"/stereo/left/camera_info",queue_length_);
 	sub_r_info_.subscribe(nh_,"/stereo/right/camera_info",queue_length_);
@@ -124,8 +132,7 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	srv_get_map_ = nh_.advertiseService("get_map",&TraversabilityCostmap::getMap,this);
 	srv_reset_map_ = nh_.advertiseService("reset_map",&TraversabilityCostmap::resetMap,this);
 
-	initialized_ = false;
-
+	cache_buff_.reset(new tcache_buff(5));
 
 }
 
@@ -143,7 +150,7 @@ bool TraversabilityCostmap::updateMapOrigin() {
 
 	geometry_msgs::PoseStamped robot_pose;
 
-	robotPose(robot_pose);
+	if (!robotPose(robot_pose)) return false;
 
 	geometry_msgs::Point newp = robot_pose.pose.position;
 	worldToMap(newp);
@@ -151,7 +158,7 @@ bool TraversabilityCostmap::updateMapOrigin() {
 	int dx = (int)round(newp.x - oldp.x);
 	int dy = (int)round(newp.y - oldp.y);
 
-	robotPose(map_origin_);
+	if (!robotPose(map_origin_)) return false;
 
 	occ_grid_meta_.origin.position.x = map_origin_.pose.position.x - map_size_/2.0;
 	occ_grid_meta_.origin.position.y = map_origin_.pose.position.y - map_size_/2.0;
@@ -160,7 +167,7 @@ bool TraversabilityCostmap::updateMapOrigin() {
 	new_map *= 0.5;
 
 	// TODO is there more effective way how to do that????
-	for (int32_t u = 0; u < new_map.rows; u++) {
+	for (int32_t u = 0; u < new_map.rows; u++)
 	for (int32_t v = 0; v < new_map.cols; v++) {
 
 		if ((u-dx) >= 0 && (u-dx) < new_map.rows && (v-dy) >= 0 && (v-dy) < new_map.cols) {
@@ -169,8 +176,7 @@ bool TraversabilityCostmap::updateMapOrigin() {
 
 		}
 
-	}
-	}
+	} // for for
 
 
 	occ_grid_ = new_map;
@@ -193,7 +199,7 @@ bool TraversabilityCostmap::robotPose(geometry_msgs::PoseStamped& pose) {
 	p.pose.orientation.z = 0;
 	p.pose.orientation.w = 1;
 
-	if (tfl_.waitForTransform(map_frame_, p.header.frame_id, p.header.stamp, ros::Duration(3.0))) {
+	if (tfl_.waitForTransform(map_frame_, p.header.frame_id, p.header.stamp, ros::Duration(0.5))) {
 
 		bool tr = false;
 
@@ -265,6 +271,21 @@ void TraversabilityCostmap::subscribe(string topic) {
 		sub_list_.push_back(sub);
 		approximate_sync_list_.push_back(sync);
 
+	} else if (use_scan_) {
+
+		boost::shared_ptr<image_transport::SubscriberFilter> sub;
+		boost::shared_ptr<ApproximateSyncScan> sync;
+
+		sub.reset(new image_transport::SubscriberFilter);
+		sync.reset( new ApproximateSyncScan(ApproximatePolicyScan(queue_length_), *sub, scan_sub_) );
+
+		sub->subscribe(*it_,ros::names::remap(topic),queue_length_,hints);
+		sync->registerCallback(boost::bind(&TraversabilityCostmap::detectorCBscan, this, _1, _2, sub_list_.size()));
+
+		sub_list_.push_back(sub);
+		approximate_sync_scan_list_.push_back(sync);
+
+
 	} else {
 
 		boost::shared_ptr<image_transport::Subscriber> sub;
@@ -319,7 +340,7 @@ void TraversabilityCostmap::worldToMap(geometry_msgs::Point& p) {
 
 }
 
-void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp) {
+void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const sensor_msgs::LaserScanConstPtr& scan) {
 
 	if (!initialized_) return;
 
@@ -340,136 +361,321 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 	const cv::Mat_<float> imat(img->height, img->width, (float*)&img->data[0], img->step);
 
-	cv::Mat_<cv::Vec3f> points;
+	int cache_idx = -1;
 
-	// it's so easy to get 3D points ;)
-	if (use_disparity_){
+	for (int i = 0; i < (int)cache_buff_->size(); i++) {
 
-		const sensor_msgs::Image& dimage = disp->image;
-		const cv::Mat_<float> dmat(dimage.height, dimage.width, (float*)&dimage.data[0], dimage.step);
+		if ((*cache_buff_)[i]->stamp == img->header.stamp) {
 
-		model_.projectDisparityImageTo3d(dmat, points, true);
+			cache_idx = i;
+			break;
 
-		ROS_ASSERT(points.rows == imat.rows);
-		ROS_ASSERT(points.cols == imat.cols);
+		}
 
 	}
 
-	tf::StampedTransform tBaseToCam;
+	// cache stuff which can be used more than once
+	if (cache_idx == -1) {
 
-	try {
+		tcache_ptr cache;
 
-	      tfl_.lookupTransform(map_frame_, img->header.frame_id, img->header.stamp, tBaseToCam);
+		cache.reset(new tcache);
 
-	    } catch(tf::TransformException& ex) {
-	      ROS_WARN("TF exception:\n%s", ex.what());
-	      return;
-	    }
+		/*cout << "cache used: " << cache_->used << endl;
+		cache_->used = 0;*/
+		cache->stamp = img->header.stamp;
 
-	 tf::Vector3 cameraOrigin = tBaseToCam.getOrigin();
-	 //cameraOrigin.setY(cameraOrigin.getY()); // Was adding + 0.14 to it because it was using the wide_stereo
+		// get transform between map_frame and camera frame
+		try {
 
-	 float cameraHeight = cameraOrigin.getZ();
+		  tfl_.lookupTransform(map_frame_, img->header.frame_id, img->header.stamp, cache->tCamToBase);
 
-	 //printf("Camera origin = %.2f %.2f %.2f\n", cameraOrigin.getX(), cameraOrigin.getY(), cameraOrigin.getZ());
-	 //printf("Camera height = %.2fm\n", cameraHeight);
+		} catch(tf::TransformException& ex) {
+		  ROS_WARN("TF exception:\n%s", ex.what());
+		  return;
+		}
 
-	 for (int32_t u = 0; u < imat.rows; u++) {
-	 	for (int32_t v = 0; v < imat.cols; v++) {
+		try {
+
+		  tfl_.lookupTransform(img->header.frame_id, map_frame_,img->header.stamp, cache->tBaseToCam);
+
+		} catch(tf::TransformException& ex) {
+		  ROS_WARN("TF exception:\n%s", ex.what());
+		  return;
+		}
+
+		// it's so easy to get 3D points ;)
+		if (use_disparity_){
+
+			const sensor_msgs::Image& dimage = disp->image;
+			const cv::Mat_<float> dmat(dimage.height, dimage.width, (float*)&dimage.data[0], dimage.step);
+
+			cv::Mat_<cv::Vec3f> points;
+
+			model_.projectDisparityImageTo3d(dmat, points, true);
+
+			ROS_ASSERT(points.rows == imat.rows);
+			ROS_ASSERT(points.cols == imat.cols);
+
+			cache->disp_skip.clear();
+			cache->disp_skip.resize(imat.rows, std::vector<bool>(imat.cols,false));
+
+			for (int32_t u = 0; u < imat.rows; u++)
+			for (int32_t v = 0; v < imat.cols; v++) {
+
+			  if (isValidPoint(points(u,v))) {
+
+				  geometry_msgs::PointStamped pt;
+				  pt.header.frame_id = img->header.frame_id;
+				  pt.header.stamp = img->header.stamp;
+				  pt.point.x = points(u,v).val[0];
+				  pt.point.y = points(u,v).val[1];
+				  pt.point.z = points(u,v).val[2];
+
+				  try {
+
+					  tfl_.transformPoint(map_frame_,pt,pt);
+
+				  } catch (tf::TransformException& ex) {
+
+					  ROS_ERROR("%s",ex.what());
+					  return;
+
+				  }
+
+				  if (pt.point.z > 0.5) cache->disp_skip[u][v] = true;
 
 
-	 	  // for points where we have depth information
-	 	  // skip points which are too high
-		  if (use_disparity_ && isValidPoint(points(u,v))) {
+			  } // if
 
-			  geometry_msgs::PointStamped pt;
-			  pt.header.frame_id = img->header.frame_id;
-			  pt.header.stamp = img->header.stamp;
-			  pt.point.x = points(u,v).val[0];
-			  pt.point.y = points(u,v).val[1];
-			  pt.point.z = points(u,v).val[2];
 
-			  // transform valid points from sensor frame to odom frame
-			  try {
+			} // for for
 
-				  tfl_.transformPoint(map_frame_,pt,pt);
 
-			  } catch (tf::TransformException& ex) {
 
-				  ROS_ERROR("%s",ex.what());
-				  continue;
+		} // if disp
 
-			  }
 
-			  // skip points which are too high
-			  if (pt.point.z > 0.5) continue;
+		tf::Vector3 cameraOrigin = cache->tCamToBase.getOrigin();
+		float cameraHeight = cameraOrigin.getZ();
 
-		  }
+		vector<double> scan_dist;
 
-		  // following code taken from https://mediabox.grasp.upenn.edu/svn/penn-ros-pkgs/pr2_poop_scoop/trunk/perceive_poo/src/perceive_poo.cpp
-		  // something similar: http://gt-ros-pkg.googlecode.com/svn/trunk/hrl/hrl_behaviors/hrl_move_floor_detect/src/move_floor_detect.cpp
-		  // and http://ua-ros-pkg.googlecode.com/svn-history/r766/trunk/arrg/ua_vision/object_tracking/src/object_tracker.cpp
 
-		  cv::Point3d ray = model_.left().projectPixelTo3dRay(cv::Point(v,u)); // TODO check if it really should be like this (v,u)
+		if (use_scan_) {
 
-	 		normalize(ray);
+			scan_dist.resize(imat.cols,max_proj_dist_);
 
-	 	 	tf::Vector3 cameraRay, baseRay;
+			sensor_msgs::PointCloud cloud;
+
+			try {
+
+				projector_.transformLaserScanToPointCloud(map_frame_,*scan,cloud,tfl_);
+
+
+			} catch(tf::TransformException& ex) {
+			  ROS_WARN("TF exception:\n%s", ex.what());
+			  return;
+			}
+
+			//int pt_cnt = 0;
+
+			for (int i=0; i < (int)cloud.points.size(); i++) {
+
+				tf::Vector3 map_pt, cam_pt;
+
+				map_pt.setX(cloud.points[i].x);
+				map_pt.setY(cloud.points[i].y);
+				map_pt.setZ(cloud.points[i].z - 0.8); // TODO read velodyne position using TF
+
+				//cout << "odo " << map_pt.getX() << " " << map_pt.getY() << " " << map_pt.getZ() << endl;
+
+				cam_pt = cache->tBaseToCam(map_pt);
+
+				//cout << "cam " << cam_pt.getX() << " " << cam_pt.getY() << " " << cam_pt.getZ() << endl;
+
+				// skip points behind camera
+				if (cam_pt.getZ() < 0.0) continue;
+
+				cv::Point3d pt;
+
+				pt.x = cam_pt.getX();
+				pt.y = cam_pt.getY();
+				pt.z = cam_pt.getZ();
+
+				cv::Point2d uv;
+
+				uv = model_.left().project3dToPixel(pt);
+
+				//cout << "img " << uv.x << " " << uv.y << endl;
+
+				if ( (uv.x >= 0.0) && (uv.y >= 0.0) && ((int)round(uv.x) < imat.cols) && ((int)round(uv.y) < imat.rows) ) {
+
+					//pt_cnt++;
+
+					// make point relative to a camera
+					map_pt -= cameraOrigin;
+
+					float dx = map_pt.getX() - cameraOrigin.getX();
+					float dy = map_pt.getY() - cameraOrigin.getY();
+					double dist = sqrt(dx*dx + dy*dy);
+
+					//cout << map_pt.getX() << " " <<  map_pt.getY() << " " <<  map_pt.getZ() << " col " << uv.x << " d: " << dist << endl;
+
+					int idx = (int)round(uv.x);
+
+					if (scan_dist[idx] > dist) scan_dist[idx] = dist;
+
+					// update also some points in neighborhood
+					if (idx-5 >= 0 && scan_dist[idx-5] > dist) scan_dist[idx-5] = dist;
+					if (idx-4 >= 0 && scan_dist[idx-4] > dist) scan_dist[idx-4] = dist;
+					if (idx-3 >= 0 && scan_dist[idx-3] > dist) scan_dist[idx-3] = dist;
+					if (idx-2 >= 0 && scan_dist[idx-2] > dist) scan_dist[idx-2] = dist;
+					if (idx-1 >= 0 && scan_dist[idx-1] > dist) scan_dist[idx-1] = dist;
+					if (idx+1 < (int)scan_dist.size() && scan_dist[idx+1] > dist) scan_dist[idx+1] = dist;
+					if (idx+2 < (int)scan_dist.size() && scan_dist[idx+2] > dist) scan_dist[idx+2] = dist;
+					if (idx+3 < (int)scan_dist.size() && scan_dist[idx+3] > dist) scan_dist[idx+3] = dist;
+					if (idx+4 < (int)scan_dist.size() && scan_dist[idx+4] > dist) scan_dist[idx+4] = dist;
+					if (idx+5 < (int)scan_dist.size() && scan_dist[idx+5] > dist) scan_dist[idx+5] = dist;
+
+
+				}
+
+		} // for cloud
+
+		//cout << "points in fov: " << pt_cnt << endl;
+
+		/*int unused_dists = 0;
+
+		for (int i=0; i < (int)scan_dist.size(); i++) {
+
+			if (scan_dist[i] == max_proj_dist_) unused_dists++;
+
+		}
+
+		cout << "unused cols: " << unused_dists << endl;*/
+
+		} // if use scan
+
+		cache->pts.clear();
+		cache->pts.resize(imat.rows, std::vector<geometry_msgs::Point>(imat.cols));
+
+		//int lim_pts = 0;
+
+		// cache rays
+		for (int32_t u = 0; u < imat.rows; u++)
+		for (int32_t v = 0; v < imat.cols; v++) {
+
+			  // following code taken from https://mediabox.grasp.upenn.edu/svn/penn-ros-pkgs/pr2_poop_scoop/trunk/perceive_poo/src/perceive_poo.cpp
+			  // something similar: http://gt-ros-pkg.googlecode.com/svn/trunk/hrl/hrl_behaviors/hrl_move_floor_detect/src/move_floor_detect.cpp
+			  // and http://ua-ros-pkg.googlecode.com/svn-history/r766/trunk/arrg/ua_vision/object_tracking/src/object_tracker.cpp
+
+			 // TODO check if it really should be like this (v,u)
+			cv::Point3d ray = model_.left().projectPixelTo3dRay(cv::Point(v,u));
+
+			normalize(ray);
+
+			tf::Vector3 cameraRay, baseRay;
 
 			cameraRay.setX(ray.x);
 			cameraRay.setY(ray.y);
 			cameraRay.setZ(ray.z);
 
-	        baseRay = tBaseToCam(cameraRay);
+			baseRay = cache->tCamToBase(cameraRay);
 
-	        // We want the ray relative to the camera origin in the
-	        // base coordinate frame
-	        baseRay -= cameraOrigin;
 
-	        // We are interested in the point where the ray hits the ground
-	        if(baseRay.getZ() < 0)
-	        {
-	          float s = cameraHeight / -baseRay.getZ();
-	          geometry_msgs::Point pt;
-	          pt.x = cameraOrigin.getX() + baseRay.getX() * s;
-	          pt.y = cameraOrigin.getY() + baseRay.getY() * s;
-	          float dx = pt.x - cameraOrigin.getX();
-	          float dy = pt.y - cameraOrigin.getY();
-	          double dist = sqrt(dx*dx + dy*dy);
+			// We want the ray relative to the camera origin in the
+			// base coordinate frame
+			baseRay -= cameraOrigin;
 
-	          //printf("x: %f, y: %f, dist = %f\n", poo.x, poo.y, dist);
+			// We are interested in the point where the ray hits the ground
+			if(baseRay.getZ() < 0)
+			{
+			  float s = cameraHeight / -baseRay.getZ();
+			  geometry_msgs::Point pt;
+			  pt.x = cameraOrigin.getX() + baseRay.getX() * s;
+			  pt.y = cameraOrigin.getY() + baseRay.getY() * s;
+			  float dx = pt.x - cameraOrigin.getX();
+			  float dy = pt.y - cameraOrigin.getY();
+			  double dist = sqrt(dx*dx + dy*dy);
 
-	          if (dist < max_proj_dist_) {
+			  if (dist < max_proj_dist_) {
 
-	        	  worldToMap(pt);
+				  if (use_scan_ && (dist > scan_dist[v]) ) {
 
-	        	  uint32_t x  = (uint32_t)pt.x;
-	        	  uint32_t y  = (uint32_t)pt.y;
+					  //lim_pts++;
 
-	        	  // check if indexes are ok, if not skip the point
-				  if (x > occ_grid_meta_.width || y > occ_grid_meta_.width)  {
+					  //cout << "ll " << dist << " " << scan_dist[v] << endl;
+					  cache->pts[u][v].x = -1.0;
 
-					  ROS_WARN_THROTTLE(1.0, "idx out of occ map!!!");
-					  continue;
+				  } else {
+
+					  worldToMap(pt);
+
+					  cache->pts[u][v] = pt;
 
 				  }
 
-				  float val = imat(u,v);
+			  } else {
 
-				  // limit probability values
-				  if (val > prob_max_) val = prob_max_;
-				  if (val < prob_min_) val = prob_min_;
+				  cache->pts[u][v].x = -1.0;
 
-				  // update of occupancy grid
-				  // TODO should we limit also value of occ_grid_(x,y)????
-				  occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
+			  }
 
-	          }
+			} // if baseRay
 
-	       }
 
-	 	} // for
-	 } // for
+		} // for for
+
+		//cout << "lim pts " << lim_pts << endl;
+
+		cache_buff_->push_back(cache);
+		cache_idx = cache_buff_->size() - 1;
+
+	} else {
+
+		(*cache_buff_)[cache_idx]->used++;
+
+	}
+
+
+	 for (int32_t u = 0; u < imat.rows; u++)
+	 for (int32_t v = 0; v < imat.cols; v++) {
+
+
+		  // skip certain points where we have depth information
+		  if (use_disparity_ && (*cache_buff_)[cache_idx]->disp_skip[u][v]) continue;
+
+
+		  if ((*cache_buff_)[cache_idx]->pts[u][v].x != -1.0) {
+
+			  uint32_t x  = (uint32_t)(*cache_buff_)[cache_idx]->pts[u][v].x;
+			  uint32_t y  = (uint32_t)(*cache_buff_)[cache_idx]->pts[u][v].y;
+
+			  // TODO move this to caching part
+			  // check if indexes are ok, if not skip the point
+			  if (x > occ_grid_meta_.width || y > occ_grid_meta_.width)  {
+
+				  ROS_WARN_THROTTLE(1.0, "idx out of occ map!!!");
+				  continue;
+
+			  }
+
+			  float val = imat(u,v);
+
+			  // limit probability values
+			  if (val > prob_max_) val = prob_max_;
+			  if (val < prob_min_) val = prob_min_;
+
+			  // update of occupancy grid
+			  // TODO should we limit also value of occ_grid_(x,y)????
+			  if (val != 0.5) occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
+
+
+		  } // if cache pts
+
+
+	 } // for for
 
 }
 
@@ -557,7 +763,6 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 		} else {
 
-			ROS_INFO("Waiting for TF...");
 			return;
 
 		}
@@ -566,7 +771,7 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 
 	geometry_msgs::PoseStamped p;
-	robotPose(p);
+	if (!robotPose(p)) return;
 
 	double dist = sqrt(pow(p.pose.position.x - map_origin_.pose.position.x,2) + pow(p.pose.position.y - map_origin_.pose.position.y,2));
 
@@ -602,8 +807,9 @@ void TraversabilityCostmap::detectorCB(const sensor_msgs::ImageConstPtr& img, co
 
 		}
 
+	const sensor_msgs::LaserScanConstPtr scan;
 
-	updateIntOccupancyGrid(img,disp);
+	updateIntOccupancyGrid(img,disp,scan);
 
 }
 
@@ -621,8 +827,28 @@ void TraversabilityCostmap::detectorCBalt(const sensor_msgs::ImageConstPtr& img,
 		}
 
 	const stereo_msgs::DisparityImageConstPtr ptr;
+	const sensor_msgs::LaserScanConstPtr scan;
 
-	updateIntOccupancyGrid(img,ptr);
+	updateIntOccupancyGrid(img,ptr,scan);
+
+}
+
+void TraversabilityCostmap::detectorCBscan(const sensor_msgs::ImageConstPtr& img, const sensor_msgs::LaserScanConstPtr& scan, const int& idx) {
+
+	ROS_INFO_ONCE("detector callback (with scan)");
+
+	if (!cam_info_received_) return;
+
+	if (img->encoding != sensor_msgs::image_encodings::TYPE_32FC1) {
+
+			ROS_ERROR_THROTTLE(1.0, "Wrong detector image (%d) encoding! Float (TYPE_32FC1) in range <0,1> required!", idx);
+			return;
+
+		}
+
+	const stereo_msgs::DisparityImageConstPtr ptr;
+
+	updateIntOccupancyGrid(img,ptr,scan);
 
 }
 
