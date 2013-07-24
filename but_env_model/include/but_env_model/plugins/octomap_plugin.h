@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,23 +28,23 @@
 #ifndef OCTOMAPPLUGIN_H_INCLUDED
 #define OCTOMAPPLUGIN_H_INCLUDED
 
-#include <srs_env_model/but_server/server_tools.h>
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/testing_oriented_box.h>
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/testing_sphere.h>
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/testing_polymesh.h>
+#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/but_server/plugins/octomap_plugin_tools/testing_oriented_box.h>
+#include <but_env_model/but_server/plugins/octomap_plugin_tools/testing_sphere.h>
+#include <but_env_model/but_server/plugins/octomap_plugin_tools/testing_polymesh.h>
 
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
 
-#include <srs_env_model/RemoveCube.h>
-#include <srs_env_model/AddCube.h>
-#include <srs_env_model/SetCrawlingDepth.h>
-#include <srs_env_model/GetTreeDepth.h>
+#include <but_env_model/RemoveCube.h>
+#include <but_env_model/AddCube.h>
+#include <but_env_model/SetCrawlingDepth.h>
+#include <but_env_model/GetTreeDepth.h>
 
-#include <srs_env_model/LoadSave.h>
+#include <but_env_model/LoadSave.h>
 
 // Registration
-#include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
+#include <but_env_model/but_server/registration/CPCtoOCRegistration.h>
 
 #include "octomap_plugin_tools/octomap_filter_single_specles.h"
 #include "octomap_plugin_tools/octomap_filter_raycast.h"
@@ -55,7 +55,7 @@
 
 #include <image_geometry/pinhole_camera_model.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 /**
  * Pointcloud plugin predeclaration
@@ -139,31 +139,31 @@ protected:
 	long int doObjectTesting( CTestingObjectBase * object );
 
 	/// Remove cube as a service - callback
-	bool removeCubeCB( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
+	bool removeCubeCB( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
 
 	/// Remove cube as a service - callback
-	bool addCubeCB( srs_env_model::AddCube::Request & req, srs_env_model::AddCube::Response & res );
+	bool addCubeCB( but_env_model::AddCube::Request & req, but_env_model::AddCube::Response & res );
 
 	/// For debugging purpouses - add cubical interactive marker to the scene
 	void addCubeGizmo( const geometry_msgs::Pose & pose, const geometry_msgs::Point & size );
 
 	/// Set crawling depth - service callback
-	bool setCrawlingDepthCB( srs_env_model::SetCrawlingDepth::Request & req, srs_env_model::SetCrawlingDepth::Response & res );
+	bool setCrawlingDepthCB( but_env_model::SetCrawlingDepth::Request & req, but_env_model::SetCrawlingDepth::Response & res );
 
 	/// Get octomap tree depth - service callback
-	bool getTreeDepthCB( srs_env_model::GetTreeDepth::Request & req, srs_env_model::GetTreeDepth::Response & res );
+	bool getTreeDepthCB( but_env_model::GetTreeDepth::Request & req, but_env_model::GetTreeDepth::Response & res );
 
 	/// Load map service callback
-	bool loadOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+	bool loadOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
 
 	/// Save map service callback
-	bool saveOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+	bool saveOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
 
 	/// Load map service callback - full octree
-	bool loadFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+	bool loadFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
 
 	/// Save map service callback - full octree
-	bool saveFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res );
+	bool saveFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
 
 
 protected:
@@ -283,7 +283,7 @@ protected:
 
 
 
- // namespace srs_env_model
+ // namespace but_env_model
 
 // OCTOMAPPLUGIN_H_INCLUDED
 #endif

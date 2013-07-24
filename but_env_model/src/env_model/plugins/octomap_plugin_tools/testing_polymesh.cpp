@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/testing_polymesh.h>
+#include <but_env_model/plugins/octomap_plugin_tools/testing_polymesh.h>
 #include <Eigen/Geometry>
 #include <iostream>
 
 /**
  * Simple constructor
  */
-srs_env_model::CTestingPolymesh::CTestingPolymesh()
+but_env_model::CTestingPolymesh::CTestingPolymesh()
 {
 
 }
@@ -40,7 +40,7 @@ srs_env_model::CTestingPolymesh::CTestingPolymesh()
 /**
  * Initialize as oriented box - constructor
  */
-srs_env_model::CTestingPolymesh::CTestingPolymesh(const tPoint &center, const tQuaternion &orientation, const tPoint & size)
+but_env_model::CTestingPolymesh::CTestingPolymesh(const tPoint &center, const tQuaternion &orientation, const tPoint & size)
 {
 	setAsBox( center, orientation, size );
 }
@@ -48,7 +48,7 @@ srs_env_model::CTestingPolymesh::CTestingPolymesh(const tPoint &center, const tQ
 /**
  * Initialize tester as a oriented box
  */
-void srs_env_model::CTestingPolymesh::setAsBox(const tPoint &center, const tQuaternion &orientation, const tPoint & size)
+void but_env_model::CTestingPolymesh::setAsBox(const tPoint &center, const tQuaternion &orientation, const tPoint & size)
 {
 	// Corners
 	tPoint points[8];

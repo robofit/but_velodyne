@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,13 +28,13 @@
 #ifndef MarkerArrayPlugin_H_included
 #define MarkerArrayPlugin_H_included
 
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/but_server/server_tools.h>
 
 #include <visualization_msgs/MarkerArray.h>
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
     class CMarkerArrayPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< visualization_msgs::MarkerArray >
@@ -123,11 +123,11 @@ namespace srs_env_model
 
     }; // class CMarkerArrayPlugin
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 
-// namespace srs_env_model
+// namespace but_env_model
 
 
 // MarkerArrayPlugin_H_included

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,7 +28,7 @@
 #ifndef PointCloudPlugin_H_included
 #define PointCloudPlugin_H_included
 
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/but_server/server_tools.h>
 
 #include <message_filters/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -42,7 +42,7 @@
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
 
 
-namespace srs_env_model
+namespace but_env_model
 {
 
     class CPointCloudPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< tPointCloud >
@@ -196,7 +196,7 @@ namespace srs_env_model
     }; // class CPointCloudPlugin
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 // PointCloudPubPlugin_H_included

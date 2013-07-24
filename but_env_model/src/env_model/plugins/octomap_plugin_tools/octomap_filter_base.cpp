@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,9 +25,9 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/octomap_filter_base.h>
+#include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_base.h>
 
-srs_env_model::COcTreeFilterBase::COcTreeFilterBase( const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/ )
+but_env_model::COcTreeFilterBase::COcTreeFilterBase( const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/ )
 : m_mode(mode)
 , m_framesSkipped(0)
 , m_framesCount(0)
@@ -40,7 +40,7 @@ srs_env_model::COcTreeFilterBase::COcTreeFilterBase( const std::string & octree_
 /**
  * Set number of frames skipped between runs
  */
-void srs_env_model::COcTreeFilterBase::setFrameSkip( unsigned skip )
+void but_env_model::COcTreeFilterBase::setFrameSkip( unsigned skip )
 {
 	m_framesSkipped = skip;
 }
@@ -49,7 +49,7 @@ void srs_env_model::COcTreeFilterBase::setFrameSkip( unsigned skip )
  * Set timer lap
  * \return true if lap can be measured and is set
  */
-bool srs_env_model::COcTreeFilterBase::setTimerLap( double lap )
+bool but_env_model::COcTreeFilterBase::setTimerLap( double lap )
 {
 	if( lap > m_timer.elapsed_min() && lap < m_timer.elapsed_max() )
 	{
@@ -64,7 +64,7 @@ bool srs_env_model::COcTreeFilterBase::setTimerLap( double lap )
 /**
  * Filter tree
  */
-void srs_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree, bool bPruneAfterFinish /*= true*/ )
+void but_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree, bool bPruneAfterFinish /*= true*/ )
 {
 	++m_framesCount;
 
@@ -79,7 +79,7 @@ void srs_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree, bool bPr
 /**
  * Test if this frame should be used
  */
-bool srs_env_model::COcTreeFilterBase::useFrame()
+bool but_env_model::COcTreeFilterBase::useFrame()
 {
 	switch( m_mode )
 	{

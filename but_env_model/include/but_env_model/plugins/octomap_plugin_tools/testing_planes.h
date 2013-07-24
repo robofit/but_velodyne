@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -34,7 +34,7 @@
 #include <Eigen/Dense>
 
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 /**
@@ -136,7 +136,7 @@ protected:
 
 
 
- // namespace srs_env_model
+ // namespace but_env_model
 
 // TestingPlanes_H_included
 #endif

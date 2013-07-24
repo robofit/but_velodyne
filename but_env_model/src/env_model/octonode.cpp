@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/octonode.h>
+#include <but_env_model/octonode.h>
 
 using namespace octomap;
 
 /**
  * Constructor
  */
-srs_env_model::EModelTreeNode::EModelTreeNode() :
+but_env_model::EModelTreeNode::EModelTreeNode() :
 	octomap::OcTreeNodeStamped(), m_r(0), m_g(0), m_b(0), m_a(0) {
 
 }
@@ -40,14 +40,14 @@ srs_env_model::EModelTreeNode::EModelTreeNode() :
 /**
  * Destructor
  */
-srs_env_model::EModelTreeNode::~EModelTreeNode() {
+but_env_model::EModelTreeNode::~EModelTreeNode() {
 
 }
 
 /**
  * Create child
  */
-bool srs_env_model::EModelTreeNode::createChild(unsigned int i) {
+bool but_env_model::EModelTreeNode::createChild(unsigned int i) {
 	if (itsChildren == NULL) {
 		allocChildren();
 	}
@@ -55,11 +55,11 @@ bool srs_env_model::EModelTreeNode::createChild(unsigned int i) {
 	return true;
 }
 
-void srs_env_model::EModelTreeNode::updateColorChildren() {
+void but_env_model::EModelTreeNode::updateColorChildren() {
 	setAverageChildColor();
 }
 
-bool srs_env_model::EModelTreeNode::pruneNode() {
+bool but_env_model::EModelTreeNode::pruneNode() {
 	// checks for equal occupancy only, color ignored
 	if (!this->collapsible())
 		return false;
@@ -78,7 +78,7 @@ bool srs_env_model::EModelTreeNode::pruneNode() {
 	return true;
 }
 
-void srs_env_model::EModelTreeNode::expandNode() {
+void but_env_model::EModelTreeNode::expandNode() {
 	assert(!hasChildren());
 
 	// expand node, set children color same as node color
@@ -89,7 +89,7 @@ void srs_env_model::EModelTreeNode::expandNode() {
 	}
 }
 
-void srs_env_model::EModelTreeNode::setAverageChildColor() {
+void but_env_model::EModelTreeNode::setAverageChildColor() {
 	int mr(0), mg(0), mb(0), ma(0);
 	int c(0);
 	for (int i = 0; i < 8; i++) {
@@ -126,7 +126,7 @@ void srs_env_model::EModelTreeNode::setAverageChildColor() {
  * @param s
  * @return
  */
-std::istream& srs_env_model::EModelTreeNode::readValue(std::istream &s)
+std::istream& but_env_model::EModelTreeNode::readValue(std::istream &s)
 {
 	// Read common data
 	octomap::OcTreeNodeStamped::readValue( s );
@@ -165,7 +165,7 @@ std::istream& srs_env_model::EModelTreeNode::readValue(std::istream &s)
  * @param s
  * @return
  */
-std::ostream& srs_env_model::EModelTreeNode::writeValue(std::ostream &s) const
+std::ostream& but_env_model::EModelTreeNode::writeValue(std::ostream &s) const
 {
 	// 1 bit for each children; 0: empty, 1: allocated
 	std::bitset<8> children;
@@ -209,8 +209,8 @@ std::ostream& srs_env_model::EModelTreeNode::writeValue(std::ostream &s) const
  * Creates a new (empty) OcTree of a given resolution
  * @param _resolution
  */
-srs_env_model::EMOcTree::EMOcTree(double _resolution) :
-	octomap::OccupancyOcTreeBase<srs_env_model::EModelTreeNode> (_resolution) {
+but_env_model::EMOcTree::EMOcTree(double _resolution) :
+	octomap::OccupancyOcTreeBase<but_env_model::EModelTreeNode> (_resolution) {
 	itsRoot = new EModelTreeNode();
 	tree_size++;
 }
@@ -220,15 +220,15 @@ srs_env_model::EMOcTree::EMOcTree(double _resolution) :
  * @param _filename
  *
  */
-srs_env_model::EMOcTree::EMOcTree(std::string _filename) :
-	OccupancyOcTreeBase<srs_env_model::EModelTreeNode> (0.1) { // resolution will be set according to tree file
+but_env_model::EMOcTree::EMOcTree(std::string _filename) :
+	OccupancyOcTreeBase<but_env_model::EModelTreeNode> (0.1) { // resolution will be set according to tree file
 	itsRoot = new EModelTreeNode();
 	tree_size++;
 
 	readBinary(_filename);
 }
 
-srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::setNodeColor(const octomap::OcTreeKey& key,
+but_env_model::EModelTreeNode* but_env_model::EMOcTree::setNodeColor(const octomap::OcTreeKey& key,
 		const unsigned char& r, const unsigned char& g, const unsigned char& b,
 		const unsigned char& a) {
 	EModelTreeNode* n = search(key);
@@ -238,7 +238,7 @@ srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::setNodeColor(const octom
 	return n;
 }
 
-srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::averageNodeColor(
+but_env_model::EModelTreeNode* but_env_model::EMOcTree::averageNodeColor(
 		const octomap::OcTreeKey& key, const unsigned char& r, const unsigned char& g,
 		const unsigned char& b, const unsigned char& a) {
 	EModelTreeNode* n = search(key);
@@ -261,7 +261,7 @@ srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::averageNodeColor(
 	return n;
 }
 
-srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::integrateNodeColor(
+but_env_model::EModelTreeNode* but_env_model::EMOcTree::integrateNodeColor(
 		const octomap::OcTreeKey& key, const unsigned char& r, const unsigned char& g,
 		const unsigned char& b, const unsigned char& a) {
 	EModelTreeNode* n = search(key);
@@ -291,11 +291,11 @@ srs_env_model::EModelTreeNode* srs_env_model::EMOcTree::integrateNodeColor(
 	return n;
 }
 
-void srs_env_model::EMOcTree::updateInnerOccupancy() {
+void but_env_model::EMOcTree::updateInnerOccupancy() {
 	this->updateInnerOccupancyRecurs(this->itsRoot, 0);
 }
 
-void srs_env_model::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
+void but_env_model::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
 		unsigned int depth) {
 	// only recurse and update for inner nodes:
 	if (node->hasChildren()) {
@@ -312,13 +312,13 @@ void srs_env_model::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
 	}
 }
 
-unsigned int srs_env_model::EMOcTree::getLastUpdateTime() {
+unsigned int but_env_model::EMOcTree::getLastUpdateTime() {
 	// this value is updated whenever inner nodes are
 	// updated using updateOccupancyChildren()
 	return itsRoot->getTimestamp();
 }
 
-void srs_env_model::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
+void but_env_model::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
 	unsigned int query_time = (unsigned int) time(NULL);
 
 	for (leaf_iterator it = this->begin_leafs(), end = this->end_leafs(); it
@@ -330,17 +330,17 @@ void srs_env_model::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
 	}
 }
 
-void srs_env_model::EMOcTree::updateNodeLogOdds(EModelTreeNode* node,
+void but_env_model::EMOcTree::updateNodeLogOdds(EModelTreeNode* node,
 		const float& update) const {
 	OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, update);
 	node->updateTimestamp();
 }
 
-void srs_env_model::EMOcTree::integrateMissNoTime(EModelTreeNode* node) const {
+void but_env_model::EMOcTree::integrateMissNoTime(EModelTreeNode* node) const {
 	OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, probMissLog);
 }
 
-void srs_env_model::EMOcTree::insertColoredScan(const typePointCloud& coloredScan,
+void but_env_model::EMOcTree::insertColoredScan(const typePointCloud& coloredScan,
 		const octomap::point3d& sensor_origin, double maxrange, bool pruning,
 		bool lazy_eval) {
 
@@ -375,5 +375,5 @@ void srs_env_model::EMOcTree::insertColoredScan(const typePointCloud& coloredSca
 }
 
 /// to ensure static initialization (only once)
-srs_env_model::EMOcTree::StaticMemberInitializer srs_env_model::EMOcTree::ocEMOcTreeMemberInit;
+but_env_model::EMOcTree::StaticMemberInitializer but_env_model::EMOcTree::ocEMOcTreeMemberInit;
 

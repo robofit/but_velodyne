@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology (BUT)
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Jan Gorig (xgorig01@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,8 +25,8 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/objtree/gbbox.h>
-#include <srs_env_model/but_server/objtree/types.h>
+#include <but_env_model/objtree/gbbox.h>
+#include <but_env_model/objtree/types.h>
 
 namespace objtree
 {

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -31,7 +31,7 @@
 
 #include "octomap_filter_base.h"
 
-namespace srs_env_model
+namespace but_env_model
 {
 /**
  * Filter single specles from the octree
@@ -83,7 +83,7 @@ protected:
 	double m_groundFilterPlaneDistance;
 };
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 #endif /* OCTOMAP_FILTER_GROUND_H_ */

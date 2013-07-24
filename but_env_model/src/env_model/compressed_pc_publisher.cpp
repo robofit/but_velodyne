@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,8 +25,8 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/compressed_pc_publisher.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/compressed_pc_publisher.h>
+#include <but_env_model/topics_list.h>
 #include <pcl/ros/conversions.h>
 #include <pcl_ros/transforms.h>
 #include <pcl/io/io.h>
@@ -35,7 +35,7 @@
 /**
  * Constructor
  */
-srs_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & nh)
+but_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & nh)
 : m_camera_stereo_offset_left(0)
 , m_camera_stereo_offset_right(0)
 , m_publishFID(CPC_WORLD_FRAME)
@@ -79,7 +79,7 @@ srs_env_model::CCompressedPCPublisher::CCompressedPCPublisher(ros::NodeHandle & 
 /**
  * Input message cb
  */
-void srs_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::ConstPtr & data )
+void but_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::ConstPtr & data )
 {
 	ROS_DEBUG_ONCE("CCompressedPCPublisher::incommingDataCB: message received");
 
@@ -156,7 +156,7 @@ void srs_env_model::CCompressedPCPublisher::incommingDataCB( const tInputData::C
 /**
  * Copy point cloud from msg to internal type variable
  */
-long srs_env_model::CCompressedPCPublisher::copyCloud( const tInputCloudMsg & input, tPointCloudInternal & output, bool bAdd /*= false*/  )
+long but_env_model::CCompressedPCPublisher::copyCloud( const tInputCloudMsg & input, tPointCloudInternal & output, bool bAdd /*= false*/  )
 {
 
 	if( bAdd )
@@ -212,7 +212,7 @@ long srs_env_model::CCompressedPCPublisher::copyCloud( const tInputCloudMsg & in
 /**
  * Test if incomming pointcloud2 has rgb part - parameter driven
  */
-bool srs_env_model::CCompressedPCPublisher::isRGBCloud( const tInputCloudMsg & cloud )
+bool but_env_model::CCompressedPCPublisher::isRGBCloud( const tInputCloudMsg & cloud )
 {
 	tInputCloudMsg::_fields_type::const_iterator i, end;
 
@@ -233,7 +233,7 @@ bool srs_env_model::CCompressedPCPublisher::isRGBCloud( const tInputCloudMsg & c
 /**
  * Remove part of the cloud
  */
-long srs_env_model::CCompressedPCPublisher::removeFrustumFromCloud( const tInputData::ConstPtr & data, tPointCloudInternal & cloud )
+long but_env_model::CCompressedPCPublisher::removeFrustumFromCloud( const tInputData::ConstPtr & data, tPointCloudInternal & cloud )
 {
 	// Get camera information
 	{
@@ -310,7 +310,7 @@ long srs_env_model::CCompressedPCPublisher::removeFrustumFromCloud( const tInput
 /**
  * Test if point is in camera cone
  */
-bool srs_env_model::CCompressedPCPublisher::inSensorCone(const cv::Point2d& uv) const
+bool but_env_model::CCompressedPCPublisher::inSensorCone(const cv::Point2d& uv) const
 {
 	//std::cerr << uv.x << " > " << m_camera_stereo_offset_left + 1 << " && " << uv.x << " < " << m_camera_size.width + m_camera_stereo_offset_right - 2 << std::endl;
 	//std::cerr << uv.y <<	" > " << 1 << " && " << uv.y << " < " << m_camera_size.height - 2 << std::endl;

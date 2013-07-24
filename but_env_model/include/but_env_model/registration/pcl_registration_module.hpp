@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,11 +28,11 @@
 
 //! Static member initialization
 template <typename PointSource, typename PointTarget, typename Scalar>
-const std::string srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::m_mode_names[4] = {"NONE", "ICP", "ICPNL", "SCA" };
+const std::string but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::m_mode_names[4] = {"NONE", "ICP", "ICPNL", "SCA" };
 
 //! Set used mode
 template <typename PointSource, typename PointTarget, typename Scalar>
-void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setMode( EPclRegistrationMode mode )
+void but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setMode( EPclRegistrationMode mode )
 {
 	m_mode = mode;
 
@@ -60,7 +60,7 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setMode(
 //! @param target Target point cloud - to this cloud should be source cloud aligned
 //! @param output Output point cloud
 template <typename PointSource, typename PointTarget, typename Scalar>
-bool srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::process( PointSourcePtr & source, PointTargetPtr & target, PointSourcePtr & output )
+bool but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::process( PointSourcePtr & source, PointTargetPtr & target, PointSourcePtr & output )
 {
 	if( m_registrationPtr == 0 || m_mode == PCL_REGISTRATION_MODE_NONE )
 		return false;
@@ -75,8 +75,8 @@ bool srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::process(
 //! Convert string to the mode
 //! @param name Mode name
 template <typename PointSource, typename PointTarget, typename Scalar>
-typename srs_env_model::EPclRegistrationMode
-srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::modeFromString( const std::string & name )
+typename but_env_model::EPclRegistrationMode
+but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::modeFromString( const std::string & name )
 {
 	std::string converted( name );
 	std::transform( converted.begin(), converted.end(), converted.begin(), ::toupper);
@@ -99,7 +99,7 @@ srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::modeFromStrin
 //! Initialize parameters from the parameter server
 //! @param node_handle Node handle
 template <typename PointSource, typename PointTarget, typename Scalar>
-void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ros::NodeHandle & node_handle )
+void but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ros::NodeHandle & node_handle )
 {
 	std::cerr << "Setting registration parameters:" << std::endl;
 
@@ -152,7 +152,7 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::init( ro
 
 //! Reinitialize registration parameters
 template <typename PointSource, typename PointTarget, typename Scalar>
-void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::resetParameters()
+void but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::resetParameters()
 {
 	if( m_mode == PCL_REGISTRATION_MODE_NONE )
 		return;
@@ -177,7 +177,7 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::resetPar
 
 //! Set common registration parameters
 template <typename PointSource, typename PointTarget, typename Scalar>
-void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setRegistrationParameters()
+void but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setRegistrationParameters()
 {
 	m_registrationPtr->setMaximumIterations( m_maxIterations );
 	m_registrationPtr->setRANSACOutlierRejectionThreshold ( m_RANSACOutlierRejectionThreshold );
@@ -187,7 +187,7 @@ void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setRegis
 
 //! Set SCA parameters
 template <typename PointSource, typename PointTarget, typename Scalar>
-void srs_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setSCAParameters()
+void but_env_model::CPclRegistration<PointSource, PointTarget, Scalar>::setSCAParameters()
 {
 	m_algSCA.setMinSampleDistance( m_scaMinSampleDistance);
 	m_algSCA.setNumberOfSamples( m_scaNumOfSamples );

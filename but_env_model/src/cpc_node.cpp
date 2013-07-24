@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,7 +25,7 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/compressed_pc_publisher.h>
+#include <but_env_model/compressed_pc_publisher.h>
 
 int main(int argc, char **argv)
 {
@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	// Create object
-	srs_env_model::CCompressedPCPublisher cpc( n );
+	but_env_model::CCompressedPCPublisher cpc( n );
 
 	ros::Rate loop_rate(10);
 

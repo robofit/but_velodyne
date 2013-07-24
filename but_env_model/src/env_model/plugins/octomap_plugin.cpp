@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,9 +25,9 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin.h>
-#include <srs_env_model/topics_list.h>
-#include <srs_env_model/but_server/plugins/point_cloud_plugin.h>
+#include <but_env_model/plugins/octomap_plugin.h>
+#include <but_env_model/topics_list.h>
+#include <but_env_model/plugins/point_cloud_plugin.h>
 
 
 #include <pcl_ros/transforms.h>
@@ -38,12 +38,12 @@
 #include <visualization_msgs/Marker.h>
 
 // Interactive marker
-#include <srs_interaction_primitives/AddUnknownObject.h>
+#include <but_interaction_primitives/AddUnknownObject.h>
 
 #define DEFAULT_RESOLUTION 0.1
 #define SENSOR_FRAME_ID "/head_cam3d_link"
 
-void srs_env_model::COctoMapPlugin::setDefaults()
+void but_env_model::COctoMapPlugin::setDefaults()
 {
 	// Set octomap parameters
 	m_mapParameters.resolution = DEFAULT_RESOLUTION;
@@ -77,8 +77,8 @@ void srs_env_model::COctoMapPlugin::setDefaults()
 	m_sensor_frame_id = SENSOR_FRAME_ID;
 }
 
-srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
+: but_env_model::CServerPluginBase(name)
 , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
 , filecounter(0)
 , m_filterSingleSpecles("/map")
@@ -104,8 +104,8 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 	m_mapParameters.crawlDepth = m_crawlDepth;
 }
 
-srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const std::string & filename)
-:	srs_env_model::CServerPluginBase(name)
+but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const std::string & filename)
+:	but_env_model::CServerPluginBase(name)
 , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
 , m_filterSingleSpecles("/map")
 , m_filterRaycast("/map")
@@ -159,7 +159,7 @@ srs_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const st
 /**
  * Destructor
  */
-srs_env_model::COctoMapPlugin::~COctoMapPlugin()\
+but_env_model::COctoMapPlugin::~COctoMapPlugin()\
 {
 	// Remove tester
 	if (m_removeTester != 0)
@@ -167,7 +167,7 @@ srs_env_model::COctoMapPlugin::~COctoMapPlugin()\
 }
 
 //! Initialize plugin - called in server constructor
-void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 {
 	PERROR( "Initializing OctoMapPlugin" );
 
@@ -221,31 +221,31 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 
 	// Advertise services
 	m_serviceResetOctomap = node_handle.advertiseService(ResetOctomap_SRV,
-			&srs_env_model::COctoMapPlugin::resetOctomapCB, this);
+			&but_env_model::COctoMapPlugin::resetOctomapCB, this);
 
 	m_serviceRemoveCube = node_handle.advertiseService(RemoveCubeOctomap_SRV,
-			&srs_env_model::COctoMapPlugin::removeCubeCB, this);
+			&but_env_model::COctoMapPlugin::removeCubeCB, this);
 
 	m_serviceAddCube = node_handle.advertiseService( AddCubeOctomap_SRV,
-			&srs_env_model::COctoMapPlugin::addCubeCB, this);
+			&but_env_model::COctoMapPlugin::addCubeCB, this);
 
 	m_serviceSetCrawlDepth = node_handle.advertiseService( SetCrawlDepth_SRV,
-			&srs_env_model::COctoMapPlugin::setCrawlingDepthCB, this );
+			&but_env_model::COctoMapPlugin::setCrawlingDepthCB, this );
 
 	m_serviceGetTreeDepth = node_handle.advertiseService( GetTreeDepth_SRV,
-			&srs_env_model::COctoMapPlugin::getTreeDepthCB, this );
+			&but_env_model::COctoMapPlugin::getTreeDepthCB, this );
 
 	m_serviceLoadMap = node_handle.advertiseService( LoadMap_SRV,
-			&srs_env_model::COctoMapPlugin::loadOctreeCB, this);
+			&but_env_model::COctoMapPlugin::loadOctreeCB, this);
 
 	m_serviceSaveMap = node_handle.advertiseService( SaveMap_SRV,
-				&srs_env_model::COctoMapPlugin::saveOctreeCB, this);
+				&but_env_model::COctoMapPlugin::saveOctreeCB, this);
 
 	m_serviceLoadFullMap = node_handle.advertiseService( LoadFullMap_SRV,
-				&srs_env_model::COctoMapPlugin::loadFullOctreeCB, this);
+				&but_env_model::COctoMapPlugin::loadFullOctreeCB, this);
 
 	m_serviceSaveFullMap = node_handle.advertiseService( SaveFullMap_SRV,
-				&srs_env_model::COctoMapPlugin::saveFullOctreeCB, this);
+				&but_env_model::COctoMapPlugin::saveFullOctreeCB, this);
 
 
 	// Create publisher
@@ -292,7 +292,7 @@ void srs_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	}
 }
 
-void srs_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
+void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 {
 //	PERROR("insertCloud: Try lock.");
 
@@ -470,7 +470,7 @@ void srs_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 /**
  * Insert pointcloud scan TODO: Modify to add ground
  */
-void srs_env_model::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf,
+void but_env_model::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf,
 		                                       const tPointCloud & ground,
 		                                       const tPointCloud & nonground)
 {
@@ -489,7 +489,7 @@ void srs_env_model::COctoMapPlugin::insertScan(const tf::Point & sensorOriginTf,
 	m_data->getTree().insertColoredScan(nonground, sensorOrigin, maxRange, true);
 }
 
-void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
+void but_env_model::COctoMapPlugin::reset(bool clearLoaded)
 {
 	if( m_bMapLoaded && (!clearLoaded) )
 		return;
@@ -503,7 +503,7 @@ void srs_env_model::COctoMapPlugin::reset(bool clearLoaded)
 /**
  * Use pointcloud to raycast filter map
  */
-void srs_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
+void but_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
 {
 //	std::cerr << "Filter cloud in" << std::endl;
 
@@ -529,7 +529,7 @@ void srs_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
 ///////////////////////////////////////////////////////////////////////////////
 
 /// Crawl octomap
-void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime)
+void but_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime)
 {
 	// Fill needed structures
 	fillMapParameters(currentTime);
@@ -540,7 +540,7 @@ void srs_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime)
 }
 
 //! Should plugin publish data?
-bool srs_env_model::COctoMapPlugin::shouldPublish()
+bool but_env_model::COctoMapPlugin::shouldPublish()
 {
 	return (m_bPublishOctomap && m_ocPublisher.getNumSubscribers() > 0);
 }
@@ -548,7 +548,7 @@ bool srs_env_model::COctoMapPlugin::shouldPublish()
 /**
  * Publishing function
  */
-void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 {
 	if( !shouldPublish() )
 		return;
@@ -570,7 +570,7 @@ void srs_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 }
 
 /// Fill map parameters
-void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time)
+void but_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time)
 {
 	m_mapParameters.currentTime = time;
 	m_mapParameters.mapSize = m_data->getTree().size();
@@ -583,7 +583,7 @@ void srs_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time)
  * @brief Reset octomap - service callback
  *
  */
-bool srs_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
+bool but_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
 {
 	std::cerr << "Reset octomap service called..." << std::endl;
 
@@ -603,7 +603,7 @@ bool srs_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& req
 /**
  * Do octomap testing by object
  */
-long int srs_env_model::COctoMapPlugin::doObjectTesting(srs_env_model::CTestingObjectBase * object)
+long int but_env_model::COctoMapPlugin::doObjectTesting(but_env_model::CTestingObjectBase * object)
 {
 	if (object == 0) {
 		PERROR( "Wrong testing object - NULL. ");
@@ -616,7 +616,7 @@ long int srs_env_model::COctoMapPlugin::doObjectTesting(srs_env_model::CTestingO
 	float probMiss(m_data->getTree().getProbMissLog());
 
 	// For all leafs
-	for (srs_env_model::tButServerOcTree::leaf_iterator it =
+	for (but_env_model::tButServerOcTree::leaf_iterator it =
 			m_data->getTree().begin_leafs(), end = m_data->getTree().end_leafs(); it
 			!= end; ++it) {
 		// Node is occupied?
@@ -641,9 +641,9 @@ long int srs_env_model::COctoMapPlugin::doObjectTesting(srs_env_model::CTestingO
  */
 #define G2EPOINT( gp ) (Eigen::Vector3f( gp.x, gp.y, gp.z ))
 #define G2EQUAT( gp ) (Eigen::Quaternionf( gp.x, gp.y, gp.z, gp.w ))
-bool srs_env_model::COctoMapPlugin::removeCubeCB(
-		srs_env_model::RemoveCube::Request & req,
-		srs_env_model::RemoveCube::Response & res) {
+bool but_env_model::COctoMapPlugin::removeCubeCB(
+		but_env_model::RemoveCube::Request & req,
+		but_env_model::RemoveCube::Response & res) {
 
 		PERROR( "Remove cube from octomap: " << req.pose << " --- " << req.size );
 
@@ -680,7 +680,7 @@ bool srs_env_model::COctoMapPlugin::removeCubeCB(
 	double d(m_mapParameters.resolution);
 
 	// Create new tester
-	m_removeTester = new srs_env_model::CTestingPolymesh(
+	m_removeTester = new but_env_model::CTestingPolymesh(
 			G2EPOINT( req.pose.position ), G2EQUAT( req.pose.orientation ),
 			G2EPOINT( req.size ) + Eigen::Vector3f(d, d, d));
 
@@ -690,9 +690,9 @@ bool srs_env_model::COctoMapPlugin::removeCubeCB(
 	return true;
 }
 
-bool srs_env_model::COctoMapPlugin::addCubeCB(
-		srs_env_model::AddCube::Request & req,
-		srs_env_model::AddCube::Response & res) {
+bool but_env_model::COctoMapPlugin::addCubeCB(
+		but_env_model::AddCube::Request & req,
+		but_env_model::AddCube::Response & res) {
 
 		PERROR( "Add cube to octomap: " << req.pose << " --- \n size: \n"  << req.size );
 
@@ -786,7 +786,7 @@ bool srs_env_model::COctoMapPlugin::addCubeCB(
 /**
  * For debugging purpouses - add cubical interactive marker to the scene
  */
-void srs_env_model::COctoMapPlugin::addCubeGizmo(
+void but_env_model::COctoMapPlugin::addCubeGizmo(
 		const geometry_msgs::Pose & pose, const geometry_msgs::Point & size) {
 	srs_interaction_primitives::AddUnknownObject gizmo;
 	gizmo.request.pose = pose;
@@ -802,7 +802,7 @@ void srs_env_model::COctoMapPlugin::addCubeGizmo(
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 {
 	boost::mutex::scoped_lock lock(m_lockData);
 
@@ -817,7 +817,7 @@ void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 5, m_latchedTopics);
 
 		// Add camera info subscriber
-//		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &srs_env_model::COctoMapPlugin::cameraInfoCB, this);
+//		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &but_env_model::COctoMapPlugin::cameraInfoCB, this);
 
 		// If should publish, create markers publisher
 //		m_markerPublisher = node_handle.advertise<visualization_msgs::Marker> (	m_markers_topic_name, 10);
@@ -827,7 +827,7 @@ void srs_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 /**
  * Set crawling depth - service callback
  */
-bool srs_env_model::COctoMapPlugin::setCrawlingDepthCB( srs_env_model::SetCrawlingDepth::Request & req, srs_env_model::SetCrawlingDepth::Response & res )
+bool but_env_model::COctoMapPlugin::setCrawlingDepthCB( but_env_model::SetCrawlingDepth::Request & req, but_env_model::SetCrawlingDepth::Response & res )
 {
 	boost::mutex::scoped_lock lock(m_lockData);
 	m_crawlDepth = req.depth;
@@ -845,7 +845,7 @@ bool srs_env_model::COctoMapPlugin::setCrawlingDepthCB( srs_env_model::SetCrawli
 /**
  * Get octomap tree depth - service callback
  */
-bool srs_env_model::COctoMapPlugin::getTreeDepthCB( srs_env_model::GetTreeDepth::Request & req, srs_env_model::GetTreeDepth::Response & res )
+bool but_env_model::COctoMapPlugin::getTreeDepthCB( but_env_model::GetTreeDepth::Request & req, but_env_model::GetTreeDepth::Response & res )
 {
 	res.depth = m_data->getTree().getTreeDepth();
 
@@ -855,7 +855,7 @@ bool srs_env_model::COctoMapPlugin::getTreeDepthCB( srs_env_model::GetTreeDepth:
 /**
  * Load map service callback
  */
-bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::loadOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
 {
 	// reset data
 	reset(true);
@@ -917,7 +917,7 @@ bool srs_env_model::COctoMapPlugin::loadOctreeCB( srs_env_model::LoadSaveRequest
 /**
  * Load map service callback
  */
-bool srs_env_model::COctoMapPlugin::saveOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::saveOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
 {
 	if(req.filename.length() == 0 )
 	{
@@ -942,7 +942,7 @@ bool srs_env_model::COctoMapPlugin::saveOctreeCB( srs_env_model::LoadSaveRequest
 /**
  * Load map service callback
  */
-bool srs_env_model::COctoMapPlugin::loadFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::loadFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
 {
 	// reset data
 	reset(true);
@@ -966,7 +966,7 @@ bool srs_env_model::COctoMapPlugin::loadFullOctreeCB( srs_env_model::LoadSaveReq
 	// is filename valid?
 	if (req.filename.length() > 0) {
 		// Try to load data
-		srs_env_model::tButServerOcTree * tree = dynamic_cast<tButServerOcTree *>( tButServerOcTree::read( req.filename ) );
+		but_env_model::tButServerOcTree * tree = dynamic_cast<tButServerOcTree *>( tButServerOcTree::read( req.filename ) );
 		if (tree != 0 )
 		{
 			// Remove old, create new
@@ -1026,7 +1026,7 @@ bool srs_env_model::COctoMapPlugin::loadFullOctreeCB( srs_env_model::LoadSaveReq
 /**
  * Load map service callback
  */
-bool srs_env_model::COctoMapPlugin::saveFullOctreeCB( srs_env_model::LoadSaveRequest & req, srs_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::saveFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
 {
 	if(req.filename.length() == 0 )
 	{

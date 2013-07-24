@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/map2d_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/map2d_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 
 
-srs_env_model::CMap2DPlugin::CMap2DPlugin(const std::string & name)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::CMap2DPlugin::CMap2DPlugin(const std::string & name)
+: but_env_model::CServerPluginBase(name)
 , m_publishMap2D(true)
 , m_map2DPublisherName(MAP2D_PUBLISHER_NAME)
 , m_latchedTopics(false)
@@ -45,20 +45,20 @@ srs_env_model::CMap2DPlugin::CMap2DPlugin(const std::string & name)
 
 
 
-srs_env_model::CMap2DPlugin::~CMap2DPlugin()
+but_env_model::CMap2DPlugin::~CMap2DPlugin()
 {
 }
 
 
 
-bool srs_env_model::CMap2DPlugin::shouldPublish()
+bool but_env_model::CMap2DPlugin::shouldPublish()
 {
 	return( m_publishMap2D && m_map2DPublisher.getNumSubscribers() > 0 );
 }
 
 
 
-void srs_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
 {
 	node_handle.param("collision_object_publisher", m_map2DPublisherName, MAP2D_PUBLISHER_NAME );
 	node_handle.param("collision_object_frame_id", m_map2DFrameId, MAP2D_FRAME_ID );
@@ -75,7 +75,7 @@ void srs_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CMap2DPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CMap2DPlugin::publishInternal(const ros::Time & timestamp)
 {
 	if( shouldPublish() )
 		m_map2DPublisher.publish(*m_data);
@@ -83,7 +83,7 @@ void srs_env_model::CMap2DPlugin::publishInternal(const ros::Time & timestamp)
 
 
 
-void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
+void but_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 {
 	m_data->header.frame_id = m_map2DFrameId;
 	m_data->header.stamp = par.currentTime;
@@ -194,7 +194,7 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 	m_data->data.resize(m_data->info.width * m_data->info.height, -1);
 
 	tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -217,7 +217,7 @@ void srs_env_model::CMap2DPlugin::newMapDataCB(SMapWithParameters & par)
 /**
  * Occupied node handler
  */
-void srs_env_model::CMap2DPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
+void but_env_model::CMap2DPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
 	if (it.getDepth() == mp.treeDepth)
 	{
@@ -244,7 +244,7 @@ void srs_env_model::CMap2DPlugin::handleOccupiedNode(srs_env_model::tButServerOc
 /**
  * Free node handler
  */
-void srs_env_model::CMap2DPlugin::handleFreeNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
+void but_env_model::CMap2DPlugin::handleFreeNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
 {
 	if (it.getDepth() == mp.treeDepth) {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)
@@ -271,7 +271,7 @@ void srs_env_model::CMap2DPlugin::handleFreeNode(srs_env_model::tButServerOcTree
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void srs_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 {
 	if( bPause )
 	{

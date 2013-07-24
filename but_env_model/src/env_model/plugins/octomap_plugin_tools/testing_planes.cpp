@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,13 +25,13 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/testing_planes.h>
+#include <but_env_model/plugins/octomap_plugin_tools/testing_planes.h>
 #include <iostream>
 
 /**
  * Simple constructor
  */
-srs_env_model::CTestingPlane::CTestingPlane()
+but_env_model::CTestingPlane::CTestingPlane()
 : m_plane()
 , m_d( 0.0 )
 {
@@ -41,7 +41,7 @@ srs_env_model::CTestingPlane::CTestingPlane()
 /**
  * Copy constructor
  */
-srs_env_model::CTestingPlane::CTestingPlane(const CTestingPlane & plane)
+but_env_model::CTestingPlane::CTestingPlane(const CTestingPlane & plane)
 : m_plane( plane.m_plane )
 , m_d( plane.m_d )
 {
@@ -52,7 +52,7 @@ srs_env_model::CTestingPlane::CTestingPlane(const CTestingPlane & plane)
 /**
  * Assignement operator
  */
-srs_env_model::CTestingPlane srs_env_model::CTestingPlane::operator =(const CTestingPlane & plane)
+but_env_model::CTestingPlane but_env_model::CTestingPlane::operator =(const CTestingPlane & plane)
 {
 	m_plane = plane.m_plane;
 	m_d = plane.m_d;
@@ -64,7 +64,7 @@ srs_env_model::CTestingPlane srs_env_model::CTestingPlane::operator =(const CTes
 /**
  * Initialize by three points
  */
-srs_env_model::CTestingPlane::CTestingPlane(const tPoint & p1, const tPoint & p2, const tPoint & p3)
+but_env_model::CTestingPlane::CTestingPlane(const tPoint & p1, const tPoint & p2, const tPoint & p3)
 {
 	// Just call method
 	set( p1, p2, p3 );
@@ -74,7 +74,7 @@ srs_env_model::CTestingPlane::CTestingPlane(const tPoint & p1, const tPoint & p2
 /**
  * Initialize by point and normal
  */
-srs_env_model::CTestingPlane::CTestingPlane(const tPoint & point, const tPoint & normal)
+but_env_model::CTestingPlane::CTestingPlane(const tPoint & point, const tPoint & normal)
 {
 	// Just call method
 	set( point, normal );
@@ -97,7 +97,7 @@ srs_env_model::CTestingPlane::CTestingPlane(const tPoint & point, const tPoint &
  * 		d2 = p3 - p1
  * 		n = d1 x d2
  */
-void srs_env_model::CTestingPlane::set(const tPoint & p1, const tPoint & p2, const tPoint & p3)
+void but_env_model::CTestingPlane::set(const tPoint & p1, const tPoint & p2, const tPoint & p3)
 {
 	// Compute directional vectors
 	tPoint dir1( p2 - p1 ), dir2( p3 - p1 );
@@ -117,7 +117,7 @@ void srs_env_model::CTestingPlane::set(const tPoint & p1, const tPoint & p2, con
 /**
  * Initialize by point and normal
  */
-void srs_env_model::CTestingPlane::set(const tPoint & point, const tPoint & normal)
+void but_env_model::CTestingPlane::set(const tPoint & point, const tPoint & normal)
 {
 	m_plane = normal;
 	m_plane.normalize();
@@ -128,7 +128,7 @@ void srs_env_model::CTestingPlane::set(const tPoint & point, const tPoint & norm
 /**
  * Test point
  */
-bool srs_env_model::CTestingPlane::isIn(double x, double y, double z)
+bool but_env_model::CTestingPlane::isIn(double x, double y, double z)
 {
 	tPoint p( x, y, z );
 
@@ -141,7 +141,7 @@ bool srs_env_model::CTestingPlane::isIn(double x, double y, double z)
 /*
  * Simple constructor
  */
-srs_env_model::CTestingPlanes::CTestingPlanes()
+but_env_model::CTestingPlanes::CTestingPlanes()
 {
 }
 
@@ -149,7 +149,7 @@ srs_env_model::CTestingPlanes::CTestingPlanes()
 /**
  * Initialize as a stack of planes
  */
-srs_env_model::CTestingPlanes::CTestingPlanes(const tPlanesStack & planes)
+but_env_model::CTestingPlanes::CTestingPlanes(const tPlanesStack & planes)
 {
 	// Just call method
 	set( planes );
@@ -159,7 +159,7 @@ srs_env_model::CTestingPlanes::CTestingPlanes(const tPlanesStack & planes)
 /**
  * Initialize by stack of planes
  */
-void srs_env_model::CTestingPlanes::set(const tPlanesStack & planes)
+void but_env_model::CTestingPlanes::set(const tPlanesStack & planes)
 {
 	if( planes.size() == 0 )
 		return;
@@ -172,7 +172,7 @@ void srs_env_model::CTestingPlanes::set(const tPlanesStack & planes)
 /*
  * Test point
  */
-bool srs_env_model::CTestingPlanes::isIn( double x, double y, double z )
+bool but_env_model::CTestingPlanes::isIn( double x, double y, double z )
 {
 	tPlanesStack::iterator i, end;
 	for( i = m_planes.begin(), end = m_planes.end(); i != end; ++i)

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -30,10 +30,10 @@
 
 #include "point_cloud_plugin.h"
 
-#include <srs_env_model_msgs/RVIZCameraPosition.h>
-#include <srs_env_model/but_server/server_tools.h>
-#include <srs_env_model/OctomapUpdates.h>
-#include <srs_env_model/SetNumIncompleteFrames.h>
+#include <but_env_model_msgs/RVIZCameraPosition.h>
+#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/OctomapUpdates.h>
+#include <but_env_model/SetNumIncompleteFrames.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
@@ -41,7 +41,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 
 
-namespace srs_env_model
+namespace but_env_model
 {
 class CCompressedPointCloudPlugin : public CPointCloudPlugin
 {
@@ -87,7 +87,7 @@ protected:
 	bool inSensorCone(const cv::Point2d& uv) const;
 
 	/// Set number of incomplete frames callback
-	bool setNumIncompleteFramesCB( srs_env_model::SetNumIncompleteFrames::Request & req, srs_env_model::SetNumIncompleteFrames::Response & res );
+	bool setNumIncompleteFramesCB( but_env_model::SetNumIncompleteFrames::Request & req, but_env_model::SetNumIncompleteFrames::Response & res );
 
 protected:
 	/// Should camera position and orientation be transformed?
@@ -101,7 +101,7 @@ protected:
 
 
 	/// Subscriber - camera position
-	// message_filters::Subscriber<srs_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
+	// message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
 	ros::Subscriber m_camPosSubscriber;
 
 	/// Publisher - packed info
@@ -111,7 +111,7 @@ protected:
 	std::string m_ocUpdatePublisherName;
 
 	//! Message filter (we only want point cloud 2 messages)
-	tf::MessageFilter<srs_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
+	tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
 
 	/// Counters
 	long m_countVisible, m_countAll;
@@ -167,7 +167,7 @@ protected:
 	bool m_bPublishSimpleCloud;
 
 	//! Packed info message data
-	srs_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
+	but_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
 
 	/// Service - set number of incomplete frames
 	ros::ServiceServer m_serviceSetNumIncomplete;
@@ -176,7 +176,7 @@ protected:
 	bool m_bTransformOutput;
 };
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 // CompressedPointCloudPlugin_H_included
 #endif

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,13 +28,13 @@
 #ifndef Map2DPlugin_H_included
 #define Map2DPlugin_H_included
 
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/but_server/server_tools.h>
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
     class CMap2DPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
@@ -115,11 +115,11 @@ namespace srs_env_model
     }; // class CMap2DPlugin
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 
-// namespace srs_env_model
+// namespace but_env_model
 
 
 // Map2DPlugin_H_included

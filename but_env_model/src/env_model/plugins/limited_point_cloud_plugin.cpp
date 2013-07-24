@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,8 +25,8 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/limited_point_cloud_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/limited_point_cloud_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 #include <Eigen/src/Geometry/Quaternion.h>
@@ -34,8 +34,8 @@
 /**
  * Constructor
  */
-srs_env_model::CLimitedPointCloudPlugin::CLimitedPointCloudPlugin( const std::string & name )
-: srs_env_model::CPointCloudPlugin( name, false )
+but_env_model::CLimitedPointCloudPlugin::CLimitedPointCloudPlugin( const std::string & name )
+: but_env_model::CPointCloudPlugin( name, false )
 , m_bTransformCamera( false )
 , m_bSpinThread( true )
 {
@@ -44,7 +44,7 @@ srs_env_model::CLimitedPointCloudPlugin::CLimitedPointCloudPlugin( const std::st
 /**
  * Destructor - kill thread
  */
-srs_env_model::CLimitedPointCloudPlugin::~CLimitedPointCloudPlugin()
+but_env_model::CLimitedPointCloudPlugin::~CLimitedPointCloudPlugin()
 {
 	if (spin_thread_.get())
 	{
@@ -56,7 +56,7 @@ srs_env_model::CLimitedPointCloudPlugin::~CLimitedPointCloudPlugin()
 /**
  * Thread body - call callbacks, if needed
  */
-void srs_env_model::CLimitedPointCloudPlugin::spinThread()
+void but_env_model::CLimitedPointCloudPlugin::spinThread()
 {
   while (node_handle_.ok())
   {
@@ -68,7 +68,7 @@ void srs_env_model::CLimitedPointCloudPlugin::spinThread()
   }
 }
 
-void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
 	if ( m_bSpinThread )
 	{
@@ -94,8 +94,8 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
 
     // Subscribe to position topic
     // Create subscriber
-    m_camPosSubscriber = node_handle.subscribe<srs_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
-    // = new message_filters::Subscriber<srs_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
+    m_camPosSubscriber = node_handle.subscribe<but_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
+    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
 
     if (!m_camPosSubscriber)
     {
@@ -104,7 +104,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
     }
 /*
     // Create message filter
-    m_tfCamPosSub = new tf::MessageFilter<srs_env_model_msgs::RVIZCameraPosition>( *m_camPosSubscriber, m_tfListener, "/map", 1);
+    m_tfCamPosSub = new tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition>( *m_camPosSubscriber, m_tfListener, "/map", 1);
     m_tfCamPosSub->registerCallback(boost::bind( &CLimitedPointCloudPlugin::onCameraPositionChangedCB, this, _1));
 */
     // Clear old pointcloud data
@@ -115,7 +115,7 @@ void srs_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle
  * Set used octomap frame id and timestamp
  */
 
-void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
+void but_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
     // Reset counters
     m_countVisible = m_countHidden = 0;
@@ -193,7 +193,7 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
     m_normal = m_normalBuf;
 
     tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -220,7 +220,7 @@ void srs_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs_env_model::CLimitedPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+void but_env_model::CLimitedPointCloudPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
     Eigen::Vector3f p( it.getX(), it.getY(), it.getZ() );
 
@@ -247,16 +247,16 @@ void srs_env_model::CLimitedPointCloudPlugin::handleOccupiedNode(srs_env_model::
 /**
  * On camera position changed callback
  */
-void srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB(const srs_env_model_msgs::RVIZCameraPosition::ConstPtr& cameraPosition)
+void but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB(const but_env_model_msgs::RVIZCameraPosition::ConstPtr& cameraPosition)
 {
     // Set camera position frame id
     m_cameraFrameId = cameraPosition->header.frame_id;
 
     // Orientation shortcut
-    const srs_env_model_msgs::RVIZCameraPosition::_position_type & p( cameraPosition->position );
+    const but_env_model_msgs::RVIZCameraPosition::_position_type & p( cameraPosition->position );
 
     // Camera direction
-    const srs_env_model_msgs::RVIZCameraPosition::_position_type & d( cameraPosition->direction );
+    const but_env_model_msgs::RVIZCameraPosition::_position_type & d( cameraPosition->direction );
 
     // Convert to eigen
     Eigen::Vector3f point( p.x, p.y, p.z );
@@ -289,17 +289,17 @@ void srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB(const sr
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CLimitedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CLimitedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
 //    PERROR( "Visible: " << m_countVisible << ", hidden: " << m_countHidden << ", min: " << min << ", max: " << max );
 //    PERROR( "Num of points: " << m_data->size() );
-    srs_env_model::CPointCloudPlugin::publishInternal( timestamp );
+    but_env_model::CPointCloudPlugin::publishInternal( timestamp );
 }
 
 /**
  *  Connect/disconnect plugin to/from all topics
  */
-void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+void but_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -315,7 +315,7 @@ void srs_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandl
 
 		// Subscribe to position topic
 		// Create subscriber
-		m_camPosSubscriber = node_handle.subscribe<srs_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &srs_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
+		m_camPosSubscriber = node_handle.subscribe<but_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
 	}
 }
 

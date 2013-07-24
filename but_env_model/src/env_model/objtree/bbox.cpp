@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology (BUT)
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Jan Gorig (xgorig01@stud.fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -26,7 +26,7 @@
  */
 
 #include <cmath>
-#include <srs_env_model/but_server/objtree/bbox.h>
+#include <but_env_model/objtree/bbox.h>
 
 namespace objtree
 {

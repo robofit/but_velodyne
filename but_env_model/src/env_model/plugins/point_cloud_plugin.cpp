@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,8 +25,8 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/point_cloud_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/point_cloud_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl/ros/conversions.h>
 #include <pcl_ros/transforms.h>
@@ -39,8 +39,8 @@
 #define DEFAULT_INPUT_CLOUD_FRAME_ID "/head_cam3d_link"
 
 /// Constructor
-srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bool subscribe)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bool subscribe)
+: but_env_model::CServerPluginBase(name)
 , m_publishPointCloud(true)
 , m_pcPublisherName(POINTCLOUD_CENTERS_PUBLISHER_NAME)
 , m_pcSubscriberName("")
@@ -65,13 +65,13 @@ srs_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 }
 
 /// Destructor
-srs_env_model::CPointCloudPlugin::~CPointCloudPlugin()
+but_env_model::CPointCloudPlugin::~CPointCloudPlugin()
 {
 
 }
 
 //! Initialize plugin - called in server constructor
-void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
 //	PERROR( "Initializing PointCloudPlugin" );
 
@@ -147,7 +147,7 @@ void srs_env_model::CPointCloudPlugin::init(ros::NodeHandle & node_handle)
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
 //	PERROR("Publish: Try lock");
 
@@ -184,7 +184,7 @@ void srs_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timesta
 }
 
 //! Set used octomap frame id and timestamp
-void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
+void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	if( ! m_publishPointCloud )
 		return;
@@ -213,7 +213,7 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 
 	// Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -237,7 +237,7 @@ void srs_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+void but_env_model::CPointCloudPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	std::cerr << "PCP: handle occupied" << std::endl;
 	tPclPoint point;
@@ -269,7 +269,7 @@ void srs_env_model::CPointCloudPlugin::handleOccupiedNode(srs_env_model::tButSer
 /**
  Cloud insertion callback
  */
-void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::ConstPtr& cloud)
+void but_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPointCloud::ConstPtr& cloud)
 {
 //	PERROR("insertCloud: Try lock");
 
@@ -430,7 +430,7 @@ void srs_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 }
 
 //! Should plugin publish data?
-bool srs_env_model::CPointCloudPlugin::shouldPublish()
+bool but_env_model::CPointCloudPlugin::shouldPublish()
 {
 	return( (!m_bAsInput) && m_publishPointCloud && m_pcPublisher.getNumSubscribers() > 0 );
 }
@@ -438,7 +438,7 @@ bool srs_env_model::CPointCloudPlugin::shouldPublish()
 /**
  * Test if incomming pointcloud2 has rgb part - parameter driven
  */
-bool srs_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud )
+bool but_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud )
 {
 	tIncommingPointCloud::_fields_type::const_iterator i, end;
 
@@ -459,7 +459,7 @@ bool srs_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::C
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 {
 //	PERROR("Try lock");
 
@@ -504,7 +504,7 @@ void srs_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nod
 /**
  * Wants plugin new map data?
  */
-bool srs_env_model::CPointCloudPlugin::wantsMap()
+bool but_env_model::CPointCloudPlugin::wantsMap()
 {
 	return ! m_bAsInput;
 }

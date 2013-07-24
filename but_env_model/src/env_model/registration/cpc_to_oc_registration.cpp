@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,11 +25,10 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/registration/CPCtoOCRegistration.h>
+#include <but_env_model/registration/cpc_to_oc_registration.h>
+#include <but_env_model/registration/pcl_registration_module.h>
+#include <but_env_model/topics_list.h>
 
-
-#include <srs_env_model/but_server/registration/pcl_registration_module.h>
-#include <srs_env_model/topics_list.h>
 #include <pcl_ros/transforms.h>
 #include <pcl/io/io.h>
 
@@ -37,7 +36,7 @@
 /**
  * Constructor
  */
-srs_env_model::COcPatchMaker::COcPatchMaker()
+but_env_model::COcPatchMaker::COcPatchMaker()
 : m_bTransformCamera( false )
 , m_pcFrameId("/map")
 , m_bSpinThread( false )
@@ -54,7 +53,7 @@ srs_env_model::COcPatchMaker::COcPatchMaker()
 /**
  * Initialize module - called in server constructor
  */
-void srs_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
+void but_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
 {
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
@@ -77,7 +76,7 @@ void srs_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
 
 	// Subscribe to position topic
 	// Create subscriber
-	m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &srs_env_model::COcPatchMaker::onCameraChangedCB, this );
+	m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::COcPatchMaker::onCameraChangedCB, this );
 
 	if (!m_camPosSubscriber)
 	{
@@ -103,7 +102,7 @@ void srs_env_model::COcPatchMaker::init(ros::NodeHandle & node_handle)
 /**
  * Get output pointcloud
  */
-bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par, const ros::Time & time )
+bool but_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par, const ros::Time & time )
 {
 	ROS_DEBUG( "CCompressedPointCloudPlugin: onFrameStart" );
 
@@ -208,10 +207,10 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par,
 
 	// Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Compute fraction matrix
-    m_fracMatrix = btMatrix3x3::getIdentity().scaled( tf::Point( 1.0 / m_fracX, 1.0 / m_fracY, 1.0 ) );
+    m_fracMatrix = tf::Matrix3x3::getIdentity().scaled( tf::Point( 1.0 / m_fracX, 1.0 / m_fracY, 1.0 ) );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(par.treeDepth); it != itEnd; ++it)
@@ -239,7 +238,7 @@ bool srs_env_model::COcPatchMaker::computeCloud( const SMapWithParameters & par,
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs_env_model::COcPatchMaker::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+void but_env_model::COcPatchMaker::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	PERROR("OnHandleOccupied");
 
@@ -284,7 +283,7 @@ void srs_env_model::COcPatchMaker::handleOccupiedNode(srs_env_model::tButServerO
 /**
  * On camera position changed callback
  */
-void srs_env_model::COcPatchMaker::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
+void but_env_model::COcPatchMaker::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -310,7 +309,7 @@ void srs_env_model::COcPatchMaker::onCameraChangedCB(const sensor_msgs::CameraIn
 /**
  * Test if point is in camera cone
  */
-bool srs_env_model::COcPatchMaker::inSensorCone(const cv::Point2d& uv) const
+bool but_env_model::COcPatchMaker::inSensorCone(const cv::Point2d& uv) const
 {
 	const double x_offset( 0.0 ), y_offset( 0.0 );
 
@@ -335,7 +334,7 @@ bool srs_env_model::COcPatchMaker::inSensorCone(const cv::Point2d& uv) const
 /**
  * Main loop when spinning our own thread - process callbacks in our callback queue - process pending goals
  */
-void srs_env_model::COcPatchMaker::spinThread()
+void but_env_model::COcPatchMaker::spinThread()
 {
 	while (node_handle_.ok())
 		{
@@ -350,7 +349,7 @@ void srs_env_model::COcPatchMaker::spinThread()
 /**
  * Called when new scan was inserted and now all can be published
  */
-void srs_env_model::COcPatchMaker::publishInternal(const ros::Time & timestamp)
+void but_env_model::COcPatchMaker::publishInternal(const ros::Time & timestamp)
 {
 	// Convert data
 	sensor_msgs::PointCloud2 msg;
@@ -371,7 +370,7 @@ void srs_env_model::COcPatchMaker::publishInternal(const ros::Time & timestamp)
 /**
  * Constructor
  */
-srs_env_model::CPcToOcRegistration::CPcToOcRegistration()
+but_env_model::CPcToOcRegistration::CPcToOcRegistration()
 : m_resampledCloud( new sensor_msgs::PointCloud2 () )
 {
 
@@ -380,7 +379,7 @@ srs_env_model::CPcToOcRegistration::CPcToOcRegistration()
 /**
  *  Initialize plugin - called in server constructor
  */
-void srs_env_model::CPcToOcRegistration::init(ros::NodeHandle & node_handle)
+void but_env_model::CPcToOcRegistration::init(ros::NodeHandle & node_handle)
 {
 	// Initialize modules
 	m_patchMaker.init( node_handle );
@@ -390,7 +389,7 @@ void srs_env_model::CPcToOcRegistration::init(ros::NodeHandle & node_handle)
 /**
  * Register cloud to the octomap
  */
-bool srs_env_model::CPcToOcRegistration::registerCloud( tPointCloudPtr & cloud, const SMapWithParameters & map )
+bool but_env_model::CPcToOcRegistration::registerCloud( tPointCloudPtr & cloud, const SMapWithParameters & map )
 {
 	if( !m_registration.isRegistering() )
 	{

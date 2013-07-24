@@ -2,7 +2,7 @@
  * \file
  * $Id: servernode.cpp 834 2012-05-23 16:36:59Z spanel $
  *
- * Modified by dcgm-robotics@FIT group.
+ * Modified by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -51,7 +51,7 @@
 
 
 #include <ros/ros.h>
-#include <srs_env_model/but_server/but_server.h>
+#include <but_env_model/env_model_server.h>
 
 #define USAGE "\nUSAGE: octomap_server <map.bt>\n" \
               "  map.bt: octomap 3D map file to read\n"
@@ -75,7 +75,7 @@ int main(int argc, char** argv){
   }
   try{
 		// Run server
-		srs_env_model::CButServer ms(mapFilename);
+		but_env_model::CButServer ms(mapFilename);
 		ros::Rate loop_rate(10);
 
 		int count = 0;

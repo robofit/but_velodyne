@@ -49,7 +49,7 @@ template <typename tpType> bool isGreat( tpType x ) { return abs( x ) > SMALL_DO
 namespace but_env_model
 {
 	//! ROS octomap type
-	typedef octomap::ButOctomapROS< srs_env_model::EMOcTree > tButServerOcMap;
+	typedef octomap::ButOctomapROS< but_env_model::EMOcTree > tButServerOcMap;
 
 	//! ROS octomap pointer type
 	typedef boost::shared_ptr<tButServerOcMap> tButServerOcMapPtr;

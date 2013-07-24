@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,17 +28,17 @@
 #ifndef CMapPubPlugin_H_included
 #define CMapPubPlugin_H_included
 
-#include <srs_env_model/but_server/server_tools.h>
-#include <srs_env_model/GetCollisionMap.h>
-#include <srs_env_model/IsNewCollisionMap.h>
-#include <srs_env_model/LockCollisionMap.h>
+#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/GetCollisionMap.h>
+#include <but_env_model/IsNewCollisionMap.h>
+#include <but_env_model/LockCollisionMap.h>
 
 #include <arm_navigation_msgs/CollisionMap.h>
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
-#include <srs_env_model/RemoveCube.h>
+#include <but_env_model/RemoveCube.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
     class CCMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< arm_navigation_msgs::CollisionMap >
@@ -90,7 +90,7 @@ namespace srs_env_model
         bool sameCMaps( arm_navigation_msgs::CollisionMap * map1, arm_navigation_msgs::CollisionMap * map2 );
 
         //! Test collision point if it is in the collision distance from the robot
-        bool isNearRobot( const btVector3 & point, double extent );
+        bool isNearRobot( const tf::Vector3 & point, double extent );
 
         /**
         * @brief Get collision map service call
@@ -98,21 +98,21 @@ namespace srs_env_model
         * @param req request - caller's map version
         * @param res response - current map and current version
         */
-        bool getCollisionMapSrvCallback( srs_env_model::GetCollisionMap::Request & req, srs_env_model::GetCollisionMap::Response & res );
+        bool getCollisionMapSrvCallback( but_env_model::GetCollisionMap::Request & req, but_env_model::GetCollisionMap::Response & res );
 
         /**
          * @brief Get true if given timestamp is older then current map time
          * @param req request - caller's map timestamp
          * @param res response - true, if new map and current timestamp
          */
-        bool isNewCmapSrvCallback( srs_env_model::IsNewCollisionMap::Request & req, srs_env_model::IsNewCollisionMap::Response & res );
+        bool isNewCmapSrvCallback( but_env_model::IsNewCollisionMap::Request & req, but_env_model::IsNewCollisionMap::Response & res );
 
         /**
          * @brief Lock collision map - disable its updates from new point cloud data
          * @param req request - bool - lock/unlock
          * @param res response -
          */
-        bool lockCmapSrvCallback( srs_env_model::LockCollisionMap::Request & req, srs_env_model::LockCollisionMap::Response & res );
+        bool lockCmapSrvCallback( but_env_model::LockCollisionMap::Request & req, but_env_model::LockCollisionMap::Response & res );
 
         /**
          * @brief Remove all collision boxes within given box. Box is aligned with axes and uses the same frame id.
@@ -127,7 +127,7 @@ namespace srs_env_model
 		 * @param req Request
 		 * @param res Response
 		 */
-		bool removeBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
+		bool removeBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
 
         /**
          * @brief Adds box to the collision map
@@ -141,7 +141,7 @@ namespace srs_env_model
          * @param req Request
          * @param res Response
          */
-        bool addBoxCallback( srs_env_model::RemoveCube::Request & req, srs_env_model::RemoveCube::Response & res );
+        bool addBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
 
         /**
          * @brief retransform map to the new time frame
@@ -163,7 +163,7 @@ namespace srs_env_model
         long int m_collisionMapVersion;
 
         //! Robot position in the octomap coordinate system
-        tf::Stamped<btVector3> m_robotBasePosition;
+        tf::Stamped<tf::Vector3> m_robotBasePosition;
 
         //! Collision map frame id
         std::string m_cmapFrameId;

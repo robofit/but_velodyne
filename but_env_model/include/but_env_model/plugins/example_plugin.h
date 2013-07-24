@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,9 +28,9 @@
 #ifndef _ExamplePlugin_H_included_
 #define _ExamplePlugin_H_included_
 
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/but_server/server_tools.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 /**
@@ -105,7 +105,7 @@ protected:
 
 		// Initialize leaf iterators
 		tButServerOcTree & tree( par.map->getTree() );
-		srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+		but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 		// Crawl through nodes
 		for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -136,7 +136,7 @@ protected:
 
 	/// Hook that is called when traversing occupied nodes of the updated Octree.
 	/// We set node color to the stored one.
-	virtual void handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+	virtual void handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 	{
 		it->r() = (*m_data)[0];
 		it->g() = (*m_data)[1];
@@ -160,7 +160,7 @@ protected:
 
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 // _ExamplePlugin_H_included_

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/collision_grid_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/collision_grid_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 
 
-srs_env_model::CCollisionGridPlugin::CCollisionGridPlugin(const std::string & name)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::CCollisionGridPlugin::CCollisionGridPlugin(const std::string & name)
+: but_env_model::CServerPluginBase(name)
 , m_publishGrid(true)
 , m_gridPublisherName(COLLISIONGRID_PUBLISHER_NAME)
 , m_latchedTopics(false)
@@ -44,20 +44,20 @@ srs_env_model::CCollisionGridPlugin::CCollisionGridPlugin(const std::string & na
 
 
 
-srs_env_model::CCollisionGridPlugin::~CCollisionGridPlugin()
+but_env_model::CCollisionGridPlugin::~CCollisionGridPlugin()
 {
 }
 
 
 
-bool srs_env_model::CCollisionGridPlugin::shouldPublish()
+bool but_env_model::CCollisionGridPlugin::shouldPublish()
 {
 	return( m_publishGrid && m_gridPublisher.getNumSubscribers() > 0 );
 }
 
 
 
-void srs_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
 {
 	node_handle.param("grid_publisher", m_gridPublisherName, COLLISIONGRID_PUBLISHER_NAME );
 	node_handle.param("grid_min_x_size", m_minSizeX, m_minSizeX);
@@ -74,7 +74,7 @@ void srs_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CCollisionGridPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CCollisionGridPlugin::publishInternal(const ros::Time & timestamp)
 {
 	boost::mutex::scoped_lock lock(m_lockData);
 
@@ -84,7 +84,7 @@ void srs_env_model::CCollisionGridPlugin::publishInternal(const ros::Time & time
 
 
 
-void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
+void but_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 {
 	// init projected 2D map:
 	m_data->header.frame_id = par.frameId;
@@ -175,7 +175,7 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 	}
 
 	tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -200,7 +200,7 @@ void srs_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 /**
  * Occupied node handler
  */
-void srs_env_model::CCollisionGridPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
+void but_env_model::CCollisionGridPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
 	if (it.getDepth() == m_crawlDepth)
 	{
@@ -227,7 +227,7 @@ void srs_env_model::CCollisionGridPlugin::handleOccupiedNode(srs_env_model::tBut
 /**
  * Free node handler
  */
-void srs_env_model::CCollisionGridPlugin::handleFreeNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
+void but_env_model::CCollisionGridPlugin::handleFreeNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
 {
 	if (it.getDepth() == m_crawlDepth) {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)
@@ -254,7 +254,7 @@ void srs_env_model::CCollisionGridPlugin::handleFreeNode(srs_env_model::tButServ
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void srs_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 {
 	if( bPause )
 	{

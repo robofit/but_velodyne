@@ -130,7 +130,7 @@ protected:
     void publishPlugins(const ros::Time& rostime);
 
     /// Use/do not use color service callback
-	bool onUseInputColor(srs_env_model::UseInputColor::Request & req, srs_env_model::UseInputColor::Response & res );
+	bool onUseInputColor(but_env_model::UseInputColor::Request & req, but_env_model::UseInputColor::Response & res );
 
 
 protected:

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -28,9 +28,9 @@
 #ifndef IMarkersPlugin_H_included
 #define IMarkersPlugin_H_included
 
-#include <srs_env_model/but_server/server_tools.h>
-#include <srs_env_model/AddPlanes.h>
-#include <srs_env_model_msgs/PlaneDesc.h>
+#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/AddPlanes.h>
+#include <but_env_model_msgs/PlaneDesc.h>
 
 #include <srs_interaction_primitives/plane.h>
 #include <srs_interaction_primitives/services_list.h>
@@ -40,7 +40,7 @@
 #include <message_filters/subscriber.h>
 #include <tf/message_filter.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 class CIMarkersPlugin : public CServerPluginBase
@@ -65,28 +65,28 @@ protected:
      *
      * @param pa Array of planes
      */
-    bool insertPlaneCallback( srs_env_model::AddPlanes::Request & req, srs_env_model::AddPlanes::Response & res );
+    bool insertPlaneCallback( but_env_model::AddPlanes::Request & req, but_env_model::AddPlanes::Response & res );
 
     /**
      * @brief Insert/modify/remove plane
      *
      * @param plane Plane
      */
-    void operatePlane( const srs_env_model_msgs::PlaneDesc & plane );
+    void operatePlane( const but_env_model_msgs::PlaneDesc & plane );
 
     /**
      * @brief Service helper - add plane
      *
      * @param plane Added plane
      */
-    void addPlaneSrvCall( const srs_env_model_msgs::PlaneDesc & plane, const std::string & name );
+    void addPlaneSrvCall( const but_env_model_msgs::PlaneDesc & plane, const std::string & name );
 
     /**
      * @brief Service helper - remove plane
      *
      * @param plane Added plane
      */
-    void removePlaneSrvCall( const srs_env_model_msgs::PlaneDesc & plane, const std::string & name );
+    void removePlaneSrvCall( const but_env_model_msgs::PlaneDesc & plane, const std::string & name );
 
     /**
      *  @brief Get unique string (used as interactive marker name)
@@ -117,7 +117,7 @@ protected:
 
     // DETECTED ENTITIES
     /// Plane
-    typedef std::pair< std::string, srs_env_model_msgs::PlaneDesc > tNamedPlane;
+    typedef std::pair< std::string, but_env_model_msgs::PlaneDesc > tNamedPlane;
     typedef std::map< int, tNamedPlane > tPlanesMap;
     tPlanesMap m_dataPlanes;
 
@@ -137,11 +137,11 @@ protected:
 }; // class CIMarkersPlugin
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 
- // namespace srs_env_model
+ // namespace but_env_model
 
 
 // IMarkersPlugin_H_included

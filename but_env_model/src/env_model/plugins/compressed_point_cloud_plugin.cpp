@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,8 +25,8 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/compressed_point_cloud_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/compressed_point_cloud_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 #include <Eigen/src/Geometry/Quaternion.h>
@@ -34,8 +34,8 @@
 /**
  * Constructor
  */
-srs_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const std::string & name )
-: srs_env_model::CPointCloudPlugin( name, false )
+but_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const std::string & name )
+: but_env_model::CPointCloudPlugin( name, false )
 , m_bTransformCamera( false )
 , m_bSpinThread( true )
 , m_frame_counter(0)
@@ -50,7 +50,7 @@ srs_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const s
 /**
  * Destructor - kill thread
  */
-srs_env_model::CCompressedPointCloudPlugin::~CCompressedPointCloudPlugin()
+but_env_model::CCompressedPointCloudPlugin::~CCompressedPointCloudPlugin()
 {
 	if (spin_thread_.get())
 	{
@@ -62,7 +62,7 @@ srs_env_model::CCompressedPointCloudPlugin::~CCompressedPointCloudPlugin()
 /**
  * Thread body - call callbacks, if needed
  */
-void srs_env_model::CCompressedPointCloudPlugin::spinThread()
+void but_env_model::CCompressedPointCloudPlugin::spinThread()
 {
   while (node_handle_.ok())
   {
@@ -77,7 +77,7 @@ void srs_env_model::CCompressedPointCloudPlugin::spinThread()
 /**
  * Initialize plugin
  */
-void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_handle)
 {
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
@@ -122,7 +122,7 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 	// Services
 	{
 		m_serviceSetNumIncomplete = node_handle.advertiseService( SetNumIncompleteFrames_SRV,
-				&srs_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB, this );
+				&but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB, this );
 	}
 
     // Create publisher - simple point cloud
@@ -130,12 +130,12 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Create publisher - packed info - cam position and update pointcloud
-    m_ocUpdatePublisher = node_handle.advertise< srs_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
+    m_ocUpdatePublisher = node_handle.advertise< but_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
 
     // Subscribe to position topic
     // Create subscriber
-    m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
-    // = new message_filters::Subscriber<srs_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
+    m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
+    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
 
     if (!m_camPosSubscriber)
     {
@@ -144,7 +144,7 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
     }
 /*
     // Create message filter
-    m_tfCamPosSub = new tf::MessageFilter<srs_env_model_msgs::RVIZCameraPosition>( *m_camPosSubscriber, m_tfListener, "/map", 1);
+    m_tfCamPosSub = new tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition>( *m_camPosSubscriber, m_tfListener, "/map", 1);
     m_tfCamPosSub->registerCallback(boost::bind( &CCompressedPointCloudPlugin::onCameraPositionChangedCB, this, _1));
 */
     // Clear old pointcloud data
@@ -160,7 +160,7 @@ void srs_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
  * Set used octomap frame id and timestamp
  */
 
-void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
+void but_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	ROS_DEBUG( "CCompressedPointCloudPlugin: onFrameStart" );
 
@@ -250,7 +250,7 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 
     // Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -277,7 +277,7 @@ void srs_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 /**
  * hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
  */
-void srs_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+void but_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	PERROR("OnHandleOccupied");
 
@@ -306,7 +306,7 @@ void srs_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(srs_env_mode
 /**
  * On camera position changed callback
  */
-void srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
+void but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -328,13 +328,13 @@ void srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_
 }
 
 //! Called when new scan was inserted and now all can be published
-void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
 //	ROS_DEBUG( "CCompressedPointCloudPlugin: onPublish" );
 
 //    PERROR( "Visible: " << m_countVisible << ", all: " << m_countAll << ", compression: " << double(m_countVisible)/double(m_countAll) );
 //    PERROR( "Num of points: " << m_data->size() );
-//    srs_env_model::CPointCloudPlugin::publishInternal( timestamp );
+//    but_env_model::CPointCloudPlugin::publishInternal( timestamp );
 
     if( shouldPublish() )
     {
@@ -377,7 +377,7 @@ void srs_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
 /**
  *  Connect/disconnect plugin to/from all topics
  */
-void srs_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+void but_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -393,14 +393,14 @@ void srs_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHa
 
 		// Subscribe to position topic
 		// Create subscriber
-		m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &srs_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
+		m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
 	}
 }
 
 /**
  * Test if point is in camera cone
  */
-bool srs_env_model::CCompressedPointCloudPlugin::inSensorCone(const cv::Point2d& uv) const
+bool but_env_model::CCompressedPointCloudPlugin::inSensorCone(const cv::Point2d& uv) const
 {
 	//PERROR( uv.x << " > " << m_camera_stereo_offset_left + 1 << " && " << uv.x << " < " << m_camera_size.width + m_camera_stereo_offset_right - 2 );
 	//PERROR( uv.y <<	" > " << 1 << " && " << uv.y << " < " << m_camera_size.height - 2 );
@@ -417,7 +417,7 @@ bool srs_env_model::CCompressedPointCloudPlugin::inSensorCone(const cv::Point2d&
 /**
  * Should plugin publish data?
  */
-bool srs_env_model::CCompressedPointCloudPlugin::shouldPublish()
+bool but_env_model::CCompressedPointCloudPlugin::shouldPublish()
 {
 	ROS_DEBUG( "CCompressedPointCloudPlugin: shouldPublish" );
 
@@ -434,7 +434,7 @@ bool srs_env_model::CCompressedPointCloudPlugin::shouldPublish()
 /**
  * Set number of incomplete frames callback
  */
-bool srs_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB( srs_env_model::SetNumIncompleteFrames::Request & req, srs_env_model::SetNumIncompleteFrames::Response & res )
+bool but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB( but_env_model::SetNumIncompleteFrames::Request & req, but_env_model::SetNumIncompleteFrames::Response & res )
 {
 	m_use_every_nth = req.num;
 	PERROR( "New number of incomplete frames set: " << m_use_every_nth );

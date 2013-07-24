@@ -2,7 +2,7 @@
  * \file
  * $Id: but_server.cpp 809 2012-05-19 21:47:48Z stancl $
  *
- * Modified by dcgm-robotics@FIT group.
+ * Modified by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -49,9 +49,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <srs_env_model/but_server/but_server.h>
-#include <srs_env_model/topics_list.h>
-//#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/env_model_server.h>
+#include <but_env_model/topics_list.h>
+//#include <but_env_model/server_tools.h>
 
 #include <sstream>
 
@@ -62,7 +62,7 @@
 /**
  Constructor
  */
-srs_env_model::CButServer::CButServer(const std::string& filename) :
+but_env_model::CButServer::CButServer(const std::string& filename) :
 			m_bIsPaused(false),
 			m_nh(),
 			m_latchedTopics(false),
@@ -156,7 +156,7 @@ srs_env_model::CButServer::CButServer(const std::string& filename) :
 /**
  Destructor
  */
-srs_env_model::CButServer::~CButServer()
+but_env_model::CButServer::~CButServer()
 {
 
 }
@@ -168,7 +168,7 @@ srs_env_model::CButServer::~CButServer()
 /**
  Publish all data
  */
-void srs_env_model::CButServer::publishAll(const ros::Time& rostime)
+void but_env_model::CButServer::publishAll(const ros::Time& rostime)
 {
 	// Store start time
 //	ros::WallTime startTime = ros::WallTime::now();
@@ -203,7 +203,7 @@ void srs_env_model::CButServer::publishAll(const ros::Time& rostime)
 /**
  * @brief Reset server and all plugins.
  */
-void srs_env_model::CButServer::reset()
+void but_env_model::CButServer::reset()
 {
   ROS_DEBUG("Reseting environment server...");
 
@@ -217,7 +217,7 @@ void srs_env_model::CButServer::reset()
 /**
  * On pause service call
  */
-bool srs_env_model::CButServer::onPause( ButServerPause::Request & request, ButServerPause::Response & response )
+bool but_env_model::CButServer::onPause( ButServerPause::Request & request, ButServerPause::Response & response )
 {
 	std::cerr << "On pause" << std::endl;
 
@@ -234,7 +234,7 @@ bool srs_env_model::CButServer::onPause( ButServerPause::Request & request, ButS
 /**
  * Pause-resume server
  */
-void srs_env_model::CButServer::pause( bool bPause )
+void but_env_model::CButServer::pause( bool bPause )
 {
 	if( m_bIsPaused == bPause )
 		return;
@@ -263,7 +263,7 @@ void srs_env_model::CButServer::pause( bool bPause )
 /**
  * Publish data
  */
-void srs_env_model::CButServer::publishPlugins(const ros::Time& rostime)
+void but_env_model::CButServer::publishPlugins(const ros::Time& rostime)
 {
 	FOR_ALL_PLUGINS_PARAM( publish, rostime );
 
@@ -273,7 +273,7 @@ void srs_env_model::CButServer::publishPlugins(const ros::Time& rostime)
 /**
  * Use/do not use color service callback
  */
-bool srs_env_model::CButServer::onUseInputColor(srs_env_model::UseInputColor::Request & req, srs_env_model::UseInputColor::Response & res )
+bool but_env_model::CButServer::onUseInputColor(but_env_model::UseInputColor::Request & req, but_env_model::UseInputColor::Response & res )
 {
 	// Set value to the pc input plugin
 	m_plugInputPointCloud->setUseInputColor(req.use_color);

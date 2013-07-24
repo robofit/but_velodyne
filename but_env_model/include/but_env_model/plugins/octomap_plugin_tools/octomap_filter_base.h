@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -29,10 +29,10 @@
 #ifndef OCTOMAP_FILTER_BASE_H_
 #define OCTOMAP_FILTER_BASE_H_
 
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 #include <boost/timer.hpp>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 class COcTreeFilterBase
@@ -96,6 +96,6 @@ protected:
 
 }; // class COcTreeFilter
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 #endif /* OCTOMAP_FILTER_BASE_H_ */

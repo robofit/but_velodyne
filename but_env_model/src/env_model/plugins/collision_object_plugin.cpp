@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/collision_object_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/collision_object_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 
 
-srs_env_model::CCollisionObjectPlugin::CCollisionObjectPlugin(const std::string & name)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::CCollisionObjectPlugin::CCollisionObjectPlugin(const std::string & name)
+: but_env_model::CServerPluginBase(name)
 , m_publishCollisionObject(true)
 , m_coPublisherName(COLLISION_OBJECT_PUBLISHER_NAME)
 , m_latchedTopics(false)
@@ -44,20 +44,20 @@ srs_env_model::CCollisionObjectPlugin::CCollisionObjectPlugin(const std::string 
 
 
 
-srs_env_model::CCollisionObjectPlugin::~CCollisionObjectPlugin()
+but_env_model::CCollisionObjectPlugin::~CCollisionObjectPlugin()
 {
 }
 
 
 
-bool srs_env_model::CCollisionObjectPlugin::shouldPublish()
+bool but_env_model::CCollisionObjectPlugin::shouldPublish()
 {
 	return( m_publishCollisionObject && m_coPublisher.getNumSubscribers() > 0 );
 }
 
 
 
-void srs_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
 {
 	node_handle.param("collision_object_publisher", m_coPublisherName, COLLISION_OBJECT_PUBLISHER_NAME );
 	node_handle.param("collision_object_frame_id", m_coFrameId, COLLISION_OBJECT_FRAME_ID );
@@ -72,7 +72,7 @@ void srs_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CCollisionObjectPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CCollisionObjectPlugin::publishInternal(const ros::Time & timestamp)
 {
 	if( m_coPublisher.getNumSubscribers() > 0 )
 		m_coPublisher.publish(*m_data);
@@ -80,7 +80,7 @@ void srs_env_model::CCollisionObjectPlugin::publishInternal(const ros::Time & ti
 
 
 
-void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & par )
+void but_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	m_data->header.frame_id = m_coFrameId;
 	m_data->header.stamp = par.currentTime;
@@ -122,7 +122,7 @@ void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & p
 
 	// Initialize leaf iterators
 	tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -142,7 +142,7 @@ void srs_env_model::CCollisionObjectPlugin::newMapDataCB( SMapWithParameters & p
 
 
 
-void srs_env_model::CCollisionObjectPlugin::handleOccupiedNode(srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
+void but_env_model::CCollisionObjectPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
 	// Transform input point
 	Eigen::Vector3f point( it.getX(), it.getY(), it.getZ() );
@@ -169,7 +169,7 @@ void srs_env_model::CCollisionObjectPlugin::handleOccupiedNode(srs_env_model::tB
 
 
 //! Connect/disconnect plugin to/from all topics
-void srs_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+void but_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
 {
 	if( bPause )
 		m_coPublisher.shutdown();

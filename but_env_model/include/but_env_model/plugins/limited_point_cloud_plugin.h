@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -30,15 +30,15 @@
 
 #include "point_cloud_plugin.h"
 
-#include <srs_env_model_msgs/RVIZCameraPosition.h>
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model_msgs/RVIZCameraPosition.h>
+#include <but_env_model/but_server/server_tools.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
 
-namespace srs_env_model
+namespace but_env_model
 {
 class CLimitedPointCloudPlugin : public CPointCloudPlugin
 {
@@ -72,7 +72,7 @@ protected:
 	virtual void publishInternal(const ros::Time & timestamp);
 
 	/// On camera position changed callback
-	void onCameraPositionChangedCB(const srs_env_model_msgs::RVIZCameraPosition::ConstPtr& position);
+	void onCameraPositionChangedCB(const but_env_model_msgs::RVIZCameraPosition::ConstPtr& position);
 
 	// main loop when spinning our own thread
 	// - process callbacks in our callback queue
@@ -102,11 +102,11 @@ protected:
 	Eigen::Vector3f m_camToOcTrans;
 
 	/// Subscriber - camera position
-	// message_filters::Subscriber<srs_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
+	// message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
 	ros::Subscriber m_camPosSubscriber;
 
 	//! Message filter (we only want point cloud 2 messages)
-	tf::MessageFilter<srs_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
+	tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
 
 	/// Counters
 	long m_countVisible, m_countHidden;
@@ -126,7 +126,7 @@ protected:
 	boost::recursive_mutex m_camPosMutex;
 };
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 // LimitedPointCloudPlugin_H_included
 #endif

@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,15 +25,16 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/old_imarkers_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/old_imarkers_plugin.h>
+#include <but_env_model/topics_list.h>
+
+#include <but_interaction_primitives/billboard.h>
 
 #include <pcl_ros/transforms.h>
-#include <srs_interaction_primitives/billboard.h>
 
 
-srs_env_model::COldIMarkersPlugin::COldIMarkersPlugin(const std::string & name)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::COldIMarkersPlugin::COldIMarkersPlugin(const std::string & name)
+: but_env_model::CServerPluginBase(name)
 , m_IMarkersFrameId(IM_SERVER_FRAME_ID)
 , m_serverTopicName(OLD_IM_SERVER_TOPIC_NAME)
 , m_uniqueNameCounter(0)
@@ -41,7 +42,7 @@ srs_env_model::COldIMarkersPlugin::COldIMarkersPlugin(const std::string & name)
 {
 }
 
-srs_env_model::COldIMarkersPlugin::~COldIMarkersPlugin()
+but_env_model::COldIMarkersPlugin::~COldIMarkersPlugin()
 {
 	if( ! m_bUseExternalServer )
 	{
@@ -50,7 +51,7 @@ srs_env_model::COldIMarkersPlugin::~COldIMarkersPlugin()
 	}
 }
 
-void srs_env_model::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
 {
 	// Get interactive markers server topic name
 	node_handle.param("im_server_topic_name", m_serverTopicName, m_serverTopicName );
@@ -75,13 +76,13 @@ void srs_env_model::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
 	}
 
 	// Advertise services
-	m_serviceInsertPlanes = node_handle.advertiseService("insert_plane", &srs_env_model::COldIMarkersPlugin::insertPlaneCallback, this);
+	m_serviceInsertPlanes = node_handle.advertiseService("insert_plane", &but_env_model::COldIMarkersPlugin::insertPlaneCallback, this);
 
 
 	// Interactive marker server test
 	/*
 	{
-		srs_env_model_msgs::PlaneDesc planedesc;
+		but_env_model_msgs::PlaneDesc planedesc;
 
 
 		// Positioning
@@ -97,7 +98,7 @@ void srs_env_model::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
 		m_planesFrameId = m_IMarkersFrameId;
 		planedesc.pose = p;
 		planedesc.scale = s;
-		planedesc.flags = srs_env_model_msgs::PlaneDesc::INSERT;
+		planedesc.flags = but_env_model_msgs::PlaneDesc::INSERT;
 		planedesc.id = 0;
 
 		operatePlane( planedesc );
@@ -106,7 +107,7 @@ void srs_env_model::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
 		p.position.x = p.position.y = p.position.z = 1.0;
 		p.orientation.x = p.orientation.y = p.orientation.z = p.orientation.w = 0.3;
 		planedesc.pose = p;
-		planedesc.flags = srs_env_model_msgs::PlaneDesc::MODIFY;
+		planedesc.flags = but_env_model_msgs::PlaneDesc::MODIFY;
 
 		operatePlane( planedesc );
 
@@ -126,14 +127,14 @@ void srs_env_model::COldIMarkersPlugin::init(ros::NodeHandle & node_handle)
  *
  * @param pa Array of planes
  */
-bool srs_env_model::COldIMarkersPlugin::insertPlaneCallback(srs_env_model::AddPlanes::Request & req,
-	srs_env_model::AddPlanes::Response & res) {
+bool but_env_model::COldIMarkersPlugin::insertPlaneCallback(but_env_model::AddPlanes::Request & req,
+	but_env_model::AddPlanes::Response & res) {
 	std::cerr << "Inset plane called" << std::endl;
 	// Get plane array
-	srs_env_model_msgs::PlaneArray & planea(req.plane_array);
+	but_env_model_msgs::PlaneArray & planea(req.plane_array);
 	m_planesFrameId = planea.header.frame_id;
-	std::vector<srs_env_model_msgs::PlaneDesc> & planes(planea.planes);
-	std::vector<srs_env_model_msgs::PlaneDesc>::iterator i;
+	std::vector<but_env_model_msgs::PlaneDesc> & planes(planea.planes);
+	std::vector<but_env_model_msgs::PlaneDesc>::iterator i;
 
 	for (i = planes.begin(); i != planes.end(); ++i) {
 		operatePlane(*i);
@@ -149,12 +150,12 @@ bool srs_env_model::COldIMarkersPlugin::insertPlaneCallback(srs_env_model::AddPl
  *
  * @param plane Plane
  */
-void srs_env_model::COldIMarkersPlugin::operatePlane(const srs_env_model_msgs::PlaneDesc & plane) {
+void but_env_model::COldIMarkersPlugin::operatePlane(const but_env_model_msgs::PlaneDesc & plane) {
 
 	std::string name;
 
 	switch (plane.flags) {
-	case srs_env_model_msgs::PlaneDesc::INSERT:
+	case but_env_model_msgs::PlaneDesc::INSERT:
 		name = getUniqueName();
 		m_dataPlanes[plane.id] = tNamedPlane(name, plane);
 
@@ -163,7 +164,7 @@ void srs_env_model::COldIMarkersPlugin::operatePlane(const srs_env_model_msgs::P
 
 		break;
 
-	case srs_env_model_msgs::PlaneDesc::MODIFY:
+	case but_env_model_msgs::PlaneDesc::MODIFY:
 		m_dataPlanes[plane.id].second = plane;
 		name = m_dataPlanes[plane.id].first;
 
@@ -174,7 +175,7 @@ void srs_env_model::COldIMarkersPlugin::operatePlane(const srs_env_model_msgs::P
 
 		break;
 
-	case srs_env_model_msgs::PlaneDesc::REMOVE:
+	case but_env_model_msgs::PlaneDesc::REMOVE:
 		name = m_dataPlanes[plane.id].first;
 
 		m_dataPlanes.erase(plane.id);
@@ -202,7 +203,7 @@ void srs_env_model::COldIMarkersPlugin::operatePlane(const srs_env_model_msgs::P
  *
  * @param plane Added plane
  */
-void srs_env_model::COldIMarkersPlugin::addPlaneSrvCall(const srs_env_model_msgs::PlaneDesc & plane,
+void but_env_model::COldIMarkersPlugin::addPlaneSrvCall(const but_env_model_msgs::PlaneDesc & plane,
 		const std::string & name)
 {
 	if( m_bUseExternalServer )
@@ -251,7 +252,7 @@ void srs_env_model::COldIMarkersPlugin::addPlaneSrvCall(const srs_env_model_msgs
  *
  * @param plane Added plane
  */
-void srs_env_model::COldIMarkersPlugin::removePlaneSrvCall(const srs_env_model_msgs::PlaneDesc & plane,
+void but_env_model::COldIMarkersPlugin::removePlaneSrvCall(const but_env_model_msgs::PlaneDesc & plane,
 		const std::string & name)
 {
 	if( m_bUseExternalServer )
@@ -275,7 +276,7 @@ void srs_env_model::COldIMarkersPlugin::removePlaneSrvCall(const srs_env_model_m
 /**
  *  @brief Get unique string (used as interactive marker name)
  */
-std::string srs_env_model::COldIMarkersPlugin::getUniqueName() {
+std::string but_env_model::COldIMarkersPlugin::getUniqueName() {
 	std::stringstream ss;
 	ss << "imn" << ++m_uniqueNameCounter;
 	return ss.str();

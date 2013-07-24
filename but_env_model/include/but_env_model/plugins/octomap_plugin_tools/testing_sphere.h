@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -30,7 +30,7 @@
 
 #include "testing_object_base.h"
 
-namespace srs_env_model
+namespace but_env_model
 {
 /**
  * Test if point is in the sphere
@@ -66,7 +66,7 @@ protected:
 
 }; // class CTestingSphere
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 
 // TestingSphere_H_included

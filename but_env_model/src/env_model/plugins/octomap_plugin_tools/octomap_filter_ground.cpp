@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,7 +25,7 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/octomap_filter_ground.h>
+#include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_ground.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
@@ -35,7 +35,7 @@
 /**
  * Constructor
  */
-srs_env_model::COcFilterGround::COcFilterGround(const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/)
+but_env_model::COcFilterGround::COcFilterGround(const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/)
 	: COcTreeFilterBase(octree_frame_id,mode), m_numSpecRemoved(0)
 	, m_inputPc(0)
 	, m_groundPc(new tPointCloud)
@@ -50,7 +50,7 @@ srs_env_model::COcFilterGround::COcFilterGround(const std::string & octree_frame
 /**
  * Configure filter before each frame. Set input cloud.
  */
-void srs_env_model::COcFilterGround::setCloud(const tPointCloud * cloud)
+void but_env_model::COcFilterGround::setCloud(const tPointCloud * cloud)
 {
 	assert(cloud != 0);
 	m_inputPc = cloud;
@@ -59,7 +59,7 @@ void srs_env_model::COcFilterGround::setCloud(const tPointCloud * cloud)
 /**
  * Initialize. Must be called before first filtering
  */
-void srs_env_model::COcFilterGround::init(ros::NodeHandle & node_handle)
+void but_env_model::COcFilterGround::init(ros::NodeHandle & node_handle)
 {
 	// distance of points from plane for RANSAC
 	node_handle.param("ocmap_ground_filter/distance", m_groundFilterDistance,
@@ -75,7 +75,7 @@ void srs_env_model::COcFilterGround::init(ros::NodeHandle & node_handle)
 /**
  * Filtering function implementation
  */
-void srs_env_model::COcFilterGround::filterInternal( tButServerOcTree & tree )
+void but_env_model::COcFilterGround::filterInternal( tButServerOcTree & tree )
 {
 	m_groundPc->header = m_inputPc->header;
 	m_groundPc->header = m_inputPc->header;

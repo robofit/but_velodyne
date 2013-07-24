@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,12 +25,12 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/testing_oriented_box.h>
+#include <but_env_model/plugins/octomap_plugin_tools/testing_oriented_box.h>
 
 /**
  * Constructor
  */
-srs_env_model::CTestingOrientedBox::CTestingOrientedBox()
+but_env_model::CTestingOrientedBox::CTestingOrientedBox()
 : m_minX( 0.0 )
 , m_minY( 0.0 )
 , m_minZ( 0.0 )
@@ -44,7 +44,7 @@ srs_env_model::CTestingOrientedBox::CTestingOrientedBox()
 /**
  * Constructor - initializing
  */
-srs_env_model::CTestingOrientedBox::CTestingOrientedBox( double minx, double miny, double minz, double maxx, double maxy, double maxz )
+but_env_model::CTestingOrientedBox::CTestingOrientedBox( double minx, double miny, double minz, double maxx, double maxy, double maxz )
 : m_minX( minx )
 , m_minY( miny )
 , m_minZ( minz )
@@ -58,7 +58,7 @@ srs_env_model::CTestingOrientedBox::CTestingOrientedBox( double minx, double min
 /**
  * Set limits
  */
-void srs_env_model::CTestingOrientedBox::set( double minx, double miny, double minz, double maxx, double maxy, double maxz )
+void but_env_model::CTestingOrientedBox::set( double minx, double miny, double minz, double maxx, double maxy, double maxz )
 {
 	m_minX = minx; m_minY = miny; m_minZ = minz;
 	m_maxX = maxx; m_maxY = maxy; m_maxZ = maxz;
@@ -67,7 +67,7 @@ void srs_env_model::CTestingOrientedBox::set( double minx, double miny, double m
 /**
  * Set by center and sizes
  */
-void srs_env_model::CTestingOrientedBox::setCenterSize( double x, double y, double z, double sx, double sy, double sz )
+void but_env_model::CTestingOrientedBox::setCenterSize( double x, double y, double z, double sx, double sy, double sz )
 {
 	// Compute half size from sizes
 	double shx( sx / 2 ), shy( sy / 2), shz( sz / 2 );
@@ -79,7 +79,7 @@ void srs_env_model::CTestingOrientedBox::setCenterSize( double x, double y, doub
 /**
  * Testing function
  */
-bool srs_env_model::CTestingOrientedBox::isIn( double x, double y, double z )
+bool but_env_model::CTestingOrientedBox::isIn( double x, double y, double z )
 {
 	return ( x >= m_minX ) && ( x < m_maxX ) && ( y >= m_minY ) && ( y < m_maxY ) && ( z >= m_minZ ) && ( z < m_maxZ );
 }

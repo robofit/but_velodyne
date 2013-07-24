@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,7 +25,7 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/octomap_plugin_tools/octomap_filter_raycast.h>
+#include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_raycast.h>
 #include <pcl/sample_consensus/method_types.h>
 #include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/sac_segmentation.h>
@@ -35,7 +35,7 @@
 #include <pcl/io/io.h>
 #include <visualization_msgs/Marker.h>
 
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/topics_list.h>
 
 #define SHOW_VISUALIZATION
 //#define NEW_RAYCAST
@@ -44,7 +44,7 @@
 /**
  * Constructor
  */
-srs_env_model::COcFilterRaycast::COcFilterRaycast(const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/)
+but_env_model::COcFilterRaycast::COcFilterRaycast(const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/)
 	: COcTreeFilterBase( octree_frame_id, mode )
 	, m_bFilterInitialized(false)
 	, m_camera_stereo_offset_left(128)
@@ -63,7 +63,7 @@ srs_env_model::COcFilterRaycast::COcFilterRaycast(const std::string & octree_fra
 /**
  * Initialize. Must be called before first filtering
  */
-void srs_env_model::COcFilterRaycast::init(ros::NodeHandle & node_handle)
+void but_env_model::COcFilterRaycast::init(ros::NodeHandle & node_handle)
 {
 
 	// stereo cam params for sensor cone:
@@ -93,7 +93,7 @@ void srs_env_model::COcFilterRaycast::init(ros::NodeHandle & node_handle)
 /**
  * Set input cloud. Must be called before filter call
  */
-void srs_env_model::COcFilterRaycast::setCloud(tPointCloudConstPtr cloud)
+void but_env_model::COcFilterRaycast::setCloud(tPointCloudConstPtr cloud)
 {
 	assert( cloud != 0 );
 	m_lockData.lock();
@@ -102,7 +102,7 @@ void srs_env_model::COcFilterRaycast::setCloud(tPointCloudConstPtr cloud)
 }
 
 //! Write some info about last filter run
-void srs_env_model::COcFilterRaycast::writeLastRunInfo()
+void but_env_model::COcFilterRaycast::writeLastRunInfo()
 {
 	std::cerr << "COcFilterRaycast: Number of leafs tested: " << m_numLeafsTested << std::endl;
 	std::cerr << "COcFilterRaycast: Number of leafs removed: " << m_numLeafsRemoved << std::endl;
@@ -114,7 +114,7 @@ void srs_env_model::COcFilterRaycast::writeLastRunInfo()
 /**
  * Camera ifo callback - initialize camera model
  */
-void srs_env_model::COcFilterRaycast::cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info) {
+void but_env_model::COcFilterRaycast::cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info) {
 
 	boost::mutex::scoped_lock lock( m_lockCamera );
 
@@ -134,7 +134,7 @@ void srs_env_model::COcFilterRaycast::cameraInfoCB(const sensor_msgs::CameraInfo
 /**
  * Filtering function implementation
  */
-void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
+void but_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 {
 	assert( m_cloudPtr != 0 );
 
@@ -244,7 +244,7 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 /**
  * Filtering function implementation
  */
-void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
+void but_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 {
 	assert( m_cloudPtr != 0 );
 
@@ -379,7 +379,7 @@ void srs_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 /**
  * Compute sensor origin from the header
  */
-octomap::point3d srs_env_model::COcFilterRaycast::getSensorOrigin(const std_msgs::Header& sensor_header)
+octomap::point3d but_env_model::COcFilterRaycast::getSensorOrigin(const std_msgs::Header& sensor_header)
 {
 	geometry_msgs::PointStamped stamped_in;
 	geometry_msgs::PointStamped stamped_out;
@@ -424,7 +424,7 @@ octomap::point3d srs_env_model::COcFilterRaycast::getSensorOrigin(const std_msgs
 /**
  * Is point in sensor cone?
  */
-bool srs_env_model::COcFilterRaycast::inSensorCone(const cv::Point2d& uv) const {
+bool but_env_model::COcFilterRaycast::inSensorCone(const cv::Point2d& uv) const {
 	// Check if projected 2D coordinate in pixel range.
 	// This check is a little more restrictive than it should be by using
 	// 1 pixel less to account for rounding / discretization errors.
@@ -438,7 +438,7 @@ bool srs_env_model::COcFilterRaycast::inSensorCone(const cv::Point2d& uv) const 
 /**
  * Return true, if occupied cell is between origin and p
  */
-bool srs_env_model::COcFilterRaycast::isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p, double resolution, tButServerOcTree & tree) const
+bool but_env_model::COcFilterRaycast::isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p, double resolution, tButServerOcTree & tree) const
 {
 	octomap::point3d direction(p - sensor_origin);
 	octomap::point3d obstacle;
@@ -459,7 +459,7 @@ bool srs_env_model::COcFilterRaycast::isOccludedMap(const octomap::point3d& sens
 /**
  * Return true if point is occluded by pointcloud
  */
-bool srs_env_model::COcFilterRaycast::isOccludedRaw(const cv::Point2d& uv, double range)
+bool but_env_model::COcFilterRaycast::isOccludedRaw(const cv::Point2d& uv, double range)
 {
 //	if( !m_cloudPtr->isOrganized() )
 //		return false;
@@ -490,7 +490,7 @@ bool srs_env_model::COcFilterRaycast::isOccludedRaw(const cv::Point2d& uv, doubl
 /**
  * Compute boundig box
  */
-void srs_env_model::COcFilterRaycast::computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max)
+void but_env_model::COcFilterRaycast::computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max)
 {
 	std::string sensor_frame = sensor_header.frame_id;
 

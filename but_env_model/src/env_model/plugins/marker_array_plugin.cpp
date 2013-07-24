@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <srs_env_model/but_server/plugins/marker_array_plugin.h>
-#include <srs_env_model/topics_list.h>
+#include <but_env_model/plugins/marker_array_plugin.h>
+#include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 
 
-srs_env_model::CMarkerArrayPlugin::CMarkerArrayPlugin(const std::string & name)
-: srs_env_model::CServerPluginBase(name)
+but_env_model::CMarkerArrayPlugin::CMarkerArrayPlugin(const std::string & name)
+: but_env_model::CServerPluginBase(name)
 , m_publishMarkerArray(true)
 , m_markerArrayPublisherName(MARKERARRAY_PUBLISHER_NAME)
 , m_latchedTopics(false)
@@ -46,20 +46,20 @@ srs_env_model::CMarkerArrayPlugin::CMarkerArrayPlugin(const std::string & name)
 
 
 
-srs_env_model::CMarkerArrayPlugin::~CMarkerArrayPlugin()
+but_env_model::CMarkerArrayPlugin::~CMarkerArrayPlugin()
 {
 }
 
 
 
-bool srs_env_model::CMarkerArrayPlugin::shouldPublish()
+bool but_env_model::CMarkerArrayPlugin::shouldPublish()
 {
     return( m_publishMarkerArray && m_markerArrayPublisher.getNumSubscribers() > 0 );
 }
 
 
 
-void srs_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
 {
     node_handle.param("marker_array_publisher", m_markerArrayPublisherName, MARKERARRAY_PUBLISHER_NAME );
     node_handle.param("marker_array_frame_id", m_markerArrayFrameId, MARKERARRAY_FRAME_ID );
@@ -85,7 +85,7 @@ void srs_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
 
 
 
-void srs_env_model::CMarkerArrayPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CMarkerArrayPlugin::publishInternal(const ros::Time & timestamp)
 {
 	if( shouldPublish() )
 		m_markerArrayPublisher.publish(*m_data);
@@ -93,7 +93,7 @@ void srs_env_model::CMarkerArrayPlugin::publishInternal(const ros::Time & timest
 
 
 
-void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
+void but_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
 {
     // each array stores all cubes of a different size, one for each depth level:
     m_data->markers.resize(par.treeDepth + 1);
@@ -141,7 +141,7 @@ void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
 
 
     tButServerOcTree & tree( par.map->getTree() );
-	srs_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
 
 	// Crawl through nodes
 	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
@@ -155,7 +155,7 @@ void srs_env_model::CMarkerArrayPlugin::newMapDataCB(SMapWithParameters & par)
 
 }
 
-void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
+void but_env_model::CMarkerArrayPlugin::handleNode(const but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
     unsigned idx = it.getDepth();
     assert(idx < m_data->markers.size());
@@ -189,7 +189,7 @@ void srs_env_model::CMarkerArrayPlugin::handleNode(const srs_env_model::tButServ
 
 
 
-void srs_env_model::CMarkerArrayPlugin::handlePostNodeTraversal(const SMapWithParameters & mp)
+void but_env_model::CMarkerArrayPlugin::handlePostNodeTraversal(const SMapWithParameters & mp)
 {
     for (unsigned i= 0; i < m_data->markers.size(); ++i){
         double size = mp.map->getTree().getNodeSize(i);
@@ -214,7 +214,7 @@ void srs_env_model::CMarkerArrayPlugin::handlePostNodeTraversal(const SMapWithPa
     invalidate();
 }
 
-std_msgs::ColorRGBA srs_env_model::CMarkerArrayPlugin::heightMapColor(double h) const {
+std_msgs::ColorRGBA but_env_model::CMarkerArrayPlugin::heightMapColor(double h) const {
 
     std_msgs::ColorRGBA color;
     color.a = 1.0;
@@ -266,7 +266,7 @@ std_msgs::ColorRGBA srs_env_model::CMarkerArrayPlugin::heightMapColor(double h) 
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void srs_env_model::CMarkerArrayPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CMarkerArrayPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
 {
 	if( bPause )
 		m_markerArrayPublisher.shutdown();

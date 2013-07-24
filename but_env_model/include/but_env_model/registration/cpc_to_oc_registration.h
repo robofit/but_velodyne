@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -32,7 +32,7 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <ros/callback_queue.h>
 #include <tf/transform_listener.h>
-#include <LinearMath/btMatrix3x3.h>
+#include <tf/LinearMath/Matrix3x3.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
@@ -40,13 +40,13 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <ros/node_handle.h>
 
-#include <srs_env_model/but_server/server_tools.h>
+#include <but_env_model/but_server/server_tools.h>
 
 #include "pcl_registration_module.h"
 
 #include <pcl/filters/voxel_grid.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 /**
  * Get visible pointcloud from octomap module
@@ -163,7 +163,7 @@ protected:
 	double m_fracY;
 
 	//! View fraction computation matrix
-	btMatrix3x3 m_fracMatrix;
+	tf::Matrix3x3 m_fracMatrix;
 
 public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -221,6 +221,6 @@ public:
 }; // class CPcToOcRegistration
 
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 #endif /* CPCTOOCREGISTRATION_H_ */

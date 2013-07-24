@@ -5,7 +5,7 @@
  *
  * Copyright (C) Brno University of Technology
  *
- * This file is part of software developed by dcgm-robotics@FIT group.
+ * This file is part of software developed by Robo@FIT group.
  *
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
@@ -35,7 +35,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <pcl/filters/voxel_grid.h>
 
-namespace srs_env_model
+namespace but_env_model
 {
 
 class COcFilterRaycast : public COcTreeFilterBase
@@ -149,6 +149,6 @@ protected:
 
 }; // class COcFilterRaycast
 
-} // namespace srs_env_model
+} // namespace but_env_model
 
 #endif /* OCTOMAP_FILTER_RAYCAST_H_ */
