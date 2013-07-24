@@ -56,7 +56,7 @@ public:
 	typedef pcl::PointCloud<tPclPoint> tPointCloudInternal;
 
 	//! Input data type
-	typedef but_env_model::OctomapUpdates tInputData;
+	typedef but_env_model_msgs::OctomapUpdates tInputData;
 
 	//! Incoming point cloud type
 	typedef tInputData::_pointcloud2_type tInputCloudMsg;
