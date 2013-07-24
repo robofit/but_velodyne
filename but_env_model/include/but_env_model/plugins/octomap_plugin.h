@@ -28,10 +28,10 @@
 #ifndef OCTOMAPPLUGIN_H_INCLUDED
 #define OCTOMAPPLUGIN_H_INCLUDED
 
-#include <but_env_model/but_server/server_tools.h>
-#include <but_env_model/but_server/plugins/octomap_plugin_tools/testing_oriented_box.h>
-#include <but_env_model/but_server/plugins/octomap_plugin_tools/testing_sphere.h>
-#include <but_env_model/but_server/plugins/octomap_plugin_tools/testing_polymesh.h>
+#include <but_env_model/server_tools.h>
+#include <but_env_model/plugins/octomap_plugin_tools/testing_oriented_box.h>
+#include <but_env_model/plugins/octomap_plugin_tools/testing_sphere.h>
+#include <but_env_model/plugins/octomap_plugin_tools/testing_polymesh.h>
 
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
@@ -40,11 +40,10 @@
 #include <but_env_model/AddCube.h>
 #include <but_env_model/SetCrawlingDepth.h>
 #include <but_env_model/GetTreeDepth.h>
-
 #include <but_env_model/LoadSave.h>
 
 // Registration
-#include <but_env_model/but_server/registration/CPCtoOCRegistration.h>
+#include <but_env_model/registration/cpc_to_oc_registration.h>
 
 #include "octomap_plugin_tools/octomap_filter_single_specles.h"
 #include "octomap_plugin_tools/octomap_filter_raycast.h"

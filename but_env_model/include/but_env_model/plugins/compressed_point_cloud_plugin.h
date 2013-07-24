@@ -31,8 +31,8 @@
 #include "point_cloud_plugin.h"
 
 #include <but_env_model_msgs/RVIZCameraPosition.h>
-#include <but_env_model/but_server/server_tools.h>
-#include <but_env_model/OctomapUpdates.h>
+#include <but_env_model_msgs/OctomapUpdates.h>
+#include <but_env_model/server_tools.h>
 #include <but_env_model/SetNumIncompleteFrames.h>
 
 #include <boost/scoped_ptr.hpp>
@@ -167,7 +167,7 @@ protected:
 	bool m_bPublishSimpleCloud;
 
 	//! Packed info message data
-	but_env_model::OctomapUpdatesPtr m_octomap_updates_msg;
+	but_env_model_msgs::OctomapUpdatesPtr m_octomap_updates_msg;
 
 	/// Service - set number of incomplete frames
 	ros::ServiceServer m_serviceSetNumIncomplete;

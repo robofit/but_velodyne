@@ -28,7 +28,7 @@
 #ifndef _ExamplePlugin_H_included_
 #define _ExamplePlugin_H_included_
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 namespace but_env_model
 {

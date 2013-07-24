@@ -31,7 +31,7 @@
 #include "point_cloud_plugin.h"
 
 #include <but_env_model_msgs/RVIZCameraPosition.h>
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>

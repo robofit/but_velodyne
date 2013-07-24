@@ -48,10 +48,12 @@ but_env_model::EModelTreeNode::~EModelTreeNode() {
  * Create child
  */
 bool but_env_model::EModelTreeNode::createChild(unsigned int i) {
-	if (itsChildren == NULL) {
+//	if (itsChildren == NULL) {
+    if (children == NULL) {
 		allocChildren();
 	}
-	itsChildren[i] = new EModelTreeNode();
+//	itsChildren[i] = new EModelTreeNode();
+    children[i] = new EModelTreeNode();
 	return true;
 }
 
@@ -71,10 +73,13 @@ bool but_env_model::EModelTreeNode::pruneNode() {
 	}
 	// delete children
 	for (unsigned int i = 0; i < 8; i++) {
-		delete itsChildren[i];
+//		delete itsChildren[i];
+        delete children[i];
 	}
-	delete[] itsChildren;
-	itsChildren = NULL;
+//    delete[] itsChildren;
+//    itsChildren = NULL;
+	delete[] children;
+	children = NULL;
 	return true;
 }
 
@@ -84,7 +89,8 @@ void but_env_model::EModelTreeNode::expandNode() {
 	// expand node, set children color same as node color
 	for (unsigned int k = 0; k < 8; k++) {
 		createChild(k);
-		itsChildren[k]->setValue(value);
+//		itsChildren[k]->setValue(value);
+        children[k]->setValue(value);
 		getChild(k)->setColor(r(), g(), b(), a());
 	}
 }
@@ -211,7 +217,8 @@ std::ostream& but_env_model::EModelTreeNode::writeValue(std::ostream &s) const
  */
 but_env_model::EMOcTree::EMOcTree(double _resolution) :
 	octomap::OccupancyOcTreeBase<but_env_model::EModelTreeNode> (_resolution) {
-	itsRoot = new EModelTreeNode();
+//	itsRoot = new EModelTreeNode();
+    root = new EModelTreeNode();
 	tree_size++;
 }
 
@@ -222,7 +229,8 @@ but_env_model::EMOcTree::EMOcTree(double _resolution) :
  */
 but_env_model::EMOcTree::EMOcTree(std::string _filename) :
 	OccupancyOcTreeBase<but_env_model::EModelTreeNode> (0.1) { // resolution will be set according to tree file
-	itsRoot = new EModelTreeNode();
+//	itsRoot = new EModelTreeNode();
+    root = new EModelTreeNode();
 	tree_size++;
 
 	readBinary(_filename);
@@ -292,7 +300,8 @@ but_env_model::EModelTreeNode* but_env_model::EMOcTree::integrateNodeColor(
 }
 
 void but_env_model::EMOcTree::updateInnerOccupancy() {
-	this->updateInnerOccupancyRecurs(this->itsRoot, 0);
+//	this->updateInnerOccupancyRecurs(this->itsRoot, 0);
+    this->updateInnerOccupancyRecurs(this->root, 0);
 }
 
 void but_env_model::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
@@ -315,7 +324,8 @@ void but_env_model::EMOcTree::updateInnerOccupancyRecurs(EModelTreeNode* node,
 unsigned int but_env_model::EMOcTree::getLastUpdateTime() {
 	// this value is updated whenever inner nodes are
 	// updated using updateOccupancyChildren()
-	return itsRoot->getTimestamp();
+//	return itsRoot->getTimestamp();
+    return root->getTimestamp();
 }
 
 void but_env_model::EMOcTree::degradeOutdatedNodes(unsigned int time_thres) {
@@ -337,7 +347,8 @@ void but_env_model::EMOcTree::updateNodeLogOdds(EModelTreeNode* node,
 }
 
 void but_env_model::EMOcTree::integrateMissNoTime(EModelTreeNode* node) const {
-	OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, probMissLog);
+//	OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, probMissLog);
+    OccupancyOcTreeBase<EModelTreeNode>::updateNodeLogOdds(node, prob_miss_log);
 }
 
 void but_env_model::EMOcTree::insertColoredScan(const typePointCloud& coloredScan,

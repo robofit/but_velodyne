@@ -32,8 +32,8 @@
 #include <message_filters/subscriber.h>
 #include <interactive_markers/interactive_marker_server.h>
 
-#include <but_env_model/but_server/server_tools.h>
-#include <but_env_model/but_server/objtree/octree.h>
+#include <but_env_model/server_tools.h>
+#include <but_env_model/objtree/octree.h>
 #include <but_env_model/GetPlane.h>
 #include <but_env_model/GetAlignedBox.h>
 #include <but_env_model/GetBoundingBox.h>
@@ -48,7 +48,7 @@
 #include <but_env_model/GetObjectsInHalfspace.h>
 #include <but_env_model/GetObjectsInSphere.h>
 
-#include <srs_interaction_primitives/services_list.h>
+#include <but_interaction_primitives/services_list.h>
 
 
 namespace but_env_model

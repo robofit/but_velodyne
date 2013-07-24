@@ -28,7 +28,7 @@
 #ifndef CollisionGridPlugin_H_included
 #define CollisionGridPlugin_H_included
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <message_filters/subscriber.h>

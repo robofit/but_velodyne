@@ -124,14 +124,13 @@ protected:
     }
 
     /// On pause service call
-    bool onPause( ButServerPause::Request & request, ButServerPause::Response & response );
+    bool onPause( EnvModelPause::Request & request, EnvModelPause::Response & response );
 
     //! Publish all
     void publishPlugins(const ros::Time& rostime);
 
     /// Use/do not use color service callback
 	bool onUseInputColor(but_env_model::UseInputColor::Request & req, but_env_model::UseInputColor::Response & res );
-
 
 protected:
     //! Is server running now

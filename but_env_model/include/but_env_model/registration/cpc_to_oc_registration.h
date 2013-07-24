@@ -40,7 +40,7 @@
 #include <image_geometry/pinhole_camera_model.h>
 #include <ros/node_handle.h>
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 #include "pcl_registration_module.h"
 

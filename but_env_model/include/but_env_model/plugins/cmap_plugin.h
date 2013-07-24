@@ -28,30 +28,30 @@
 #ifndef CMapPubPlugin_H_included
 #define CMapPubPlugin_H_included
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 #include <but_env_model/GetCollisionMap.h>
 #include <but_env_model/IsNewCollisionMap.h>
 #include <but_env_model/LockCollisionMap.h>
+#include <but_env_model/RemoveCube.h>
 
-#include <arm_navigation_msgs/CollisionMap.h>
+#include <moveit_msgs/CollisionMap.h>
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
-#include <but_env_model/RemoveCube.h>
 
 namespace but_env_model
 {
 
-    class CCMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< arm_navigation_msgs::CollisionMap >
+    class CCMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< moveit_msgs::CollisionMap >
     {
     protected:
     	//! Crawler type
         typedef COctomapCrawlerBase<tButServerOcTree::NodeType> tOctomapCrawler;
 
         //! Boxes vector type
-        typedef arm_navigation_msgs::CollisionMap::_boxes_type tBoxVec;
+        typedef moveit_msgs::CollisionMap::_boxes_type tBoxVec;
 
         //! Box type
-        typedef arm_navigation_msgs::OrientedBoundingBox tBox;
+        typedef moveit_msgs::OrientedBoundingBox tBox;
 
         //! Point type
         typedef geometry_msgs::Point32 tBoxPoint;
@@ -87,7 +87,7 @@ namespace but_env_model
         virtual bool shouldPublish(  );
 
         //! Compare two collision maps and test if they are the same
-        bool sameCMaps( arm_navigation_msgs::CollisionMap * map1, arm_navigation_msgs::CollisionMap * map2 );
+        bool sameCMaps( moveit_msgs::CollisionMap * map1, moveit_msgs::CollisionMap * map2 );
 
         //! Test collision point if it is in the collision distance from the robot
         bool isNearRobot( const tf::Vector3 & point, double extent );
@@ -172,7 +172,7 @@ namespace but_env_model
         tDataPtr m_dataBuffer;
 
         /// Empty collision map - used when callers map id is the same as the current map id
-        arm_navigation_msgs::CollisionMap m_dataEmpty;
+        moveit_msgs::CollisionMap m_dataEmpty;
 
         //! Is publishing enabled?
         bool m_publishCollisionMap;

@@ -28,16 +28,16 @@
 #ifndef CollisionObjectPlugin_H_included
 #define CollisionObjectPlugin_H_included
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 #include <message_filters/subscriber.h>
-#include <arm_navigation_msgs/CollisionObject.h>
+#include <moveit_msgs/CollisionObject.h>
 #include <tf/message_filter.h>
 
 namespace but_env_model
 {
 
-    class CCollisionObjectPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< arm_navigation_msgs::CollisionObject >
+    class CCollisionObjectPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< moveit_msgs::CollisionObject >
     {
     public:
         /// Constructor

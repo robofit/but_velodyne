@@ -28,7 +28,7 @@
 #ifndef PointCloudPlugin_H_included
 #define PointCloudPlugin_H_included
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 #include <message_filters/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>

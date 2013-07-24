@@ -90,9 +90,9 @@ but_env_model::CButServer::CButServer(const std::string& filename) :
 	ros::NodeHandle private_nh("~");
 
 	// Advertise services
-	m_serviceReset = private_nh.advertiseService(ServerReset_SRV, &CButServer::onReset, this);
-	m_servicePause = private_nh.advertiseService(ServerPause_SRV, &CButServer::onPause, this);
-	m_serviceUseInputColor = private_nh.advertiseService( ServerUseInputColor_SRV, &CButServer::onUseInputColor, this);
+	m_serviceReset = private_nh.advertiseService(EnvModelReset_SRV, &CButServer::onReset, this);
+	m_servicePause = private_nh.advertiseService(EnvModelPause_SRV, &CButServer::onPause, this);
+	m_serviceUseInputColor = private_nh.advertiseService( EnvModelUseInputColor_SRV, &CButServer::onUseInputColor, this);
 
 
 	m_latchedTopics = false;
@@ -217,7 +217,7 @@ void but_env_model::CButServer::reset()
 /**
  * On pause service call
  */
-bool but_env_model::CButServer::onPause( ButServerPause::Request & request, ButServerPause::Response & response )
+bool but_env_model::CButServer::onPause( EnvModelPause::Request & request, EnvModelPause::Response & response )
 {
 	std::cerr << "On pause" << std::endl;
 

@@ -28,7 +28,7 @@
 #ifndef MarkerArrayPlugin_H_included
 #define MarkerArrayPlugin_H_included
 
-#include <but_env_model/but_server/server_tools.h>
+#include <but_env_model/server_tools.h>
 
 #include <visualization_msgs/MarkerArray.h>
 #include <message_filters/subscriber.h>

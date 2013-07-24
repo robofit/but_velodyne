@@ -29,8 +29,9 @@
 #ifndef pcl_registration_module_H_included
 #define pcl_registration_module_H_included
 
-#include <but_env_model/but_server/server_tools.h>
-#include <but_env_model/OctomapUpdates.h>
+#include <but_env_model/server_tools.h>
+#include <but_env_model_msgs/OctomapUpdates.h>
+
 #include <pcl/registration/icp.h>
 #include <pcl/registration/ia_ransac.h>
 #include <pcl/registration/icp_nl.h>

@@ -224,7 +224,6 @@ void but_env_model::CCMapPlugin::handleOccupiedNode(but_env_model::tButServerOcT
 	}
 
 	// Add point to the collision map
-	//arm_navigation_msgs::OrientedBoundingBox box;
 	tBox box;
 
 	double size = it.getSize();
