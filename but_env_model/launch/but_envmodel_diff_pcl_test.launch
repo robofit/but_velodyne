@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Configuration for COB, bringup simulation -->
+    <include file="$(find srs_env_model)/launch/run_sim.launch" />
+
+	<!-- Run depth image publishing node -->
+	<node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node"/>
+
+    	<!-- Kinect throttling -->
+	<!--include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
+
+	<!-- Run our dynamic scene model server node -->
+    	<include file="$(find srs_env_model)/launch/but_envmodel_common.launch" />
+
+	<!-- Run differential point cloud decompressor node -->
+    	<include file="$(find srs_env_model)/launch/but_envmodel_diff_pcl_client.launch" />
+
+	<!-- Run rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model)/config/cpc_test1.vcg"/>
+</launch>
+

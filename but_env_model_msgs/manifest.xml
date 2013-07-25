@@ -1,0 +1,20 @@
+<package>
+  <description brief="but_env_model_msgs">
+
+Definition of shared ROS environment mapping messages by Robo@FIT group.
+
+  </description>
+  <author>Vit Stancl (stancl@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)</author>
+  <license>LGPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/but_env_model_msgs</url>
+
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib"/>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
+</package>

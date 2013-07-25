@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Don't forget to run the Kinect throttling nodelet on the robot-->
+    <!-- include file="$(find srs_env_model_utils)/launch/kinect_throttling.launch" /-->
+
+    <arg name="points_in" default="/cam3d_throttled/depth_registered/points"/>
+    <arg name="camera_info" default="/cam3d_throttled/rgb/camera_info"/>
+
+    <!-- Run our dynamic scene model server node -->
+    <node name="but_server_node" pkg="srs_env_model" type="but_server_node">
+        <rosparam file="$(find srs_env_model)/config/environment_server_robot.yaml" command="load"/>
+        <remap from="but_server_node/camera_info" to="$(arg camera_info)" />
+        <remap from="but_server_node/points_in" to="$(arg points_in)" />
+        <remap from="but_server_node/points_filter" to="$(arg points_in)"/>
+        <remap from="but_server_node/rviz_camera_position" to="/rviz_camera_position" />
+    </node>
+
+</launch>
+
