@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef SERVER_TOOLS_H_INCLUDED
 #define SERVER_TOOLS_H_INCLUDED
@@ -33,6 +34,8 @@
 #include <boost/signal.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/make_shared.hpp>
+
+#include <ros/ros.h>
 
 // Small double number
 #define SMALL_DOUBLE double(0.00000001);

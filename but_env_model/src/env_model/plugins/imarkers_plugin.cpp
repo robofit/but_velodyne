@@ -27,7 +27,7 @@
 
 #include <but_env_model/plugins/imarkers_plugin.h>
 #include <but_env_model/topics_list.h>
-#include <srs_interaction_primitives/billboard.h>
+#include <but_interaction_primitives/billboard.h>
 
 #include <pcl_ros/transforms.h>
 
@@ -65,8 +65,8 @@ void but_env_model::CIMarkersPlugin::init(ros::NodeHandle & node_handle)
 	if( m_bUseExternalServer )
 	{
 		// Connect to the services
-		m_removeInteractiveMarkerService = node_handle.serviceClient<srs_interaction_primitives::RemovePrimitive> (srs_interaction_primitives::RemovePrimitive_SRV);
-		m_addInteractivePlaneService = node_handle.serviceClient<srs_interaction_primitives::AddPlane> (srs_interaction_primitives::AddPlane_SRV);
+		m_removeInteractiveMarkerService = node_handle.serviceClient<but_interaction_primitives::RemovePrimitive> (but_interaction_primitives::RemovePrimitive_SRV);
+		m_addInteractivePlaneService = node_handle.serviceClient<but_interaction_primitives::AddPlane> (but_interaction_primitives::AddPlane_SRV);
 	}
 	else
 	{
@@ -208,7 +208,7 @@ void but_env_model::CIMarkersPlugin::addPlaneSrvCall(const but_env_model_msgs::P
 	if( m_bUseExternalServer )
 	{
 		// Create service
-		srs_interaction_primitives::AddPlane addPlaneSrv;
+		but_interaction_primitives::AddPlane addPlaneSrv;
 
 		// Modify service
 		addPlaneSrv.request.name = name;
@@ -225,7 +225,7 @@ void but_env_model::CIMarkersPlugin::addPlaneSrvCall(const but_env_model_msgs::P
 	else
 	{
 		// Creating Plane object with name "plane1"
-		srs_interaction_primitives::Plane *p = new srs_interaction_primitives::Plane(m_imServer, m_IMarkersFrameId, name );
+		but_interaction_primitives::Plane *p = new but_interaction_primitives::Plane(m_imServer, m_IMarkersFrameId, name);
 
 		p->setPose( plane.pose );
 		p->setScale( plane.scale );
@@ -256,7 +256,7 @@ void but_env_model::CIMarkersPlugin::removePlaneSrvCall(const but_env_model_msgs
 	if( m_bUseExternalServer )
 	{
 		// Create service
-		srs_interaction_primitives::RemovePrimitive removeObjectSrv;
+		but_interaction_primitives::RemovePrimitive removeObjectSrv;
 
 		// Modify service
 		removeObjectSrv.request.name = name;

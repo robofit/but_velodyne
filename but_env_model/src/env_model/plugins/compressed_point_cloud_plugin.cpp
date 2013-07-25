@@ -41,7 +41,7 @@ but_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const s
 , m_frame_counter(0)
 , m_uncomplete_frames( 10 )
 , m_bPublishComplete( false )
-, m_octomap_updates_msg( new OctomapUpdates )
+, m_octomap_updates_msg( new but_env_model_msgs::OctomapUpdates )
 , m_bTransformOutput( false )
 {
 	m_use_every_nth = 1;
@@ -130,7 +130,7 @@ void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
 		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Create publisher - packed info - cam position and update pointcloud
-    m_ocUpdatePublisher = node_handle.advertise< but_env_model::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
+    m_ocUpdatePublisher = node_handle.advertise< but_env_model_msgs::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
 
     // Subscribe to position topic
     // Create subscriber

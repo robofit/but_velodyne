@@ -228,13 +228,17 @@ void but_env_model::CCMapPlugin::handleOccupiedNode(but_env_model::tButServerOcT
 
 	double size = it.getSize();
 	box.extents.x = box.extents.y = box.extents.z = size;
-	box.axis.x = box.axis.y = 0.0;
-	box.axis.z = 1.0;
-	box.angle = 0.0;
-	box.center.x = point[0];
-	box.center.y = point[1];
-	box.center.z = point[2];
-
+	box.pose.position.x = point[0];
+    box.pose.position.y = point[1];
+    box.pose.position.z = point[2];
+    //box.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, tf::inRadians(-90), 0.0);
+    tf::quaternionTFToMsg(tf::Quaternion(tf::Vector3(0.0, 0.0, 1.0), 0.0), box.pose.orientation);
+//	box.axis.x = box.axis.y = 0.0;
+//	box.axis.z = 1.0;
+//	box.angle = 0.0;
+//	box.center.x = point[0];
+//	box.center.y = point[1];
+//	box.center.z = point[2];
 
 	m_dataBuffer->boxes.push_back(box);
 }
@@ -246,7 +250,7 @@ void but_env_model::CCMapPlugin::handleOccupiedNode(but_env_model::tButServerOcT
  * @param map2 Second map to compare
  * @return true if maps are the same
  */
-bool but_env_model::CCMapPlugin::sameCMaps( arm_navigation_msgs::CollisionMap * map1, arm_navigation_msgs::CollisionMap * map2 )
+bool but_env_model::CCMapPlugin::sameCMaps( moveit_msgs::CollisionMap * map1, moveit_msgs::CollisionMap * map2 )
 {
 	// Do not swap maps, if in the locked mode
 	if( m_bLocked )
@@ -267,16 +271,20 @@ bool but_env_model::CCMapPlugin::sameCMaps( arm_navigation_msgs::CollisionMap * 
 	}
 
 	// Compare maps box by box
-	arm_navigation_msgs::CollisionMap::_boxes_type::iterator icm1, icm2;
-	arm_navigation_msgs::CollisionMap::_boxes_type::iterator end1( map1->boxes.end());
+	moveit_msgs::CollisionMap::_boxes_type::iterator icm1, icm2;
+	moveit_msgs::CollisionMap::_boxes_type::iterator end1( map1->boxes.end());
 
 	long num( 0 );
 	for( icm1 = map1->boxes.begin(), icm2 = map2->boxes.begin(); icm1 != end1; ++icm1, ++icm2 )
 	{
-		if( isGreat( icm1->center.x - icm2->center.x ) ||
-				isGreat( icm1->center.y - icm2->center.y ) ||
-				isGreat( icm1->center.z - icm2->center.z ) ||
-				isGreat( icm1->extents.x - icm2->extents.x ) )
+//		if( isGreat( icm1->center.x - icm2->center.x ) ||
+//				isGreat( icm1->center.y - icm2->center.y ) ||
+//				isGreat( icm1->center.z - icm2->center.z ) ||
+//				isGreat( icm1->extents.x - icm2->extents.x ) )
+        if( isGreat( icm1->pose.position.x - icm2->pose.position.x ) ||
+                isGreat( icm1->pose.position.y - icm2->pose.position.y ) ||
+                isGreat( icm1->pose.position.z - icm2->pose.position.z ) ||
+                isGreat( icm1->extents.x - icm2->extents.x ) )
 		{
 //			std::cerr << "Point number " << num << " different." << std::endl;
 			return false;
@@ -381,7 +389,7 @@ void but_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & node_hand
 	if( bPause )
 		m_cmapPublisher.shutdown();
 	else
-		m_cmapPublisher = node_handle.advertise<arm_navigation_msgs::CollisionMap> ( m_cmapPublisherName, 5, m_latchedTopics);
+		m_cmapPublisher = node_handle.advertise<moveit_msgs::CollisionMap> ( m_cmapPublisherName, 5, m_latchedTopics);
 }
 
 /**
@@ -410,9 +418,12 @@ long but_env_model::CCMapPlugin::removeInsideBox( const tBoxPoint & center, cons
 	tBoxVec::iterator it, itEnd( buffer.end() );
 	for( it = buffer.begin(); it != itEnd; ++it )
 	{
-		if( abs( it->center.x - center.x ) > (it->extents.x + extents.x ) ||
-			abs( it->center.y - center.y ) > (it->extents.y + extents.y ) ||
-			abs( it->center.z - center.z ) > (it->extents.z + extents.z ) )
+//        if( abs( it->center.x - center.x ) > (it->extents.x + extents.x ) ||
+//            abs( it->center.y - center.y ) > (it->extents.y + extents.y ) ||
+//            abs( it->center.z - center.z ) > (it->extents.z + extents.z ) )
+		if( abs( it->pose.position.x - center.x ) > (it->extents.x + extents.x ) ||
+			abs( it->pose.position.y - center.y ) > (it->extents.y + extents.y ) ||
+			abs( it->pose.position.z - center.z ) > (it->extents.z + extents.z ) )
 		{
 			boxes.push_back( *it );
 			++counter;
@@ -492,12 +503,16 @@ void but_env_model::CCMapPlugin::addBox( const tBoxPoint & center, const tBoxPoi
 	box.extents.x = size.x / 2.0;
 	box.extents.y = size.y / 2.0;
 	box.extents.z = size.z / 2.0;
-	box.axis.x = box.axis.y = 0.0;
-	box.axis.z = 1.0;
-	box.angle = 0.0;
-	box.center.x = center.x;
-	box.center.y = center.y;
-	box.center.z = center.z;
+	box.pose.position.x = center.x;
+    box.pose.position.y = center.y;
+    box.pose.position.z = center.z;
+    tf::quaternionTFToMsg(tf::Quaternion(tf::Vector3(0.0, 0.0, 1.0), 0.0), box.pose.orientation);
+//	box.axis.x = box.axis.y = 0.0;
+//	box.axis.z = 1.0;
+//	box.angle = 0.0;
+//	box.center.x = center.x;
+//	box.center.y = center.y;
+//	box.center.z = center.z;
 
 	boxes.push_back(box);
 }
@@ -581,7 +596,8 @@ void but_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
 	for( it = m_data->boxes.begin(); it != itEnd; ++it )
 	{
 		// Copy values to the eigen vectors
-		Eigen::Vector4f position( it->center.x, it->center.y, it->center.z, 1.0f );
+//		Eigen::Vector4f position( it->center.x, it->center.y, it->center.z, 1.0f );
+        Eigen::Vector4f position( it->pose.position.x, it->pose.position.y, it->pose.position.z, 1.0f );
 		Eigen::Vector4f extents( it->extents.x, it->extents.y, it->extents.z, 1.0f );
 		extents += position;
 
@@ -590,9 +606,12 @@ void but_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
 		extents = m * extents;
 
 		// Copy values back to the box
-		it->center.x = position[0];
-		it->center.y = position[1];
-		it->center.z = position[2];
+//        it->center.x = position[0];
+//        it->center.y = position[1];
+//        it->center.z = position[2];
+		it->pose.position.x = position[0];
+		it->pose.position.y = position[1];
+		it->pose.position.z = position[2];
 
 		// Recompute extents
 		extents = extents - position;
@@ -606,7 +625,8 @@ void but_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
 	for( it = m_dataBuffer->boxes.begin(); it != itEnd; ++it )
 	{
 		// Copy values to the eigen vectors
-		Eigen::Vector4f position( it->center.x, it->center.y, it->center.z, 1.0f );
+//		Eigen::Vector4f position( it->center.x, it->center.y, it->center.z, 1.0f );
+        Eigen::Vector4f position( it->pose.position.x, it->pose.position.y, it->pose.position.z, 1.0f );
 		Eigen::Vector4f extents( it->extents.x, it->extents.y, it->extents.z, 1.0f );
 		extents += position;
 
@@ -615,9 +635,12 @@ void but_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
 		extents = m * extents;
 
 		// Copy values back to the box
-		it->center.x = position[0];
-		it->center.y = position[1];
-		it->center.z = position[2];
+//        it->center.x = position[0];
+//        it->center.y = position[1];
+//        it->center.z = position[2];
+        it->pose.position.x = position[0];
+        it->pose.position.y = position[1];
+        it->pose.position.z = position[2];
 
 		// Recompute extents
 		extents -= position;
@@ -629,8 +652,3 @@ void but_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
 	// Store timestamp
 	m_mapTime = currentTime;
 }
-
-
-
-
-

@@ -77,9 +77,9 @@ void CObjTreePlugin::init(ros::NodeHandle &node_handle)
     m_serviceShowObject = node_handle.advertiseService(ShowObject_SRV, &CObjTreePlugin::srvShowObject, this);
     m_serviceShowObjtree = node_handle.advertiseService(ShowObjtree_SRV, &CObjTreePlugin::srvShowObjtree, this);
 
-    m_clientAddPlane = node_handle.serviceClient<srs_interaction_primitives::AddPlane>(srs_interaction_primitives::AddPlane_SRV);
-    m_clientAddBoundingBox = node_handle.serviceClient<srs_interaction_primitives::AddBoundingBox>(srs_interaction_primitives::AddBoundingBox_SRV);
-    m_clientRemovePrimitive = node_handle.serviceClient<srs_interaction_primitives::RemovePrimitive>(srs_interaction_primitives::RemovePrimitive_SRV);
+    m_clientAddPlane = node_handle.serviceClient<but_interaction_primitives::AddPlane>(but_interaction_primitives::AddPlane_SRV);
+    m_clientAddBoundingBox = node_handle.serviceClient<but_interaction_primitives::AddBoundingBox>(but_interaction_primitives::AddBoundingBox_SRV);
+    m_clientRemovePrimitive = node_handle.serviceClient<but_interaction_primitives::RemovePrimitive>(but_interaction_primitives::RemovePrimitive_SRV);
 
     m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 5);
 
@@ -493,7 +493,7 @@ void CObjTreePlugin::showObject(unsigned int id)
         {
             objtree::BBox *box = (objtree::BBox*)object;
 
-            srs_interaction_primitives::AddBoundingBox addBoxSrv;
+            but_interaction_primitives::AddBoundingBox addBoxSrv;
 
             addBoxSrv.request.frame_id = IM_SERVER_FRAME_ID;
             addBoxSrv.request.name = name;
@@ -525,7 +525,7 @@ void CObjTreePlugin::showObject(unsigned int id)
         {
             objtree::GBBox *box = (objtree::GBBox*)object;
 
-            srs_interaction_primitives::AddBoundingBox addBoxSrv;
+            but_interaction_primitives::AddBoundingBox addBoxSrv;
 
             addBoxSrv.request.frame_id = IM_SERVER_FRAME_ID;
             addBoxSrv.request.name = name;
@@ -557,7 +557,7 @@ void CObjTreePlugin::showObject(unsigned int id)
         {
             objtree::Plane *plane = (objtree::Plane*)object;
 
-            srs_interaction_primitives::AddPlane addPlaneSrv;
+            but_interaction_primitives::AddPlane addPlaneSrv;
 
             addPlaneSrv.request.frame_id = IM_SERVER_FRAME_ID;
             addPlaneSrv.request.name = name;
@@ -663,7 +663,7 @@ void CObjTreePlugin::publishCube(visualization_msgs::Marker &lines, float x, flo
 
 void CObjTreePlugin::removePrimitiveMarker(unsigned int id)
 {
-    srs_interaction_primitives::RemovePrimitive removePrimitiveSrv;
+    but_interaction_primitives::RemovePrimitive removePrimitiveSrv;
     char name[64];
     snprintf(name, sizeof(name), "imn%u", id);
     removePrimitiveSrv.request.name = name;

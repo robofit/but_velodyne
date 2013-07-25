@@ -29,9 +29,11 @@
 #include <but_env_model/topics_list.h>
 #include <but_env_model/plugins/point_cloud_plugin.h>
 
-
 #include <pcl_ros/transforms.h>
 #include <pcl/io/io.h>
+
+#include <octomap_msgs/Octomap.h>
+#include <octomap_msgs/conversions.h>
 
 // Filtering
 #include <visualization_msgs/MarkerArray.h>
@@ -249,7 +251,7 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 
 
 	// Create publisher
-	m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (
+	m_ocPublisher = node_handle.advertise<octomap_msgs::Octomap> (
 			m_ocPublisherName, 5, m_latchedTopics);
 
 	m_registration.init( node_handle );
@@ -558,11 +560,15 @@ void but_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 	boost::mutex::scoped_lock lock(m_lockData);
 //	PERROR( "publish: Locked");
 
-	octomap_ros::OctomapBinary map;
-	map.header.frame_id = m_mapParameters.frameId;
-	map.header.stamp = timestamp;
+//	octomap_ros::OctomapBinary map;
+//	map.header.frame_id = m_mapParameters.frameId;
+//	map.header.stamp = timestamp;
+//	octomap::octomapMapToMsgData(m_data->getTree(), map.data);
 
-	octomap::octomapMapToMsgData(m_data->getTree(), map.data);
+    octomap_msgs::Octomap map;
+    octomap_msgs::binaryMapToMsg(m_data->getTree(), map);
+    map.header.frame_id = m_mapParameters.frameId;
+    map.header.stamp = timestamp;
 
 	m_ocPublisher.publish(map);
 
@@ -786,9 +792,9 @@ bool but_env_model::COctoMapPlugin::addCubeCB(
 /**
  * For debugging purpouses - add cubical interactive marker to the scene
  */
-void but_env_model::COctoMapPlugin::addCubeGizmo(
-		const geometry_msgs::Pose & pose, const geometry_msgs::Point & size) {
-	srs_interaction_primitives::AddUnknownObject gizmo;
+void but_env_model::COctoMapPlugin::addCubeGizmo(const geometry_msgs::Pose & pose, const geometry_msgs::Point & size)
+{
+	but_interaction_primitives::AddUnknownObject gizmo;
 	gizmo.request.pose = pose;
 	gizmo.request.scale.x = size.x;
 	gizmo.request.scale.y = size.y;
@@ -814,7 +820,7 @@ void but_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 	}
 	else
 	{
-		m_ocPublisher = node_handle.advertise<octomap_ros::OctomapBinary> (	m_ocPublisherName, 5, m_latchedTopics);
+		m_ocPublisher = node_handle.advertise<octomap_msgs::Octomap> (m_ocPublisherName, 5, m_latchedTopics);
 
 		// Add camera info subscriber
 //		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &but_env_model::COctoMapPlugin::cameraInfoCB, this);

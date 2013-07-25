@@ -67,7 +67,7 @@ void but_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create publisher
-	m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
+	m_coPublisher = node_handle.advertise<moveit_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -152,11 +152,17 @@ void but_env_model::CCollisionObjectPlugin::handleOccupiedNode(but_env_model::tB
 	    point = m_ocToCoRot * point + m_ocToCoTrans;
 
 	// Add shape
-	arm_navigation_msgs::Shape shape;
-	shape.type = arm_navigation_msgs::Shape::BOX;
-	shape.dimensions.resize(3);
-	shape.dimensions[0] = shape.dimensions[1] = shape.dimensions[2] = it.getSize();
-	m_data->shapes.push_back(shape);
+//	arm_navigation_msgs::Shape shape;
+//	shape.type = arm_navigation_msgs::Shape::BOX;
+//	shape.dimensions.resize(3);
+//	shape.dimensions[0] = shape.dimensions[1] = shape.dimensions[2] = it.getSize();
+//	m_data->shapes.push_back(shape);
+
+	shape_msgs::SolidPrimitive shape;
+    shape.type = shape_msgs::SolidPrimitive::BOX;
+    shape.dimensions.resize(3);
+    shape.dimensions[0] = shape.dimensions[1] = shape.dimensions[2] = it.getSize();
+    m_data->primitives.push_back(shape);
 
 	// Add pose
 	geometry_msgs::Pose pose;
@@ -164,7 +170,8 @@ void but_env_model::CCollisionObjectPlugin::handleOccupiedNode(but_env_model::tB
 	pose.position.x = point.x();
 	pose.position.y = point.y();
 	pose.position.z = point.z();
-	m_data->poses.push_back(pose);
+//	m_data->poses.push_back(pose);
+	m_data->primitive_poses.push_back(pose);
 }
 
 
@@ -174,5 +181,5 @@ void but_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle 
 	if( bPause )
 		m_coPublisher.shutdown();
 	else
-		m_coPublisher = node_handle.advertise<arm_navigation_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
+		m_coPublisher = node_handle.advertise<moveit_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
 }
