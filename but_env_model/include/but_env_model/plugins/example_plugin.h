@@ -47,7 +47,7 @@ public:
 	//! This method is called by server on start. Use node_handle to do
 	//! parameters reading and all initializations here (subscriber
 	//! connection, publisher creation, etc.)
-	virtual void init(ros::NodeHandle & node_handle){}
+	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh) {}
 
 	//! This method is called when user wants to reset server.
 	virtual void reset() {}

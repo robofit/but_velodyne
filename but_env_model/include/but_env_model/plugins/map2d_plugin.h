@@ -50,7 +50,7 @@ public:
     void enable( bool enabled ){ m_publishMap2D = enabled; }
 
     //! Initialize plugin - called in server constructor
-    virtual void init(ros::NodeHandle & node_handle);
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
     //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
     virtual void pause( bool bPause, ros::NodeHandle & node_handle );

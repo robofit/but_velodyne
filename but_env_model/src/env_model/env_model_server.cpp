@@ -131,7 +131,7 @@ but_env_model::CButServer::CButServer(const std::string& filename) :
 	//=========================================================================
 	// Initialize plugins
 
-	FOR_ALL_PLUGINS_PARAM(init, m_privnh)
+	FOR_ALL_PLUGINS_PARAM2(init, m_nh, m_privnh)
 
 	ROS_INFO( "EnvModelSrv: All plugins initialized. Starting server... " );
 
@@ -250,7 +250,9 @@ void but_env_model::CButServer::pause( bool bPause )
 
 	for( p = m_plugins.begin(); p != end; ++p )
 	{
-		(*p)->pause( bPause, m_privnh );
+	    // Majkl 2013/07
+//        (*p)->pause( bPause, m_privnh );
+		(*p)->pause( bPause, m_nh );
 	}
 
 	if( bPause )

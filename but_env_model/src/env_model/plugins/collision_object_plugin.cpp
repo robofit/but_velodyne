@@ -57,17 +57,18 @@ bool but_env_model::CCollisionObjectPlugin::shouldPublish()
 
 
 
-void but_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCollisionObjectPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-	node_handle.param("collision_object_publisher", m_coPublisherName, COLLISION_OBJECT_PUBLISHER_NAME );
-	node_handle.param("collision_object_frame_id", m_coFrameId, COLLISION_OBJECT_FRAME_ID );
+	private_nh.param("collision_object_publisher", m_coPublisherName, COLLISION_OBJECT_PUBLISHER_NAME );
+	private_nh.param("collision_object_frame_id", m_coFrameId, COLLISION_OBJECT_FRAME_ID );
+
 	// Get collision map crawling depth
 	int depth(m_crawlDepth);
-	node_handle.param("collision_object_octree_depth", depth, depth);
+	private_nh.param("collision_object_octree_depth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create publisher
-	m_coPublisher = node_handle.advertise<moveit_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
+	m_coPublisher = nh.advertise<moveit_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -176,10 +177,10 @@ void but_env_model::CCollisionObjectPlugin::handleOccupiedNode(but_env_model::tB
 
 
 //! Connect/disconnect plugin to/from all topics
-void but_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+void but_env_model::CCollisionObjectPlugin::pause( bool bPause, ros::NodeHandle & nh)
 {
 	if( bPause )
 		m_coPublisher.shutdown();
 	else
-		m_coPublisher = node_handle.advertise<moveit_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
+		m_coPublisher = nh.advertise<moveit_msgs::CollisionObject> (m_coPublisherName, 5, m_latchedTopics);
 }

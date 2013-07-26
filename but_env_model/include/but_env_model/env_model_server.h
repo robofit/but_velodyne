@@ -168,6 +168,7 @@ protected:
     /// Call all plugins function
 #define FOR_ALL_PLUGINS( X ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X; } }
 #define FOR_ALL_PLUGINS_PARAM( X, Y ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y); } }
+#define FOR_ALL_PLUGINS_PARAM2( X, Y, Z ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y,Z); } }
 
     /// Collision map
     boost::shared_ptr< CCMapPlugin > m_plugCMap;

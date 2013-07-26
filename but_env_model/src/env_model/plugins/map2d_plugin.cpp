@@ -58,19 +58,20 @@ bool but_env_model::CMap2DPlugin::shouldPublish()
 
 
 
-void but_env_model::CMap2DPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CMap2DPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-	node_handle.param("collision_object_publisher", m_map2DPublisherName, MAP2D_PUBLISHER_NAME );
-	node_handle.param("collision_object_frame_id", m_map2DFrameId, MAP2D_FRAME_ID );
-	node_handle.param("min_x_size", m_minSizeX, m_minSizeX);
-	node_handle.param("min_y_size", m_minSizeY, m_minSizeY);
+	private_nh.param("collision_object_publisher", m_map2DPublisherName, MAP2D_PUBLISHER_NAME );
+	private_nh.param("collision_object_frame_id", m_map2DFrameId, MAP2D_FRAME_ID );
+	private_nh.param("min_x_size", m_minSizeX, m_minSizeX);
+	private_nh.param("min_y_size", m_minSizeY, m_minSizeY);
+
 	// Get collision map crawling depth
 	int depth(m_crawlDepth);
-	node_handle.param("collision_object_octree_depth", depth, depth);
+	private_nh.param("collision_object_octree_depth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create publisher
-	m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 5, m_latchedTopics);
+	m_map2DPublisher = nh.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -271,7 +272,7 @@ void but_env_model::CMap2DPlugin::handleFreeNode(but_env_model::tButServerOcTree
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void but_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 	{
@@ -280,6 +281,6 @@ void but_env_model::CMap2DPlugin::pause( bool bPause, ros::NodeHandle & node_han
 	else
 	{
 		// Create publisher
-		m_map2DPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 5, m_latchedTopics);
+		m_map2DPublisher = nh.advertise<nav_msgs::OccupancyGrid> (m_map2DPublisherName, 5, m_latchedTopics);
 	}
 }

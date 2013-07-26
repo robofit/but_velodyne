@@ -55,7 +55,7 @@ public:
 	virtual ~CCompressedPointCloudPlugin();
 
 	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
+	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
 	//! Connect/disconnect plugin to/from all topics
 	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
@@ -120,7 +120,7 @@ protected:
 
 	// these are needed when spinning up a dedicated thread
 	boost::scoped_ptr<boost::thread> spin_thread_;
-	ros::NodeHandle node_handle_;
+	ros::NodeHandle nh_;
 	ros::CallbackQueue callback_queue_;
 	volatile bool need_to_terminate_;
 

@@ -138,7 +138,7 @@ namespace but_env_model
 		virtual ~CServerPluginBase() {}
 
 		//! Initialize plugin - called in server constructor
-		virtual void init(ros::NodeHandle & node_handle) {}
+		virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh) {}
 
 		//! Called when new scan was inserted and now all can be published
 		void publish(const ros::Time & timestamp)

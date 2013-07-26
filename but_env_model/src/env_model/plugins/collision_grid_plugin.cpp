@@ -57,19 +57,19 @@ bool but_env_model::CCollisionGridPlugin::shouldPublish()
 
 
 
-void but_env_model::CCollisionGridPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCollisionGridPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-	node_handle.param("grid_publisher", m_gridPublisherName, COLLISIONGRID_PUBLISHER_NAME );
-	node_handle.param("grid_min_x_size", m_minSizeX, m_minSizeX);
-	node_handle.param("grid_min_y_size", m_minSizeY, m_minSizeY);
+	private_nh.param("grid_publisher", m_gridPublisherName, COLLISIONGRID_PUBLISHER_NAME );
+	private_nh.param("grid_min_x_size", m_minSizeX, m_minSizeX);
+	private_nh.param("grid_min_y_size", m_minSizeY, m_minSizeY);
 
 	// Get collision map crawling depth
 	int depth(m_crawlDepth);
-	node_handle.param("collision_grid_octree_depth", depth, depth);
+	private_nh.param("collision_grid_octree_depth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create publisher
-	m_gridPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
+	m_gridPublisher = nh.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -263,7 +263,7 @@ void but_env_model::CCollisionGridPlugin::handleFreeNode(but_env_model::tButServ
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void but_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 	{
@@ -272,6 +272,6 @@ void but_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & 
 	else
 	{
 		// Create publisher
-		m_gridPublisher = node_handle.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
+		m_gridPublisher = nh.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
 	}
 }

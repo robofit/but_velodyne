@@ -59,20 +59,21 @@ bool but_env_model::CMarkerArrayPlugin::shouldPublish()
 
 
 
-void but_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-    node_handle.param("marker_array_publisher", m_markerArrayPublisherName, MARKERARRAY_PUBLISHER_NAME );
-    node_handle.param("marker_array_frame_id", m_markerArrayFrameId, MARKERARRAY_FRAME_ID );
+    private_nh.param("marker_array_publisher", m_markerArrayPublisherName, MARKERARRAY_PUBLISHER_NAME );
+    private_nh.param("marker_array_frame_id", m_markerArrayFrameId, MARKERARRAY_FRAME_ID );
+
     // Get collision map crawling depth
 	int depth(m_crawlDepth);
-	node_handle.param("marker_array_octree_depth", depth, depth);
+	private_nh.param("marker_array_octree_depth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
     double r, g, b, a;
-    node_handle.param("color/r", r, 0.0);
-    node_handle.param("color/g", g, 0.0);
-    node_handle.param("color/b", b, 1.0);
-    node_handle.param("color/a", a, 1.0);
+    private_nh.param("color/r", r, 0.0);
+    private_nh.param("color/g", g, 0.0);
+    private_nh.param("color/b", b, 1.0);
+    private_nh.param("color/a", a, 1.0);
 
     m_color.r = r;
     m_color.g = g;
@@ -80,7 +81,7 @@ void but_env_model::CMarkerArrayPlugin::init(ros::NodeHandle & node_handle)
     m_color.a = a;
 
     // Create publisher
-    m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 5, m_latchedTopics);
+    m_markerArrayPublisher = nh.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 5, m_latchedTopics);
 }
 
 
@@ -266,10 +267,10 @@ std_msgs::ColorRGBA but_env_model::CMarkerArrayPlugin::heightMapColor(double h) 
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void but_env_model::CMarkerArrayPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CMarkerArrayPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 		m_markerArrayPublisher.shutdown();
 	else
-		m_markerArrayPublisher = node_handle.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 5, m_latchedTopics);
+		m_markerArrayPublisher = nh.advertise<visualization_msgs::MarkerArray> (m_markerArrayPublisherName, 5, m_latchedTopics);
 }

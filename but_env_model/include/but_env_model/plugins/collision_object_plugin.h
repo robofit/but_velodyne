@@ -53,7 +53,7 @@ public:
     bool shouldPublish();
 
     //! Initialize plugin - called in server constructor
-    virtual void init(ros::NodeHandle & node_handle);
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
     //! Connect/disconnect plugin to/from all topics
     virtual void pause( bool bPause, ros::NodeHandle & node_handle);

@@ -63,13 +63,13 @@ public:
     void enable( bool enabled ) { m_publishPointCloud = enabled; }
 
     //! Initialize plugin - called in server constructor
-    virtual void init(ros::NodeHandle & node_handle);
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
     //! Initialize plugin - called in server constructor, enable or disable subscription.
-    virtual void init(ros::NodeHandle & node_handle, bool subscribe){ m_bSubscribe = subscribe; init(node_handle); }
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh, bool subscribe) { m_bSubscribe = subscribe; init(nh, private_nh); }
 
     //! Initialize plugin - use given input topic name
-    virtual void init(ros::NodeHandle & node_handle, const std::string & topic){ m_pcSubscriberName = topic; init(node_handle); }
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh, const std::string & topic) { m_pcSubscriberName = topic; init(nh, private_nh); }
 
     //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
     virtual void pause( bool bPause, ros::NodeHandle & node_handle );

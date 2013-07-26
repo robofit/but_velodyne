@@ -85,7 +85,7 @@ public:
 	void insertCloud(tPointCloud::ConstPtr cloud);
 
 	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
+	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
 	//! Reset octomap
 	void reset(bool clearLoaded = true);

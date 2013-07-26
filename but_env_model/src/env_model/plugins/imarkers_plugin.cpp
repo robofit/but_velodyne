@@ -50,23 +50,23 @@ but_env_model::CIMarkersPlugin::~CIMarkersPlugin()
 	}
 }
 
-void but_env_model::CIMarkersPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CIMarkersPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
 	// Get interactive markers server topic name
-	node_handle.param("im_server_topic_name", m_serverTopicName, m_serverTopicName );
+	private_nh.param("im_server_topic_name", m_serverTopicName, m_serverTopicName );
 
 	// Get default frame id
-	node_handle.param("im_server_frame_id", m_IMarkersFrameId, m_IMarkersFrameId );
+	private_nh.param("im_server_frame_id", m_IMarkersFrameId, m_IMarkersFrameId );
 
 	// Should external server be used
-	node_handle.param("im_server_use_external_server", m_bUseExternalServer, false );
+	private_nh.param("im_server_use_external_server", m_bUseExternalServer, false );
 
 	// Use external server or start one?
 	if( m_bUseExternalServer )
 	{
 		// Connect to the services
-		m_removeInteractiveMarkerService = node_handle.serviceClient<but_interaction_primitives::RemovePrimitive> (but_interaction_primitives::RemovePrimitive_SRV);
-		m_addInteractivePlaneService = node_handle.serviceClient<but_interaction_primitives::AddPlane> (but_interaction_primitives::AddPlane_SRV);
+		m_removeInteractiveMarkerService = nh.serviceClient<but_interaction_primitives::RemovePrimitive> (but_interaction_primitives::RemovePrimitive_SRV);
+		m_addInteractivePlaneService = nh.serviceClient<but_interaction_primitives::AddPlane> (but_interaction_primitives::AddPlane_SRV);
 	}
 	else
 	{
@@ -75,7 +75,7 @@ void but_env_model::CIMarkersPlugin::init(ros::NodeHandle & node_handle)
 	}
 
 	// Advertise services
-	m_serviceInsertPlanes = node_handle.advertiseService("insert_plane", &but_env_model::CIMarkersPlugin::insertPlaneCallback, this);
+	m_serviceInsertPlanes = nh.advertiseService("insert_plane", &but_env_model::CIMarkersPlugin::insertPlaneCallback, this);
 
 
 	// Interactive marker server test

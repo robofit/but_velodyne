@@ -7,12 +7,12 @@
     <arg name="camera_info_in" default="/cam3d_throttled/rgb/camera_info" />
 
     <!-- Run our dynamic scene model server node -->
-    <node launch-prefix="xterm -e gdb -ex run --args" name="but_env_model_node" pkg="but_env_model" type="but_env_model_node">
+    <node name="but_env_model_node" pkg="but_env_model" type="but_env_model_node">
         <rosparam file="$(find but_env_model)/config/envmodel_defaults.yaml" command="load"/>
-        <remap from="but_env_model_node/camera_info" to="$(arg camera_info_in)" />
-        <remap from="but_env_model_node/points_in" to="$(arg rgb_points_in)" />
-        <remap from="but_env_model_node/points_filter" to="$(arg rgb_points_in)" />
-        <remap from="but_env_model_node/rviz_camera_position" to="/rviz_camera_position" />
+        <remap from="camera_info" to="$(arg camera_info_in)" />
+        <remap from="points_in" to="$(arg rgb_points_in)" />
+        <remap from="points_filter" to="$(arg rgb_points_in)" />
+        <remap from="rviz_camera_position" to="/rviz_camera_position" />
     </node>
 
 </launch>

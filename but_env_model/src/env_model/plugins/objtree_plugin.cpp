@@ -54,34 +54,34 @@ CObjTreePlugin::~CObjTreePlugin()
     reset();
 }
 
-void CObjTreePlugin::init(ros::NodeHandle &node_handle)
+void CObjTreePlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
     //Advertise services
-    m_serviceGetObjectsInBox = node_handle.advertiseService(GetObjectsInBox_SRV, &CObjTreePlugin::srvGetObjectsInBox, this);
-    m_serviceGetObjectsInHalfspace = node_handle.advertiseService(GetObjectsInHalfspace_SRV, &CObjTreePlugin::srvGetObjectsInHalfspace, this);
-    m_serviceGetObjectsInSphere = node_handle.advertiseService(GetObjectsInSphere_SRV, &CObjTreePlugin::srvGetObjectsInSphere, this);
-    m_serviceGetPlane = node_handle.advertiseService(GetPlane_SRV, &CObjTreePlugin::srvGetPlane, this);
-    m_serviceGetABox = node_handle.advertiseService(GetAlignedBox_SRV, &CObjTreePlugin::srvGetABox, this);
-    m_serviceGetBBox = node_handle.advertiseService(GetBoundingBox_SRV, &CObjTreePlugin::srvGetBBox, this);
-    m_serviceInsertPlane = node_handle.advertiseService(InsertPlane_SRV, &CObjTreePlugin::srvInsertPlane, this);
-    m_serviceInsertPlaneByPosition = node_handle.advertiseService(InsertPlaneByPosition_SRV, &CObjTreePlugin::srvInsertPlaneByPosition, this);
-    m_serviceGetSimilarPlane = node_handle.advertiseService(GetSimilarPlane_SRV, &CObjTreePlugin::srvGetSimilarPlane, this);
-    m_serviceInsertPlanes = node_handle.advertiseService(InsertPlanes_SRV, &CObjTreePlugin::srvInsertPlanes, this);
-    m_serviceInsertABox = node_handle.advertiseService(InsertAlignedBox_SRV, &CObjTreePlugin::srvInsertABox, this);
-    m_serviceInsertABoxByPosition = node_handle.advertiseService(InsertAlignedBoxByPosition_SRV, &CObjTreePlugin::srvInsertABoxByPosition, this);
-    m_serviceInsertBBox = node_handle.advertiseService(InsertBoundingBox_SRV, &CObjTreePlugin::srvInsertBBox, this);
-    m_serviceInsertBBoxByPosition = node_handle.advertiseService(InsertBoundingBoxByPosition_SRV, &CObjTreePlugin::srvInsertBBoxByPosition, this);
-    m_serviceGetSimilarABox = node_handle.advertiseService(GetSimilarAlignedBox_SRV, &CObjTreePlugin::srvGetSimilarABox, this);
-    m_serviceGetSimilarBBox = node_handle.advertiseService(GetSimilarBoundingBox_SRV, &CObjTreePlugin::srvGetSimilarBBox, this);
-    m_serviceRemoveObject = node_handle.advertiseService(RemoveObject_SRV, &CObjTreePlugin::srvRemoveObject, this);
-    m_serviceShowObject = node_handle.advertiseService(ShowObject_SRV, &CObjTreePlugin::srvShowObject, this);
-    m_serviceShowObjtree = node_handle.advertiseService(ShowObjtree_SRV, &CObjTreePlugin::srvShowObjtree, this);
+    m_serviceGetObjectsInBox = nh.advertiseService(GetObjectsInBox_SRV, &CObjTreePlugin::srvGetObjectsInBox, this);
+    m_serviceGetObjectsInHalfspace = nh.advertiseService(GetObjectsInHalfspace_SRV, &CObjTreePlugin::srvGetObjectsInHalfspace, this);
+    m_serviceGetObjectsInSphere = nh.advertiseService(GetObjectsInSphere_SRV, &CObjTreePlugin::srvGetObjectsInSphere, this);
+    m_serviceGetPlane = nh.advertiseService(GetPlane_SRV, &CObjTreePlugin::srvGetPlane, this);
+    m_serviceGetABox = nh.advertiseService(GetAlignedBox_SRV, &CObjTreePlugin::srvGetABox, this);
+    m_serviceGetBBox = nh.advertiseService(GetBoundingBox_SRV, &CObjTreePlugin::srvGetBBox, this);
+    m_serviceInsertPlane = nh.advertiseService(InsertPlane_SRV, &CObjTreePlugin::srvInsertPlane, this);
+    m_serviceInsertPlaneByPosition = nh.advertiseService(InsertPlaneByPosition_SRV, &CObjTreePlugin::srvInsertPlaneByPosition, this);
+    m_serviceGetSimilarPlane = nh.advertiseService(GetSimilarPlane_SRV, &CObjTreePlugin::srvGetSimilarPlane, this);
+    m_serviceInsertPlanes = nh.advertiseService(InsertPlanes_SRV, &CObjTreePlugin::srvInsertPlanes, this);
+    m_serviceInsertABox = nh.advertiseService(InsertAlignedBox_SRV, &CObjTreePlugin::srvInsertABox, this);
+    m_serviceInsertABoxByPosition = nh.advertiseService(InsertAlignedBoxByPosition_SRV, &CObjTreePlugin::srvInsertABoxByPosition, this);
+    m_serviceInsertBBox = nh.advertiseService(InsertBoundingBox_SRV, &CObjTreePlugin::srvInsertBBox, this);
+    m_serviceInsertBBoxByPosition = nh.advertiseService(InsertBoundingBoxByPosition_SRV, &CObjTreePlugin::srvInsertBBoxByPosition, this);
+    m_serviceGetSimilarABox = nh.advertiseService(GetSimilarAlignedBox_SRV, &CObjTreePlugin::srvGetSimilarABox, this);
+    m_serviceGetSimilarBBox = nh.advertiseService(GetSimilarBoundingBox_SRV, &CObjTreePlugin::srvGetSimilarBBox, this);
+    m_serviceRemoveObject = nh.advertiseService(RemoveObject_SRV, &CObjTreePlugin::srvRemoveObject, this);
+    m_serviceShowObject = nh.advertiseService(ShowObject_SRV, &CObjTreePlugin::srvShowObject, this);
+    m_serviceShowObjtree = nh.advertiseService(ShowObjtree_SRV, &CObjTreePlugin::srvShowObjtree, this);
 
-    m_clientAddPlane = node_handle.serviceClient<but_interaction_primitives::AddPlane>(but_interaction_primitives::AddPlane_SRV);
-    m_clientAddBoundingBox = node_handle.serviceClient<but_interaction_primitives::AddBoundingBox>(but_interaction_primitives::AddBoundingBox_SRV);
-    m_clientRemovePrimitive = node_handle.serviceClient<but_interaction_primitives::RemovePrimitive>(but_interaction_primitives::RemovePrimitive_SRV);
+    m_clientAddPlane = nh.serviceClient<but_interaction_primitives::AddPlane>(but_interaction_primitives::AddPlane_SRV);
+    m_clientAddBoundingBox = nh.serviceClient<but_interaction_primitives::AddBoundingBox>(but_interaction_primitives::AddBoundingBox_SRV);
+    m_clientRemovePrimitive = nh.serviceClient<but_interaction_primitives::RemovePrimitive>(but_interaction_primitives::RemovePrimitive_SRV);
 
-    m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 5);
+    m_markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 5);
 
     printf("ObjTree plugin initialized!\n");
 }
@@ -699,12 +699,12 @@ void CObjTreePlugin::publishOctree(const std::list<objtree::Box> &nodes)
 /**
  *  Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void CObjTreePlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void CObjTreePlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 		m_markerPub.shutdown();
 	else
-		m_markerPub = node_handle.advertise<visualization_msgs::Marker>("visualization_marker", 5);
+		m_markerPub = nh.advertise<visualization_msgs::Marker>("visualization_marker", 5);
 }
 
 }
