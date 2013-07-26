@@ -47,19 +47,19 @@
 #define BUT_OCTOMAP_ROS_H_
 
 
-#include <sensor_msgs/PointCloud2.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/ros/conversions.h>
 #include <tf/transform_datatypes.h>
 
+#include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Vector3.h>
 #include <octomap/octomap.h>
 #include <octomap_ros/conversions.h>
 
-namespace octomap {
-
+namespace octomap
+{
 
   /**
    * @brief ROS wrapper class for OctoMap Octrees, providing the most important

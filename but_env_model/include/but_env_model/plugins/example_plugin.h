@@ -41,7 +41,7 @@ class CExamplePlugin : public CServerPluginBase
 public:
 	//! Constructor. Plugin name can be used for debug string output.
 	CExamplePlugin( const std::string & name = "ExamplePlugin ")
-	: CServerPluginBase( name )
+	    : CServerPluginBase( name )
 	{}
 
 	//! This method is called by server on start. Use node_handle to do
@@ -60,9 +60,13 @@ protected:
 
 	//! Return true, if you want to publish something now. Called
 	//! before onPublish method.
-	virtual bool shouldPublish(){ return false; }
+	virtual bool shouldPublish() { return false; }
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CExamplePlugin
+
 
 /**
  * Simple crawler plugin example.
@@ -77,7 +81,7 @@ class CExampleCrawlerPlugin
 public:
 	//! Constructor. Plugin name can be used for debug string output.
 	CExampleCrawlerPlugin( const std::string & name = "ExamplePlugin ")
-	: CServerPluginBase( name )
+	    : CServerPluginBase( name )
 	{
 		m_data->resize(3);
 
@@ -96,7 +100,6 @@ public:
 	virtual void reset() {}
 
 protected:
-
 	//! Set used octomap frame id and timestamp.
 	virtual void newMapDataCB( SMapWithParameters & par )
 	{
@@ -154,15 +157,13 @@ protected:
 	/// Called when all nodes was visited.
 	virtual void handlePostNodeTraversal(const SMapWithParameters & mp){}
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CExampleCrawlerPlugin
 
 
-
-
 } // namespace but_env_model
-
 
 // _ExamplePlugin_H_included_
 #endif
-

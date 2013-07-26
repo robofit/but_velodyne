@@ -37,91 +37,85 @@
 namespace but_env_model
 {
 
-    class CMap2DPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
-    {
-    public:
-        /// Constructor
-        CMap2DPlugin(const std::string & name);
+class CMap2DPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
+{
+public:
+    /// Constructor
+    CMap2DPlugin(const std::string & name);
 
-        /// Destructor
-        virtual ~CMap2DPlugin();
+    /// Destructor
+    virtual ~CMap2DPlugin();
 
-        //! Enable or disable publishing
-        void enable( bool enabled ){ m_publishMap2D = enabled; }
+    //! Enable or disable publishing
+    void enable( bool enabled ){ m_publishMap2D = enabled; }
 
-		//! Initialize plugin - called in server constructor
-		virtual void init(ros::NodeHandle & node_handle);
+    //! Initialize plugin - called in server constructor
+    virtual void init(ros::NodeHandle & node_handle);
 
-        //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
-        virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+    //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+    virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
-    protected:
-        //! Should plugin publish data?
-		bool shouldPublish();
+protected:
+    //! Should plugin publish data?
+    bool shouldPublish();
 
-		//! Called when new scan was inserted and now all can be published
-		virtual void publishInternal(const ros::Time & timestamp);
+    //! Called when new scan was inserted and now all can be published
+    virtual void publishInternal(const ros::Time & timestamp);
 
-		//! Set used octomap frame id and timestamp
-		virtual void newMapDataCB( SMapWithParameters & par );
+    //! Set used octomap frame id and timestamp
+    virtual void newMapDataCB( SMapWithParameters & par );
 
-		//! Handle free node (does nothing here)
-		virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp );
+    //! Handle free node (does nothing here)
+    virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp );
 
-		/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-		virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+    /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+    virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-    public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+protected:
+    //! Is publishing enabled?
+    bool m_publishMap2D;
 
-    protected:
-        //! Is publishing enabled?
-        bool m_publishMap2D;
+    //! Collision object publisher name
+    std::string m_map2DPublisherName;
 
-        //! Collision object publisher name
-        std::string m_map2DPublisherName;
+    /// Collision object publisher
+    ros::Publisher m_map2DPublisher;
 
-        /// Collision object publisher
-        ros::Publisher m_map2DPublisher;
+    //! Transform listener
+    tf::TransformListener m_tfListener;
 
-        //! Transform listener
-        tf::TransformListener m_tfListener;
+    //
+    bool m_latchedTopics;
 
-        //
-        bool m_latchedTopics;
+    //! Used frame id (input data will be transformed to it)
+    std::string m_map2DFrameId;
 
-        //! Used frame id (input data will be transformed to it)
-        std::string m_map2DFrameId;
+    /// Crawled octomap frame id
+    std::string m_ocFrameId;
 
-        /// Crawled octomap frame id
-        std::string m_ocFrameId;
+    /// Transformation from octomap to the collision object frame id - rotation
+    Eigen::Matrix3f m_ocToMap2DRot;
 
-        /// Transformation from octomap to the collision object frame id - rotation
-        Eigen::Matrix3f m_ocToMap2DRot;
+    /// Transformation from octomap to the collision object frame id - translation
+    Eigen::Vector3f m_ocToMap2DTrans;
 
-        /// Transformation from octomap to the collision object frame id - translation
-        Eigen::Vector3f m_ocToMap2DTrans;
+    /// Padded key minimum
+    octomap::OcTreeKey m_paddedMinKey;
 
-        /// Padded key minimum
-        octomap::OcTreeKey m_paddedMinKey;
+    /// Map limits
+    double m_minSizeX;
+    double m_minSizeY;
 
-        /// Map limits
-        double m_minSizeX;
-        double m_minSizeY;
+    /// Conversion between frame id's must be done...
+    bool m_bConvert;
 
-        /// Conversion between frame id's must be done...
-        bool m_bConvert;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    }; // class CMap2DPlugin
+}; // class CMap2DPlugin
 
 
 } // namespace but_env_model
 
-
-
-// namespace but_env_model
-
-
 // Map2DPlugin_H_included
 #endif
-

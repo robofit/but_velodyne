@@ -30,7 +30,8 @@
 
 #include "testing_object_base.h"
 
-#include <vector>
+#define EIGEN_USE_NEW_STDVECTOR
+#include <Eigen/StdVector>
 #include <Eigen/Dense>
 
 
@@ -45,9 +46,6 @@ class CTestingPlane : public CTestingObjectBase
 public:
 	/// Point type
 	typedef Eigen::Vector3f tPoint;
-
-public:
-   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 public:
 	//! Simple constructor
@@ -96,6 +94,9 @@ protected:
 	//! Last plane parameter
 	double m_d;
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 }; // class CTestingPlane
 
 /**
@@ -105,7 +106,7 @@ class CTestingPlanes : public CTestingObjectBase
 {
 public:
 	//! Stack of planes type
-	typedef std::vector< CTestingPlane > tPlanesStack;
+	typedef std::vector< CTestingPlane, Eigen::aligned_allocator<CTestingPlane> > tPlanesStack;
 
 public:
 	//! Simple constructor
@@ -130,15 +131,13 @@ protected:
 	//! Planes stack
 	tPlanesStack m_planes;
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 }; // class CTestingPlanes
 
-}
 
-
-
- // namespace but_env_model
+} // namespace but_env_model
 
 // TestingPlanes_H_included
 #endif
-
-

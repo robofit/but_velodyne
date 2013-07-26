@@ -49,49 +49,50 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <ros/ros.h>
 #include <but_env_model/env_model_server.h>
 
-#define USAGE "\nUSAGE: octomap_server <map.bt>\n" \
+#define USAGE "\nUSAGE: but_env_model_node <map.bt>\n" \
               "  map.bt: octomap 3D map file to read\n"
 
-int main(int argc, char** argv){
-  ros::init(argc, argv, "but_env_model");
-  std::string mapFilename("");
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "but_env_model");
 
-  if (argc > 2 || (argc == 2 && std::string(argv[1]) == "-h")){
-          ROS_ERROR("%s", USAGE);
-          exit(-1);
-  }
+    std::string mapFilename("");
 
-  std::cerr << "Number of octomap server parameters: " << argc << std::endl;
+    if( argc > 2 || (argc == 2 && std::string(argv[1] ) == "-h") )
+    {
+        ROS_ERROR("%s", USAGE);
+        exit(-1);
+    }
 
+    ROS_INFO_STREAM( "Number of server parameters: " << argc );
 
-  if (argc == 2)
-  {
-	  std::cerr << "Trying to load input octomap file: " << argv[1] << std::endl;
-          mapFilename = std::string(argv[1]);
-  }
-  try{
-		// Run server
-		but_env_model::CButServer ms(mapFilename);
-		ros::Rate loop_rate(10);
+    if( argc == 2 )
+    {
+        ROS_INFO_STREAM( "Trying to load input octomap file: " << argv[1] );
+        mapFilename = std::string(argv[1]);
+    }
+    try {
+        // Run server
+        but_env_model::CButServer ms(mapFilename);
+        ros::Rate loop_rate(10);
 
-		int count = 0;
+        int count = 0;
+        while( ros::ok() )
+        {
+            ros::spinOnce();
 
-		while (ros::ok())
-		{
-			ros::spinOnce();
+            loop_rate.sleep();
+            ++count;
+        }
+    }
+    catch(std::runtime_error& e)
+    {
+        ROS_ERROR_STREAM( "Environment model server exception: " << e.what() );
+        return -1;
+    }
 
-			loop_rate.sleep();
-			++count;
-		}
-  }catch(std::runtime_error& e){
-          ROS_ERROR("octomap_server exception: %s", e.what());
-          return -1;
-  }
-
-
-  return 0;
+    return 0;
 }

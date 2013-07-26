@@ -775,7 +775,8 @@ bool but_env_model::COctoMapPlugin::addCubeCB(
 				++counter;
 
 				// Try to generate octree key
-				if (!m_data->getTree().genKey(p, key)) continue;
+//				if (!m_data->getTree().genKey(p, key)) continue;
+                if (!m_data->getTree().coordToKeyChecked(p, key)) continue;
 
 				// Set node value
 				m_data->getTree().updateNode(key, true, true);

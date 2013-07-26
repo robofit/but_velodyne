@@ -172,6 +172,7 @@ private:
     void removePrimitiveMarker(unsigned int id);
 };
 
+
 }
 
 #endif // _BUT_ENV_MODEL_PLUGINS_OBJTREEPLUGIN_H

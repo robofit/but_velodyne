@@ -100,17 +100,21 @@ void but_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 	octomap::point3d minPt(minX, minY, minZ);
 	octomap::point3d maxPt(maxX, maxY, maxZ);
 	octomap::OcTreeKey minKey, maxKey, curKey;
-	if (!par.map->getTree().genKey(minPt, minKey)){
+//	if (!par.map->getTree().genKey(minPt, minKey)){
+    if (!par.map->getTree().coordToKeyChecked(minPt, minKey)){
 	  ROS_ERROR("Could not create min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
 	  return;
 	}
 
-	if (!par.map->getTree().genKey(maxPt, maxKey)){
+//	if (!par.map->getTree().genKey(maxPt, maxKey)){
+    if (!par.map->getTree().coordToKeyChecked(maxPt, maxKey)){
 	  ROS_ERROR("Could not create max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
 	  return;
 	}
-	par.map->getTree().genKeyAtDepth(minKey, par.treeDepth, minKey);
-	par.map->getTree().genKeyAtDepth(maxKey, par.treeDepth, maxKey);
+//	par.map->getTree().genKeyAtDepth(minKey, par.treeDepth, minKey);
+//	par.map->getTree().genKeyAtDepth(maxKey, par.treeDepth, maxKey);
+    minKey = par.map->getTree().adjustKeyAtDepth(minKey, par.treeDepth);
+    maxKey = par.map->getTree().adjustKeyAtDepth(maxKey, par.treeDepth);
 
 	ROS_DEBUG("MinKey: %d %d %d / MaxKey: %d %d %d", minKey[0], minKey[1], minKey[2], maxKey[0], maxKey[1], maxKey[2]);
 
@@ -125,16 +129,20 @@ void but_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 	maxPt = octomap::point3d(maxX, maxY, maxZ);
 
 	octomap::OcTreeKey paddedMaxKey;
-	if (!par.map->getTree().genKey(minPt, m_paddedMinKey)){
+//	if (!par.map->getTree().genKey(minPt, m_paddedMinKey)){
+    if (!par.map->getTree().coordToKeyChecked(minPt, m_paddedMinKey)){
 	  ROS_ERROR("Could not create padded min OcTree key at %f %f %f", minPt.x(), minPt.y(), minPt.z());
 	  return;
 	}
-	if (!par.map->getTree().genKey(maxPt, paddedMaxKey)){
+//    if (!par.map->getTree().genKey(maxPt, paddedMaxKey)){
+	if (!par.map->getTree().coordToKeyChecked(maxPt, paddedMaxKey)){
 	  ROS_ERROR("Could not create padded max OcTree key at %f %f %f", maxPt.x(), maxPt.y(), maxPt.z());
 	  return;
 	}
-	par.map->getTree().genKeyAtDepth(m_paddedMinKey, par.treeDepth, m_paddedMinKey);
-	par.map->getTree().genKeyAtDepth(paddedMaxKey, par.treeDepth, paddedMaxKey);
+//	par.map->getTree().genKeyAtDepth(m_paddedMinKey, par.treeDepth, m_paddedMinKey);
+//	par.map->getTree().genKeyAtDepth(paddedMaxKey, par.treeDepth, paddedMaxKey);
+	m_paddedMinKey = par.map->getTree().adjustKeyAtDepth(m_paddedMinKey, par.treeDepth);
+	paddedMaxKey = par.map->getTree().adjustKeyAtDepth(paddedMaxKey, par.treeDepth);
 
 	ROS_DEBUG("Padded MinKey: %d %d %d / padded MaxKey: %d %d %d", m_paddedMinKey[0], m_paddedMinKey[1], m_paddedMinKey[2], paddedMaxKey[0], paddedMaxKey[1], paddedMaxKey[2]);
 	assert(paddedMaxKey[0] >= maxKey[0] && paddedMaxKey[1] >= maxKey[1]);
@@ -154,7 +162,8 @@ void but_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 
 	// might not exactly be min / max of octree:
 	octomap::point3d origin;
-	par.map->getTree().genCoords(m_paddedMinKey, m_crawlDepth, origin);
+//	par.map->getTree().genCoords(m_paddedMinKey, m_crawlDepth, origin);
+	origin = par.map->getTree().keyToCoord(m_paddedMinKey, m_crawlDepth);
 	double gridRes = par.map->getTree().getNodeSize(par.treeDepth);
 	m_data->info.resolution = gridRes;
 	m_data->info.origin.position.x = origin.x() - gridRes*0.5;

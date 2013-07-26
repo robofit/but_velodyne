@@ -40,6 +40,7 @@
 
 namespace but_env_model
 {
+
 class CLimitedPointCloudPlugin : public CPointCloudPlugin
 {
 public:
@@ -57,9 +58,6 @@ public:
 
 	//! Wants plugin new map data?
 	virtual bool wantsMap() { return m_cameraFrameId.size() != 0; }
-
-public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
 	//! Set used octomap frame id and timestamp
@@ -124,7 +122,11 @@ protected:
 
 	// Mutex used to lock camera position parameters
 	boost::recursive_mutex m_camPosMutex;
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+
 
 } // namespace but_env_model
 

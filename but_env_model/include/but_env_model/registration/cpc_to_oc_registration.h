@@ -166,7 +166,7 @@ protected:
 	tf::Matrix3x3 m_fracMatrix;
 
 public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class COcToPcl
 

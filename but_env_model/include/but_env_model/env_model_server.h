@@ -51,8 +51,8 @@
  */
 
 #pragma once
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef ENV_MODEL_SERVER_H
+#define ENV_MODEL_SERVER_H
 
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -72,10 +72,7 @@
 #include <but_env_model/EnvModelPause.h>
 #include <but_env_model/UseInputColor.h>
 
-// Old interactive markers plugin used for testing
-#include <but_env_model/plugins/old_imarkers_plugin.h>
-
-#define _EXAMPLES_
+//#define _EXAMPLES_
 #ifdef _EXAMPLES_
 #	include <but_env_model/plugins/example_plugin.h>
 #endif
@@ -137,7 +134,7 @@ protected:
     bool m_bIsPaused;
 
     /// Node handle
-    ros::NodeHandle m_nh;
+    ros::NodeHandle m_nh, m_privnh;
 
     bool m_latchedTopics;
 
@@ -163,7 +160,7 @@ protected:
     // Plugins
 
     /// All plugins vector type
-    typedef std::vector<CServerPluginBase * > tVecPlugins;
+    typedef std::vector<CServerPluginBase *> tVecPlugins;
 
     /// All plugins
     tVecPlugins m_plugins;
@@ -176,9 +173,11 @@ protected:
     boost::shared_ptr< CCMapPlugin > m_plugCMap;
 
     /// Incoming depth points cloud
-    boost::shared_ptr< CPointCloudPlugin > m_plugInputPointCloud,
-                                    /// Output depth points cloud - whole octomap
-                                                        m_plugOcMapPointCloud;
+    boost::shared_ptr< CPointCloudPlugin > m_plugInputPointCloud;
+
+    /// Output depth points cloud - whole octomap
+    boost::shared_ptr< CPointCloudPlugin > m_plugOcMapPointCloud;
+
     /// Visible points point cloud
     boost::shared_ptr< CPointCloudPlugin > m_plugVisiblePointCloud;
 
@@ -200,14 +199,8 @@ protected:
     /// ObjTree plugin
     boost::shared_ptr< CObjTreePlugin > m_plugObjTree;
 
-    /// Old interactive markers plugin
-    boost::shared_ptr< COldIMarkersPlugin > m_plugOldIMarkers;
-
     /// Compressed pointcloud plugin
     boost::shared_ptr< CCompressedPointCloudPlugin > m_plugCompressedPointCloud;
-
-    /// Use old interactive server plugin?				TODO: Remov this when new is will be finished
-    bool m_bUseOldIMP;
 
 #ifdef _EXAMPLES_
     /// Create example plugin
@@ -221,4 +214,4 @@ protected:
 
 } // namespace but_env_model
 
-#endif // SERVER_H
+#endif // ENV_MODEL_SERVER_H

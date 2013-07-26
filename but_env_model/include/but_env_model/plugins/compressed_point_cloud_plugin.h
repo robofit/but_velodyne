@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef CompressedPointCloudPlugin_H_included
 #define CompressedPointCloudPlugin_H_included
@@ -43,6 +44,7 @@
 
 namespace but_env_model
 {
+
 class CCompressedPointCloudPlugin : public CPointCloudPlugin
 {
 public:
@@ -57,10 +59,6 @@ public:
 
 	//! Connect/disconnect plugin to/from all topics
 	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
-
-
-public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
 	//! Set used octomap frame id and timestamp
@@ -98,7 +96,6 @@ protected:
 
     // Camera position topic name
     std::string m_cameraInfoTopic;
-
 
 	/// Subscriber - camera position
 	// message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
@@ -174,7 +171,11 @@ protected:
 
 	/// Should output pointcloud be transformed
 	bool m_bTransformOutput;
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+
 
 } // namespace but_env_model
 

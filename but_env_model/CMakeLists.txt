@@ -10,6 +10,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 set(ROS_BUILD_TYPE RelWithDebInfo)
 #set(ROS_BUILD_TYPE Release)
+#set(ROS_BUILD_TYPE Debug)
 
 find_package( Eigen REQUIRED )
 include_directories( ${EIGEN_INCLUDE_DIRS} )
@@ -53,7 +54,6 @@ set( SERVER_SOURCES src/env_model/env_model_server.cpp
                     src/env_model/plugins/limited_point_cloud_plugin.cpp
                     src/env_model/plugins/compressed_point_cloud_plugin.cpp
                     src/env_model/plugins/objtree_plugin.cpp
-                    src/env_model/plugins/old_imarkers_plugin.cpp
                     src/env_model/plugins/octomap_plugin_tools/testing_oriented_box.cpp
                     src/env_model/plugins/octomap_plugin_tools/testing_planes.cpp
                     src/env_model/plugins/octomap_plugin_tools/testing_polymesh.cpp

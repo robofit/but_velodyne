@@ -24,26 +24,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
- #pragma once
- #ifndef TestingObjectBase_H_included
- #define TestingObjectBase_H_included
+
+#pragma once
+#ifndef TestingObjectBase_H_included
+#define TestingObjectBase_H_included
  
- namespace but_env_model
- {
- 
- /**
-  *	Testing object interface definition
-  */
- class CTestingObjectBase
- {
- public:
- 	//! Test this point and return true if it is in the tested object
- 	virtual bool isIn( double x, double y, double z ) = 0;
- };
- 
- } // namespace but_env_model
- 
- // TestingObjectBase_H_included
- #endif
- 
- 
+#include <Eigen/Core>
+
+namespace but_env_model
+{
+
+/**
+ * Testing object interface definition
+ */
+class CTestingObjectBase
+{
+public:
+    //! Test this point and return true if it is in the tested object
+    virtual bool isIn( double x, double y, double z ) = 0;
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+};
+
+} // namespace but_env_model
+
+// TestingObjectBase_H_included
+#endif
