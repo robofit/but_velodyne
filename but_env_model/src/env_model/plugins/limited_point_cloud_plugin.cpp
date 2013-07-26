@@ -58,7 +58,7 @@ but_env_model::CLimitedPointCloudPlugin::~CLimitedPointCloudPlugin()
  */
 void but_env_model::CLimitedPointCloudPlugin::spinThread()
 {
-  while (node_handle_.ok())
+  while (nh_.ok())
   {
     if (need_to_terminate_)
     {
@@ -68,34 +68,34 @@ void but_env_model::CLimitedPointCloudPlugin::spinThread()
   }
 }
 
-void but_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CLimitedPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
 	if ( m_bSpinThread )
 	{
 		// if we're spinning our own thread, we'll also need our own callback queue
-		node_handle.setCallbackQueue( &callback_queue_ );
+		nh.setCallbackQueue( &callback_queue_ );
 
 		need_to_terminate_ = false;
 		spin_thread_.reset( new boost::thread(boost::bind(&CLimitedPointCloudPlugin::spinThread, this)) );
-		node_handle_ = node_handle;
+		nh_ = nh;
 	}
 
     // Read parameters
-    node_handle.param("rviz_camera_position_topic_name", m_cameraPositionTopic, SUBSCRIBER_CAMERA_POSITION_NAME );
+    private_nh.param("rviz_camera_position_topic_name", m_cameraPositionTopic, SUBSCRIBER_CAMERA_POSITION_NAME );
 
     // Point cloud publishing topic name
-    node_handle.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
+    private_nh.param("pointcloud_centers_publisher", m_pcPublisherName, VISIBLE_POINTCLOUD_CENTERS_PUBLISHER_NAME );
 
 	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
-	node_handle.param("ocmap_frame_id", m_frame_id, m_frame_id);
+	private_nh.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
     // Create publisher
-    m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+    m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Subscribe to position topic
     // Create subscriber
-    m_camPosSubscriber = node_handle.subscribe<but_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
-    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
+    m_camPosSubscriber = nh.subscribe<but_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
+    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(nh, cameraPositionTopic, 1);
 
     if (!m_camPosSubscriber)
     {
@@ -299,7 +299,7 @@ void but_env_model::CLimitedPointCloudPlugin::publishInternal(const ros::Time & 
 /**
  *  Connect/disconnect plugin to/from all topics
  */
-void but_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+void but_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -311,11 +311,11 @@ void but_env_model::CLimitedPointCloudPlugin::pause( bool bPause, ros::NodeHandl
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+		m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber
-		m_camPosSubscriber = node_handle.subscribe<but_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
+		m_camPosSubscriber = nh.subscribe<but_env_model_msgs::RVIZCameraPosition>( m_cameraPositionTopic, 10, &but_env_model::CLimitedPointCloudPlugin::onCameraPositionChangedCB, this );
 	}
 }
 

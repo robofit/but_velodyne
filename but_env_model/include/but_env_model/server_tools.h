@@ -52,13 +52,13 @@ template <typename tpType> bool isGreat( tpType x ) { return abs( x ) > SMALL_DO
 namespace but_env_model
 {
 	//! ROS octomap type
-	typedef octomap::ButOctomapROS< but_env_model::EMOcTree > tButServerOcMap;
+	typedef octomap::ButOctomapROS<but_env_model::EMOcTree> tButServerOcMap;
 
 	//! ROS octomap pointer type
 	typedef boost::shared_ptr<tButServerOcMap> tButServerOcMapPtr;
 
 	//! ROS octomap const pointer type
-	typedef boost::shared_ptr< const tButServerOcMap > tButServerOcMapConstPtr;
+	typedef boost::shared_ptr<const tButServerOcMap> tButServerOcMapConstPtr;
 
 	//! Define octree type
 	typedef tButServerOcMap::OcTreeType tButServerOcTree;
@@ -128,21 +128,17 @@ namespace but_env_model
 	//! Server plugin base class
 	class CServerPluginBase
 	{
-	#define PERROR( x ) std::cerr << "Plugin "<< this->m_name << ": " << x << std::endl;
+	#define PERROR(x) ROS_INFO_STREAM( "EnvModelSrv plugin " << this->m_name << ": " << x );
 
 	public:
 		//! Constructor
-		CServerPluginBase( const std::string & name )
-			: m_name(name)
-		{ }
+		CServerPluginBase( const std::string & name ) : m_name(name) {}
 
 		//! Virtual destructor.
 		virtual ~CServerPluginBase() {}
 
 		//! Initialize plugin - called in server constructor
-		virtual void init(ros::NodeHandle & node_handle)
-		{
-		}
+		virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh) {}
 
 		//! Called when new scan was inserted and now all can be published
 		void publish(const ros::Time & timestamp)
@@ -154,11 +150,10 @@ namespace but_env_model
 		virtual void reset() {}
 
 		//! Pause/resume plugin. All publishers and subscribers are disconnected on pause
-		virtual void pause( bool bPause, ros::NodeHandle & node_handle ){}
+		virtual void pause( bool bPause, ros::NodeHandle & node_handle ) {}
 
 		//! Get plugin name
-		std::string getName( ) { return m_name; }
-
+		std::string getName() { return m_name; }
 
 	protected:
 		//! Should data be published
@@ -232,14 +227,14 @@ namespace but_env_model
 		typedef boost::signal< void (tDataConstPtr, const ros::Time & ) > tSigDataHasChanged;
 
 		/// Constructor
-		// 2012/12/14 Majkl: Trying to solve problem with missing time stamps
-//        CDataHolderBase() : m_data(new tData) {}
-//        CDataHolderBase() : m_data(new tData), m_DataTimeStamp(ros::Time(0)) {}
-        CDataHolderBase() : m_DataTimeStamp(ros::Time::now()) {m_data = boost::make_shared<tData>();}
+        CDataHolderBase() : m_DataTimeStamp(ros::Time::now())
+		{
+            // NOTE: boost::make_shared doesn't reflect Eigen's specific allocators
+//            m_data = boost::make_shared<tData>();
+            m_data = tDataPtr( new tData() );
+		}
 
 		/// Constructor
-//        CDataHolderBase( tData * data ) : m_data(data) {}
-//        CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time(0)) {}
         CDataHolderBase( tData * data ) : m_data(data), m_DataTimeStamp(ros::Time::now()) {}
 
 	public:
@@ -263,10 +258,8 @@ namespace but_env_model
 		{
 			if( hasValidData() )
 			{
-	//			std::cerr << "invalidate: Locked." << std::endl;
 				boost::mutex::scoped_lock lock(m_lockData);
 				m_sigDataChanged( m_data, m_DataTimeStamp );
-	//			std::cerr << "invalidate: Unlocked." << std::endl;
 			}
 		}
 

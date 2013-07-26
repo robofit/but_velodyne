@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef TestingSphere_H_included
 #define TestingSphere_H_included
@@ -32,6 +33,7 @@
 
 namespace but_env_model
 {
+
 /**
  * Test if point is in the sphere
  */
@@ -66,8 +68,8 @@ protected:
 
 }; // class CTestingSphere
 
-} // namespace but_env_model
 
+} // namespace but_env_model
 
 // TestingSphere_H_included
 #endif

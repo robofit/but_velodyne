@@ -94,6 +94,9 @@ protected:
 	//! Tree frame id
 	std::string m_treeFrameId;
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 }; // class COcTreeFilter
 
 } // namespace but_env_model

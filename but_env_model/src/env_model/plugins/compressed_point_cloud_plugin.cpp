@@ -64,7 +64,7 @@ but_env_model::CCompressedPointCloudPlugin::~CCompressedPointCloudPlugin()
  */
 void but_env_model::CCompressedPointCloudPlugin::spinThread()
 {
-  while (node_handle_.ok())
+  while (nh_.ok())
   {
     if (need_to_terminate_)
     {
@@ -77,65 +77,65 @@ void but_env_model::CCompressedPointCloudPlugin::spinThread()
 /**
  * Initialize plugin
  */
-void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
 	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
 	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
-	node_handle.param("ocmap_frame_id", m_frame_id, m_frame_id);
+	private_nh.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
 	if ( m_bSpinThread )
 	{
 		// if we're spinning our own thread, we'll also need our own callback queue
-		node_handle.setCallbackQueue( &callback_queue_ );
+		nh.setCallbackQueue( &callback_queue_ );
 
 		need_to_terminate_ = false;
 		spin_thread_.reset( new boost::thread(boost::bind(&CCompressedPointCloudPlugin::spinThread, this)) );
-		node_handle_ = node_handle;
+		nh_ = nh;
 	}
 
     // Read parameters
 	{
 		// Where to get camera position information
-		node_handle.param("compressed_pc_camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
+		private_nh.param("compressed_pc_camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
 		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_camera_info_topic_name: %s", m_cameraInfoTopic.c_str() );
 
 		// Point cloud publishing topic name
-		node_handle.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_SIMPLE_PC_PUBLISHING_TOPIC_NAME);
+		private_nh.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_SIMPLE_PC_PUBLISHING_TOPIC_NAME);
 		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_pointcloud_centers_publisher: %s", m_pcPublisherName.c_str() );
 
 		// Should simple pointcloud be published too?
-		node_handle.param("publish_simple_cloud", m_bPublishSimpleCloud, false );
+		private_nh.param("publish_simple_cloud", m_bPublishSimpleCloud, false );
 
 		// How many uncomplete frames should be published before complete one
 		int uf;
-		node_handle.param("compressed_pc_differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES );
+		private_nh.param("compressed_pc_differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES );
 		m_uncomplete_frames = uf;
 
 		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %i", uf );
 
 		// Complete data topic name
-		node_handle.param( "compressed_pc_update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
+		private_nh.param( "compressed_pc_update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
 		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %s", m_ocUpdatePublisherName.c_str() );
 	}
 
 	// Services
 	{
-		m_serviceSetNumIncomplete = node_handle.advertiseService( SetNumIncompleteFrames_SRV,
+		m_serviceSetNumIncomplete = nh.advertiseService( SetNumIncompleteFrames_SRV,
 				&but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB, this );
 	}
 
     // Create publisher - simple point cloud
 	if( m_bPublishSimpleCloud)
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+		m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
     // Create publisher - packed info - cam position and update pointcloud
-    m_ocUpdatePublisher = node_handle.advertise< but_env_model_msgs::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
+    m_ocUpdatePublisher = nh.advertise< but_env_model_msgs::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
 
     // Subscribe to position topic
     // Create subscriber
-    m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
-    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(node_handle, cameraPositionTopic, 1);
+    m_camPosSubscriber = nh.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
+    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(nh, cameraPositionTopic, 1);
 
     if (!m_camPosSubscriber)
     {
@@ -151,8 +151,8 @@ void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & node_han
     m_data->clear();
 
     // stereo cam params for sensor cone:
-	node_handle.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
-	node_handle.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
+	private_nh.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
+	private_nh.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
 
 }
 
@@ -377,7 +377,7 @@ void but_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
 /**
  *  Connect/disconnect plugin to/from all topics
  */
-void but_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & node_handle)
+void but_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh)
 {
 	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
 
@@ -389,11 +389,11 @@ void but_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHa
 	else
 	{
 		// Create publisher
-		m_pcPublisher = node_handle.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+		m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
 		// Subscribe to position topic
 		// Create subscriber
-		m_camPosSubscriber = node_handle.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
+		m_camPosSubscriber = nh.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
 	}
 }
 

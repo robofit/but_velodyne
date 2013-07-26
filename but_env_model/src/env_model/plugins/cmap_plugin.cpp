@@ -48,7 +48,7 @@ but_env_model::CCMapPlugin::CCMapPlugin(const std::string & name)
 }
 
 //! Initialize plugin - called in server constructor
-void but_env_model::CCMapPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::CCMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
 	m_collisionMapVersion = 0;
 	m_dataBuffer->boxes.clear();
@@ -57,36 +57,36 @@ void but_env_model::CCMapPlugin::init(ros::NodeHandle & node_handle)
 	// Read parameters
 
 	// Get collision map radius
-	node_handle.param("collision_map_radius", m_collisionMapLimitRadius, COLLISION_MAP_RADIUS_LIMIT );
+	private_nh.param("collision_map_radius", m_collisionMapLimitRadius, COLLISION_MAP_RADIUS_LIMIT );
 
 	// Get collision map topic name
-	node_handle.param("collision_map_publisher", m_cmapPublisherName, COLLISION_MAP_PUBLISHER_NAME );
+	private_nh.param("collision_map_publisher", m_cmapPublisherName, COLLISION_MAP_PUBLISHER_NAME );
 
 	// Get FID to which will be points transformed when publishing collision map
-	node_handle.param("collision_map_frame_id", m_cmapFrameId, COLLISION_MAP_FRAME_ID ); //
+	private_nh.param("collision_map_frame_id", m_cmapFrameId, COLLISION_MAP_FRAME_ID ); //
 
 	// Get collision map crawling depth
 	int depth(m_crawlDepth);
-	node_handle.param("collision_map_octree_depth", depth, depth);
+	private_nh.param("collision_map_octree_depth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create and publish service - get collision map
-	m_serviceGetCollisionMap = node_handle.advertiseService( GetCollisionMap_SRV, 	&CCMapPlugin::getCollisionMapSrvCallback, this);
+	m_serviceGetCollisionMap = nh.advertiseService( GetCollisionMap_SRV, 	&CCMapPlugin::getCollisionMapSrvCallback, this);
 
 	// Create and publish service - is new collision map
-	m_serviceIsNewCMap = node_handle.advertiseService( IsNewCMap_SRV, &CCMapPlugin::isNewCmapSrvCallback, this );
+	m_serviceIsNewCMap = nh.advertiseService( IsNewCMap_SRV, &CCMapPlugin::isNewCmapSrvCallback, this );
 
 	// Create and publish service - lock map
-	m_serviceLockCMap = node_handle.advertiseService( LockCMap_SRV, &CCMapPlugin::lockCmapSrvCallback, this );
+	m_serviceLockCMap = nh.advertiseService( LockCMap_SRV, &CCMapPlugin::lockCmapSrvCallback, this );
 
 	// Create and publish service - remove cube from map
-	m_serviceRemoveCube = node_handle.advertiseService( RemoveCubeCMP_SRV, &CCMapPlugin::removeBoxCallback, this );
+	m_serviceRemoveCube = nh.advertiseService( RemoveCubeCMP_SRV, &CCMapPlugin::removeBoxCallback, this );
 
 	// Create and publish service - add cube to map
-	m_serviceAddCube = node_handle.advertiseService( AddCubeCMP_SRV, &CCMapPlugin::addBoxCallback, this );
+	m_serviceAddCube = nh.advertiseService( AddCubeCMP_SRV, &CCMapPlugin::addBoxCallback, this );
 
 	// Connect publishing services
-	pause( false, node_handle );
+	pause( false, nh );
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -384,12 +384,12 @@ bool but_env_model::CCMapPlugin::lockCmapSrvCallback( but_env_model::LockCollisi
 /**
  *  Disconnect plugin from all topics
  */
-void but_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 		m_cmapPublisher.shutdown();
 	else
-		m_cmapPublisher = node_handle.advertise<moveit_msgs::CollisionMap> ( m_cmapPublisherName, 5, m_latchedTopics);
+		m_cmapPublisher = nh.advertise<moveit_msgs::CollisionMap> ( m_cmapPublisherName, 5, m_latchedTopics);
 }
 
 /**

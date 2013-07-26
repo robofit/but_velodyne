@@ -49,9 +49,6 @@ public:
 	typedef Eigen::Transform<float, 3, Eigen::Affine> tTransform;
 
 public:
-   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-public:
 	//! Simple constructor
 	CTestingPolymesh();
 
@@ -61,13 +58,13 @@ public:
 	//! Create as oriented box
 	void setAsBox( const tPoint &center, const tQuaternion &orientation, const tPoint & size );
 
-protected:
-
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CTestingPolymesh
 
-} // namespace but_env_model
 
+} // namespace but_env_model
 
 // TestingPolymesh_H_included
 #endif

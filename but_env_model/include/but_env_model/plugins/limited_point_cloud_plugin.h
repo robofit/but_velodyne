@@ -40,6 +40,7 @@
 
 namespace but_env_model
 {
+
 class CLimitedPointCloudPlugin : public CPointCloudPlugin
 {
 public:
@@ -50,16 +51,13 @@ public:
 	virtual ~CLimitedPointCloudPlugin();
 
 	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
+	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
 	//! Connect/disconnect plugin to/from all topics
 	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
 
 	//! Wants plugin new map data?
 	virtual bool wantsMap() { return m_cameraFrameId.size() != 0; }
-
-public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
 	//! Set used octomap frame id and timestamp
@@ -118,13 +116,17 @@ protected:
 
 	// these are needed when spinning up a dedicated thread
 	boost::scoped_ptr<boost::thread> spin_thread_;
-	ros::NodeHandle node_handle_;
+	ros::NodeHandle nh_;
 	ros::CallbackQueue callback_queue_;
 	volatile bool need_to_terminate_;
 
 	// Mutex used to lock camera position parameters
 	boost::recursive_mutex m_camPosMutex;
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+
 
 } // namespace but_env_model
 

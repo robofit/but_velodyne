@@ -37,98 +37,94 @@
 namespace but_env_model
 {
 
-    class CMarkerArrayPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< visualization_msgs::MarkerArray >
-    {
-    public:
-        /// Constructor
-        CMarkerArrayPlugin(const std::string & name);
+class CMarkerArrayPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< visualization_msgs::MarkerArray >
+{
+public:
+    /// Constructor
+    CMarkerArrayPlugin(const std::string & name);
 
-        /// Destructor
-        virtual ~CMarkerArrayPlugin();
+    /// Destructor
+    virtual ~CMarkerArrayPlugin();
 
-        //! Enable or disable publishing
-        void enable( bool enabled ){ m_publishMarkerArray = enabled; }
+    //! Enable or disable publishing
+    void enable( bool enabled ){ m_publishMarkerArray = enabled; }
 
-        //! Initialize plugin - called in server constructor
-        virtual void init(ros::NodeHandle & node_handle);
+    //! Initialize plugin - called in server constructor
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
-         //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
-        virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+     //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+    virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
-    protected:
-		//! Called when new scan was inserted and now all can be published
-		 virtual void publishInternal(const ros::Time & timestamp);
+protected:
+    //! Called when new scan was inserted and now all can be published
+     virtual void publishInternal(const ros::Time & timestamp);
 
-		 //! Set used octo map frame id and time stamp
-		 virtual void newMapDataCB( SMapWithParameters & par );
+     //! Set used octo map frame id and time stamp
+     virtual void newMapDataCB( SMapWithParameters & par );
 
-		 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-		 virtual void handleNode(const tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+     /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+     virtual void handleNode(const tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-		 /// Called when all nodes was visited.
-		 virtual void handlePostNodeTraversal(const SMapWithParameters & mp);
+     /// Called when all nodes was visited.
+     virtual void handlePostNodeTraversal(const SMapWithParameters & mp);
 
-		 //! Should plugin publish data?
-		 virtual bool shouldPublish();
+     //! Should plugin publish data?
+     virtual bool shouldPublish();
 
 
-		 /// Compute color from the height
-        std_msgs::ColorRGBA heightMapColor(double h) const;
+     /// Compute color from the height
+    std_msgs::ColorRGBA heightMapColor(double h) const;
 
-    public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+protected:
+    //! Is publishing enabled?
+    bool m_publishMarkerArray;
 
-    protected:
-        //! Is publishing enabled?
-        bool m_publishMarkerArray;
+    //! Collision object publisher name
+    std::string m_markerArrayPublisherName;
 
-        //! Collision object publisher name
-        std::string m_markerArrayPublisherName;
+    /// Collision object publisher
+    ros::Publisher m_markerArrayPublisher;
 
-        /// Collision object publisher
-        ros::Publisher m_markerArrayPublisher;
+    //! Transform listener
+    tf::TransformListener m_tfListener;
 
-        //! Transform listener
-        tf::TransformListener m_tfListener;
+    //
+    bool m_latchedTopics;
 
-        //
-        bool m_latchedTopics;
+    //! Used frame id (input data will be transformed to it)
+    std::string m_markerArrayFrameId;
 
-        //! Used frame id (input data will be transformed to it)
-        std::string m_markerArrayFrameId;
+    /// Crawled octomap frame id
+    std::string m_ocFrameId;
 
-        /// Crawled octomap frame id
-        std::string m_ocFrameId;
+    /// Transformation from octomap to the collision object frame id - rotation
+    Eigen::Matrix3f m_ocToMarkerArrayRot;
 
-        /// Transformation from octomap to the collision object frame id - rotation
-        Eigen::Matrix3f m_ocToMarkerArrayRot;
+    /// Transformation from octomap to the collision object frame id - translation
+    Eigen::Vector3f m_ocToMarkerArrayTrans;
 
-        /// Transformation from octomap to the collision object frame id - translation
-        Eigen::Vector3f m_ocToMarkerArrayTrans;
+    /// Octomap metrics parameters
+    double m_minX, m_minY, m_minZ, m_maxX, m_maxY, m_maxZ;
 
-        /// Octomap metrics parameters
-        double m_minX, m_minY, m_minZ, m_maxX, m_maxY, m_maxZ;
+    /// Create marker array as a height map
+    bool m_bHeightMap;
 
-        /// Create marker array as a height map
-        bool m_bHeightMap;
+    /// Should input data be transformed? (are they in different frames?)
+    bool m_bTransform;
 
-        /// Should input data be transformed? (are they in different frames?)
-        bool m_bTransform;
+    /// Coloring factor
+    float m_colorFactor;
 
-        /// Coloring factor
-        float m_colorFactor;
+    /// Markers color
+    std_msgs::ColorRGBA m_color;
 
-        /// Markers color
-        std_msgs::ColorRGBA m_color;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    }; // class CMarkerArrayPlugin
+}; // class CMarkerArrayPlugin
+
 
 } // namespace but_env_model
-
-
-
-// namespace but_env_model
-
 
 // MarkerArrayPlugin_H_included
 #endif

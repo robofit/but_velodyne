@@ -63,66 +63,65 @@
  Constructor
  */
 but_env_model::CButServer::CButServer(const std::string& filename) :
-			m_bIsPaused(false),
-			m_nh(),
-			m_latchedTopics(false),
-			m_numPCFramesProcessed(1.0), m_frameCounter(0),
-			m_plugCMap(new CCMapPlugin("CMAP" )),
-			m_plugInputPointCloud( new CPointCloudPlugin("PCIN", true ) ),
-			m_plugOcMapPointCloud( new CPointCloudPlugin( "PCOC", false )),
-//			m_plugVisiblePointCloud( new CLimitedPointCloudPlugin( "PCVIS" ) ),
-			m_plugOctoMap( new COctoMapPlugin("OCM", filename)),
-			m_plugCollisionObject( new CCollisionObjectPlugin( "COB" )),
-			m_plugMap2D( new CCollisionGridPlugin( "M2D" )),
-			m_plugIMarkers( ),
-			m_plugMarkerArray( new CMarkerArrayPlugin( "MA" ) ),
-			m_plugObjTree( new CObjTreePlugin( "OT" ) ),
-			m_plugOldIMarkers( ),
-			m_plugCompressedPointCloud( new CCompressedPointCloudPlugin( "CPC" ) ),
-			m_bUseOldIMP( false )
+    m_bIsPaused(false),
+    m_nh(),
+    m_privnh("~"),
+    m_latchedTopics(false),
+    m_numPCFramesProcessed(1.0),
+    m_frameCounter(0),
+    m_plugCMap(),
+    m_plugInputPointCloud(),
+    m_plugOcMapPointCloud(),
+//    m_plugVisiblePointCloud(),
+    m_plugOctoMap(),
+    m_plugCollisionObject(),
+    m_plugMap2D(),
+    m_plugIMarkers(),
+    m_plugMarkerArray(),
+    m_plugObjTree(),
+    m_plugCompressedPointCloud()
 #ifdef _EXAMPLES_
-			, m_plugExample( new CExamplePlugin("Example1") )
-			, m_plugExampleCrawler( new CExampleCrawlerPlugin("Example2") )
+    , m_plugExample()
+    , m_plugExampleCrawler()
+#endif
+{
+	m_latchedTopics = false;
+	m_privnh.param("latch", m_latchedTopics, m_latchedTopics);
+
+    //=========================================================================
+    // Create plugins
+
+	ROS_INFO_STREAM( "EnvModelSrv: Initializing plugins..." );
+
+//    m_plugCMap = new CCMapPlugin( "CMAP" );
+    m_plugInputPointCloud = boost::shared_ptr<CPointCloudPlugin>( new CPointCloudPlugin("PCIN", true) );
+    m_plugOcMapPointCloud = boost::shared_ptr<CPointCloudPlugin>( new CPointCloudPlugin("PCOC", false) );
+//    m_plugVisiblePointCloud = boost::shared_ptr<CLimitedPointCloudPlugin>( new CLimitedPointCloudPlugin( "PCVIS") );
+    m_plugOctoMap = boost::shared_ptr<COctoMapPlugin>( new COctoMapPlugin("OCM", filename) );
+//    m_plugCollisionObject = boost::shared_ptr<CCollisionObjectPlugin>( new CCollisionObjectPlugin( "COB") );
+    m_plugMap2D = boost::shared_ptr<CCollisionGridPlugin>( new CCollisionGridPlugin( "M2D") );
+//    m_plugMarkerArray = boost::shared_ptr<CMarkerArrayPlugin>( new CMarkerArrayPlugin( "MA") );
+//    m_plugObjTree = boost::shared_ptr<CObjTreePlugin>( new CObjTreePlugin( "OT") );
+//    m_plugCompressedPointCloud = boost::shared_ptr<CCompressedPointCloudPlugin>( new CCompressedPointCloudPlugin( "CPC") );
+//    m_plugIMarkers = boost::shared_ptr<CIMarkersPlugin>( new CIMarkersPlugin( "IM") );
+
+#ifdef _EXAMPLES_
+    m_plugExample = boost::shared_ptr<CExamplePlugin>( new CExamplePlugin( "Example1") );
+    m_plugExampleCrawler = boost::shared_ptr<CExampleCrawlerPlugin>( new CExampleCrawlerPlugin( "Example2") );
 #endif
 
-{
-	// Get node handle
-	ros::NodeHandle private_nh("~");
-
-	// Advertise services
-	m_serviceReset = private_nh.advertiseService(EnvModelReset_SRV, &CButServer::onReset, this);
-	m_servicePause = private_nh.advertiseService(EnvModelPause_SRV, &CButServer::onPause, this);
-	m_serviceUseInputColor = private_nh.advertiseService( EnvModelUseInputColor_SRV, &CButServer::onUseInputColor, this);
-
-
-	m_latchedTopics = false;
-	private_nh.param("latch", m_latchedTopics, m_latchedTopics);
-	private_nh.param<bool>("use_old_im", m_bUseOldIMP, m_bUseOldIMP);
-
-	std::cerr << "BUTSERVER: Initializing plugins " << std::endl;
-
-	// Store all plugins pointers for easier access
-	m_plugins.push_back( m_plugCMap.get() );
-	m_plugins.push_back( m_plugInputPointCloud.get() );
-	m_plugins.push_back( m_plugOcMapPointCloud.get() );
-//	m_plugins.push_back( m_plugVisiblePointCloud.get() );
-	m_plugins.push_back( m_plugOctoMap.get() );
-	m_plugins.push_back( m_plugCollisionObject.get() );
-	m_plugins.push_back( m_plugMap2D.get() );
-	m_plugins.push_back( m_plugMarkerArray.get() );
-	m_plugins.push_back( m_plugObjTree.get() );
-	m_plugins.push_back( m_plugCompressedPointCloud.get() );
-
-	if( m_bUseOldIMP )
-	{
-		m_plugOldIMarkers = boost::shared_ptr< COldIMarkersPlugin >(new COldIMarkersPlugin( "IM"  ) );
-		m_plugins.push_back( m_plugOldIMarkers.get() );
-	}
-	else
-	{
-		m_plugIMarkers = boost::shared_ptr< CIMarkersPlugin >( new CIMarkersPlugin( "IM" ) );
-		m_plugins.push_back( m_plugIMarkers.get() );
-	}
+    // Store all plugins pointers for easier access
+//    m_plugins.push_back( m_plugCMap.get() );
+    m_plugins.push_back( m_plugInputPointCloud.get() );
+    m_plugins.push_back( m_plugOcMapPointCloud.get() );
+//    m_plugins.push_back( m_plugVisiblePointCloud.get() );
+    m_plugins.push_back( m_plugOctoMap.get() );
+//    m_plugins.push_back( m_plugCollisionObject.get() );
+    m_plugins.push_back( m_plugMap2D.get() );
+//    m_plugins.push_back( m_plugMarkerArray.get() );
+//    m_plugins.push_back( m_plugObjTree.get() );
+//    m_plugins.push_back( m_plugCompressedPointCloud.get() );
+//    m_plugins.push_back( m_plugIMarkers.get() );
 
 #ifdef _EXAMPLES_
 	m_plugins.push_back( m_plugExample.get() );
@@ -131,26 +130,35 @@ but_env_model::CButServer::CButServer(const std::string& filename) :
 
 	//=========================================================================
 	// Initialize plugins
-	FOR_ALL_PLUGINS_PARAM(init, private_nh)
 
-	std::cerr << "BUTSERVER: All plugins initialized. Starting server. " << std::endl;
+	FOR_ALL_PLUGINS_PARAM2(init, m_nh, m_privnh)
+
+	ROS_INFO( "EnvModelSrv: All plugins initialized. Starting server... " );
 
 	// Connect input point cloud input with octomap
 	m_plugInputPointCloud->getSigDataChanged().connect( boost::bind( &COctoMapPlugin::insertCloud, m_plugOctoMap, _1 ));
 
 	// Connect all crawlers
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCMapPlugin::handleNewMapData, m_plugCMap, _1 ) );
+//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCMapPlugin::handleNewMapData, m_plugCMap, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CPointCloudPlugin::handleNewMapData, m_plugOcMapPointCloud, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionGridPlugin::handleNewMapData, m_plugMap2D, _1 ) );
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CMarkerArrayPlugin::handleNewMapData, m_plugMarkerArray, _1 ) );
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCompressedPointCloudPlugin::handleNewMapData, m_plugCompressedPointCloud, _1 ) );
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionObjectPlugin::handleNewMapData, m_plugCollisionObject, _1 ) );
+//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CMarkerArrayPlugin::handleNewMapData, m_plugMarkerArray, _1 ) );
+//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCompressedPointCloudPlugin::handleNewMapData, m_plugCompressedPointCloud, _1 ) );
+//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionObjectPlugin::handleNewMapData, m_plugCollisionObject, _1 ) );
 //	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CLimitedPointCloudPlugin::handleNewMapData, m_plugVisiblePointCloud, _1 ) );
 
 	// Connect octomap data changed signal with server publish
 	m_plugOctoMap->getSigDataChanged().connect( boost::bind( &CButServer::onOcMapDataChanged, *this, _1, _2 ));
 
+    //=========================================================================
+    // Advertise services
+
+	m_serviceReset = m_privnh.advertiseService(EnvModelReset_SRV, &CButServer::onReset, this);
+    m_servicePause = m_privnh.advertiseService(EnvModelPause_SRV, &CButServer::onPause, this);
+    m_serviceUseInputColor = m_privnh.advertiseService( EnvModelUseInputColor_SRV, &CButServer::onUseInputColor, this);
+
 } // Constructor
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /**
@@ -160,7 +168,6 @@ but_env_model::CButServer::~CButServer()
 {
 
 }
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,11 +212,11 @@ void but_env_model::CButServer::publishAll(const ros::Time& rostime)
  */
 void but_env_model::CButServer::reset()
 {
-  ROS_DEBUG("Reseting environment server...");
+  ROS_INFO( "Reseting environment server..." );
 
   FOR_ALL_PLUGINS(reset());
 
-  ROS_DEBUG("Environment server reset finished.");
+  ROS_INFO( "Environment server reset finished." );
 
 }
 
@@ -239,14 +246,13 @@ void but_env_model::CButServer::pause( bool bPause )
 	if( m_bIsPaused == bPause )
 		return;
 
-	// Get node handle
-	ros::NodeHandle private_nh("~");
-
 	tVecPlugins::iterator p, end( m_plugins.end() );
 
 	for( p = m_plugins.begin(); p != end; ++p )
 	{
-		(*p)->pause( bPause, private_nh );
+	    // Majkl 2013/07
+//        (*p)->pause( bPause, m_privnh );
+		(*p)->pause( bPause, m_nh );
 	}
 
 	if( bPause )

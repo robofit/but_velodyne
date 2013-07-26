@@ -80,15 +80,15 @@ void but_env_model::COctoMapPlugin::setDefaults()
 }
 
 but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
-: but_env_model::CServerPluginBase(name)
-, CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
-, filecounter(0)
-, m_filterSingleSpecles("/map")
-, m_filterRaycast("/map")
-, m_filterGround("/map")
-, m_bFilterWithInput(false)
-, m_bNewDataToFilter(false)
-, m_bMapLoaded(false)
+    : but_env_model::CServerPluginBase(name)
+    , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
+    , filecounter(0)
+    , m_filterSingleSpecles("/map")
+    , m_filterRaycast("/map")
+    , m_filterGround("/map")
+    , m_bFilterWithInput(false)
+    , m_bNewDataToFilter(false)
+    , m_bMapLoaded(false)
 {
 	//
 	setDefaults();
@@ -107,15 +107,15 @@ but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
 }
 
 but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const std::string & filename)
-:	but_env_model::CServerPluginBase(name)
-, CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
-, m_filterSingleSpecles("/map")
-, m_filterRaycast("/map")
-, m_filterGround("/map")
-, m_bFilterWithInput(false)
-, m_filterCloudPlugin(new CPointCloudPlugin("PCFILTER", false ))
-, m_bNewDataToFilter(false)
-, m_bMapLoaded(false)
+    : but_env_model::CServerPluginBase(name)
+    , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
+    , m_filterSingleSpecles("/map")
+    , m_filterRaycast("/map")
+    , m_filterGround("/map")
+    , m_bFilterWithInput(false)
+    , m_filterCloudPlugin(new CPointCloudPlugin("PCFILTER", false ))
+    , m_bNewDataToFilter(false)
+    , m_bMapLoaded(false)
 {
 	setDefaults();
 
@@ -169,29 +169,29 @@ but_env_model::COctoMapPlugin::~COctoMapPlugin()\
 }
 
 //! Initialize plugin - called in server constructor
-void but_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
+void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
 	PERROR( "Initializing OctoMapPlugin" );
 
 	reset(false);
 
-	node_handle.param("ocmap_resolution", m_mapParameters.resolution,
+	private_nh.param("ocmap_resolution", m_mapParameters.resolution,
 			m_mapParameters.resolution);
 	int td( m_mapParameters.treeDepth);
-	node_handle.param("ocmap_treedepth", td, td );
+	private_nh.param("ocmap_treedepth", td, td );
 	m_mapParameters.treeDepth = ( td < 0 ) ? 0 : td;
-	node_handle.param("ocmap_sensor_model/hit", m_mapParameters.probHit,
+	private_nh.param("ocmap_sensor_model/hit", m_mapParameters.probHit,
 			m_mapParameters.probHit);
-	node_handle.param("ocmap_sensor_model/miss", m_mapParameters.probMiss,
+	private_nh.param("ocmap_sensor_model/miss", m_mapParameters.probMiss,
 			m_mapParameters.probMiss);
-	node_handle.param("ocmap_sensor_model/min", m_mapParameters.thresMin,
+	private_nh.param("ocmap_sensor_model/min", m_mapParameters.thresMin,
 			m_mapParameters.thresMin);
-	node_handle.param("ocmap_sensor_model/max", m_mapParameters.thresMax,
+	private_nh.param("ocmap_sensor_model/max", m_mapParameters.thresMax,
 			m_mapParameters.thresMax);
-	node_handle.param("ocmap_max_range", m_mapParameters.maxRange,
+	private_nh.param("ocmap_max_range", m_mapParameters.maxRange,
 			m_mapParameters.maxRange);
 
-	node_handle.param("ocmap_frame_id", m_mapParameters.frameId, m_mapParameters.frameId );
+	private_nh.param("ocmap_frame_id", m_mapParameters.frameId, m_mapParameters.frameId );
 
 	// Set octomap parameters...
 	{
@@ -204,57 +204,57 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 
 	// Default color
 	int c;
-	c = m_r; node_handle.param("pointcloud_default_color_r", c, c);	m_r = c;
-	c = m_g; node_handle.param("pointcloud_default_color_g", c, c);	m_g = c;
-	c = m_b; node_handle.param("pointcloud_default_color_b", c, c);	m_b = c;
+	c = m_r; private_nh.param("pointcloud_default_color_r", c, c);	m_r = c;
+	c = m_g; private_nh.param("pointcloud_default_color_g", c, c);	m_g = c;
+	c = m_b; private_nh.param("pointcloud_default_color_b", c, c);	m_b = c;
 
 	// Should ground plane be filtered?
-	node_handle.param("ocmap_filter_ground", m_filterGroundPlane, m_filterGroundPlane);
+	private_nh.param("ocmap_filter_ground", m_filterGroundPlane, m_filterGroundPlane);
 
 	// Should potentially free cells be filtered?
-	node_handle.param("ocmap_filter_outdated", m_bRemoveOutdated, m_bRemoveOutdated );
+	private_nh.param("ocmap_filter_outdated", m_bRemoveOutdated, m_bRemoveOutdated );
 
 	// Should be the input cloud used for raycast filtering?
-	node_handle.param("use_input_for_filter", m_bFilterWithInput, m_bFilterWithInput );
+	private_nh.param("use_input_for_filter", m_bFilterWithInput, m_bFilterWithInput );
 
 	// Octomap publishing topic
-	node_handle.param("ocmap_publishing_topic", m_ocPublisherName,
+	private_nh.param("ocmap_publishing_topic", m_ocPublisherName,
 			OCTOMAP_PUBLISHER_NAME);
 
 	// Advertise services
-	m_serviceResetOctomap = node_handle.advertiseService(ResetOctomap_SRV,
+	m_serviceResetOctomap = nh.advertiseService(ResetOctomap_SRV,
 			&but_env_model::COctoMapPlugin::resetOctomapCB, this);
 
-	m_serviceRemoveCube = node_handle.advertiseService(RemoveCubeOctomap_SRV,
+	m_serviceRemoveCube = nh.advertiseService(RemoveCubeOctomap_SRV,
 			&but_env_model::COctoMapPlugin::removeCubeCB, this);
 
-	m_serviceAddCube = node_handle.advertiseService( AddCubeOctomap_SRV,
+	m_serviceAddCube = nh.advertiseService( AddCubeOctomap_SRV,
 			&but_env_model::COctoMapPlugin::addCubeCB, this);
 
-	m_serviceSetCrawlDepth = node_handle.advertiseService( SetCrawlDepth_SRV,
+	m_serviceSetCrawlDepth = nh.advertiseService( SetCrawlDepth_SRV,
 			&but_env_model::COctoMapPlugin::setCrawlingDepthCB, this );
 
-	m_serviceGetTreeDepth = node_handle.advertiseService( GetTreeDepth_SRV,
+	m_serviceGetTreeDepth = nh.advertiseService( GetTreeDepth_SRV,
 			&but_env_model::COctoMapPlugin::getTreeDepthCB, this );
 
-	m_serviceLoadMap = node_handle.advertiseService( LoadMap_SRV,
+	m_serviceLoadMap = nh.advertiseService( LoadMap_SRV,
 			&but_env_model::COctoMapPlugin::loadOctreeCB, this);
 
-	m_serviceSaveMap = node_handle.advertiseService( SaveMap_SRV,
+	m_serviceSaveMap = nh.advertiseService( SaveMap_SRV,
 				&but_env_model::COctoMapPlugin::saveOctreeCB, this);
 
-	m_serviceLoadFullMap = node_handle.advertiseService( LoadFullMap_SRV,
+	m_serviceLoadFullMap = nh.advertiseService( LoadFullMap_SRV,
 				&but_env_model::COctoMapPlugin::loadFullOctreeCB, this);
 
-	m_serviceSaveFullMap = node_handle.advertiseService( SaveFullMap_SRV,
+	m_serviceSaveFullMap = nh.advertiseService( SaveFullMap_SRV,
 				&but_env_model::COctoMapPlugin::saveFullOctreeCB, this);
 
 
 	// Create publisher
-	m_ocPublisher = node_handle.advertise<octomap_msgs::Octomap> (
+	m_ocPublisher = nh.advertise<octomap_msgs::Octomap> (
 			m_ocPublisherName, 5, m_latchedTopics);
 
-	m_registration.init( node_handle );
+	m_registration.init( nh );
 
 	PERROR( "OctoMapPlugin initialized..." );
 
@@ -265,9 +265,9 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	// Initialize filters
 	m_filterSingleSpecles.setTreeFrameId(m_mapParameters.frameId);
 	m_filterRaycast.setTreeFrameId(m_mapParameters.frameId);
-	m_filterRaycast.init(node_handle);
+	m_filterRaycast.init(nh);
 	m_filterGround.setTreeFrameId(m_mapParameters.frameId);
-	m_filterGround.init(node_handle);
+	m_filterGround.init(nh);
 
 	// Set specles filter 20 seconds delay
 	m_filterSingleSpecles.setRunMode( COcTreeFilterBase::FILTER_TEST_TIME );
@@ -278,7 +278,7 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & node_handle)
 	{
 		// Initialize filter pointcloud plugin
 		std::cerr << "Initializing filter-in pointcloud plugin." << std::endl;
-		m_filterCloudPlugin->init(node_handle, SUBSCRIBER_FILTERING_CLOUD_NAME);
+		m_filterCloudPlugin->init(nh, private_nh, SUBSCRIBER_FILTERING_CLOUD_NAME);
 
 		// Disable cloud filtering
 		m_filterCloudPlugin->enableCloudFiltering(false);
@@ -552,13 +552,13 @@ bool but_env_model::COctoMapPlugin::shouldPublish()
  */
 void but_env_model::COctoMapPlugin::publishInternal(const ros::Time & timestamp)
 {
+    ROS_INFO_ONCE( "COctoMapPlugin::publishInternal() called" );
+
 	if( !shouldPublish() )
 		return;
 
 	// Lock data
-//	PERROR( "publish: Try lock");
 	boost::mutex::scoped_lock lock(m_lockData);
-//	PERROR( "publish: Locked");
 
 //	octomap_ros::OctomapBinary map;
 //	map.header.frame_id = m_mapParameters.frameId;
@@ -591,12 +591,12 @@ void but_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time)
  */
 bool but_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
 {
-	std::cerr << "Reset octomap service called..." << std::endl;
+    ROS_INFO( "Reset octomap service called..." );
 
 	// When reseting, loaded octomap should be cleared
 	reset(true);
 
-	std::cerr << "Reset done..." << std::endl;
+    ROS_INFO( "Reset done..." );
 
 	invalidate();
 
@@ -775,7 +775,8 @@ bool but_env_model::COctoMapPlugin::addCubeCB(
 				++counter;
 
 				// Try to generate octree key
-				if (!m_data->getTree().genKey(p, key)) continue;
+//				if (!m_data->getTree().genKey(p, key)) continue;
+                if (!m_data->getTree().coordToKeyChecked(p, key)) continue;
 
 				// Set node value
 				m_data->getTree().updateNode(key, true, true);
@@ -808,7 +809,7 @@ void but_env_model::COctoMapPlugin::addCubeGizmo(const geometry_msgs::Pose & pos
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void but_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_handle )
+void but_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	boost::mutex::scoped_lock lock(m_lockData);
 
@@ -820,13 +821,13 @@ void but_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & node_h
 	}
 	else
 	{
-		m_ocPublisher = node_handle.advertise<octomap_msgs::Octomap> (m_ocPublisherName, 5, m_latchedTopics);
+		m_ocPublisher = nh.advertise<octomap_msgs::Octomap> (m_ocPublisherName, 5, m_latchedTopics);
 
 		// Add camera info subscriber
-//		m_ciSubscriber = node_handle.subscribe(m_camera_info_topic, 10, &but_env_model::COctoMapPlugin::cameraInfoCB, this);
+//		m_ciSubscriber = nh.subscribe(m_camera_info_topic, 10, &but_env_model::COctoMapPlugin::cameraInfoCB, this);
 
 		// If should publish, create markers publisher
-//		m_markerPublisher = node_handle.advertise<visualization_msgs::Marker> (	m_markers_topic_name, 10);
+//		m_markerPublisher = nh.advertise<visualization_msgs::Marker> (	m_markers_topic_name, 10);
 	}
 }
 

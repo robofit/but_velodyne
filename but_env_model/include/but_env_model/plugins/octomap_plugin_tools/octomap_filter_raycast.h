@@ -147,6 +147,9 @@ protected:
 	/// Tree resolution
 	float m_tree_resolution;
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
 }; // class COcFilterRaycast
 
 } // namespace but_env_model

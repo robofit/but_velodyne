@@ -56,6 +56,7 @@
 
 namespace but_env_model
 {
+
 /**
  * Pointcloud plugin predeclaration
  */
@@ -84,7 +85,7 @@ public:
 	void insertCloud(tPointCloud::ConstPtr cloud);
 
 	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
+	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
 	//! Reset octomap
 	void reset(bool clearLoaded = true);
@@ -274,15 +275,13 @@ protected:
 	// Input sensor frame id
 	std::string m_sensor_frame_id;
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class COctoMapPlugin;
 
 
-}
-
-
-
- // namespace but_env_model
+} // namespace but_env_model
 
 // OCTOMAPPLUGIN_H_INCLUDED
 #endif

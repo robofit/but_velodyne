@@ -24,11 +24,13 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef OCTONODE_H
 #define OCTONODE_H
 
 #include "but_octomap_ros.h"
+
 #include <octomap/OcTreeStamped.h>
 
 namespace but_env_model
@@ -202,7 +204,8 @@ public:
 			const float& z, const unsigned char& r, const unsigned char& g,
 			const unsigned char& b, const unsigned char& a) {
 		octomap::OcTreeKey key;
-		if (!this->genKey(octomap::point3d(x, y, z), key))
+//        if (!this->genKey(octomap::point3d(x, y, z), key))
+		if (!this->coordToKeyChecked(octomap::point3d(x, y, z), key))
 			return NULL;
 		return setNodeColor(key, r, g, b, a);
 	}
@@ -216,7 +219,8 @@ public:
 			const float& z, const unsigned char& r, const unsigned char& g,
 			const unsigned char& b, const unsigned char& a) {
 		octomap::OcTreeKey key;
-		if (!this->genKey(octomap::point3d(x, y, z), key))
+//      if (!this->genKey(octomap::point3d(x, y, z), key))
+        if (!this->coordToKeyChecked(octomap::point3d(x, y, z), key))
 			return NULL;
 		return averageNodeColor(key, r, g, b, a);
 	}
@@ -231,7 +235,8 @@ public:
 			const float& z, const unsigned char& r, const unsigned char& g,
 			const unsigned char& b, const unsigned char& a) {
 		octomap::OcTreeKey key;
-		if (!this->genKey(octomap::point3d(x, y, z), key))
+//		if (!this->genKey(octomap::point3d(x, y, z), key))
+        if (!this->coordToKeyChecked(octomap::point3d(x, y, z), key))
 			return NULL;
 		return integrateNodeColor(key, r, g, b, a);
 	}

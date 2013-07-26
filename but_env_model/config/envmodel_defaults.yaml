@@ -49,7 +49,8 @@ ocmap_ground_filter/angle: 0.15
 ocmap_ground_filter/plane_distance: 0.07
 
 # Raytrace input and try to delete all cells that should be free
-ocmap_filter_outdated: true
+#ocmap_filter_outdated: true
+ocmap_filter_outdated: false
 
 ###############################################################################
 # Point cloud plugin

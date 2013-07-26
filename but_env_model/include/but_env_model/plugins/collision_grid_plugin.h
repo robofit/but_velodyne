@@ -37,91 +37,85 @@
 namespace but_env_model
 {
 
-    class CCollisionGridPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
-    {
-    public:
-        /// Constructor
-        CCollisionGridPlugin(const std::string & name);
+class CCollisionGridPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
+{
+public:
+    /// Constructor
+    CCollisionGridPlugin(const std::string & name);
 
-        /// Destructor
-        virtual ~CCollisionGridPlugin();
+    /// Destructor
+    virtual ~CCollisionGridPlugin();
 
-        //! Enable or disable publishing
-        void enable( bool enabled ){ m_publishGrid = enabled; }
+    //! Enable or disable publishing
+    void enable( bool enabled ){ m_publishGrid = enabled; }
 
-		//! Initialize plugin - called in server constructor
-		virtual void init(ros::NodeHandle & node_handle);
+    //! Initialize plugin - called in server constructor
+    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
-        //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
-        virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+    //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+    virtual void pause( bool bPause, ros::NodeHandle & node_handle );
 
-    protected:
-        //! Should plugin publish data?
-		bool shouldPublish();
+protected:
+    //! Should plugin publish data?
+    bool shouldPublish();
 
-		//! Called when new scan was inserted and now all can be published
-		virtual void publishInternal(const ros::Time & timestamp);
+    //! Called when new scan was inserted and now all can be published
+    virtual void publishInternal(const ros::Time & timestamp);
 
-		//! Set used octomap frame id and timestamp
-		virtual void newMapDataCB( SMapWithParameters & par );
+    //! Set used octomap frame id and timestamp
+    virtual void newMapDataCB( SMapWithParameters & par );
 
-		//! Handle free node (does nothing here)
-		virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp );
+    //! Handle free node (does nothing here)
+    virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp );
 
-		/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-		virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+    /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+    virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-    public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+protected:
+    //! Is publishing enabled?
+    bool m_publishGrid;
 
-    protected:
-        //! Is publishing enabled?
-        bool m_publishGrid;
+    //! Collision object publisher name
+    std::string m_gridPublisherName;
 
-        //! Collision object publisher name
-        std::string m_gridPublisherName;
+    /// Collision object publisher
+    ros::Publisher m_gridPublisher;
 
-        /// Collision object publisher
-        ros::Publisher m_gridPublisher;
+    //! Transform listener
+    tf::TransformListener m_tfListener;
 
-        //! Transform listener
-        tf::TransformListener m_tfListener;
+    //
+    bool m_latchedTopics;
 
-        //
-        bool m_latchedTopics;
+    /// Crawled octomap frame id
+    std::string m_ocFrameId;
 
-        /// Crawled octomap frame id
-        std::string m_ocFrameId;
+    /// Transformation from octomap to the collision object frame id - rotation
+    Eigen::Matrix3f m_ocToGridRot;
 
-        /// Transformation from octomap to the collision object frame id - rotation
-        Eigen::Matrix3f m_ocToGridRot;
+    /// Transformation from octomap to the collision object frame id - translation
+    Eigen::Vector3f m_ocToGridTrans;
 
-        /// Transformation from octomap to the collision object frame id - translation
-        Eigen::Vector3f m_ocToGridTrans;
+    /// Padded key minimum
+    octomap::OcTreeKey m_paddedMinKey;
 
-        /// Padded key minimum
-        octomap::OcTreeKey m_paddedMinKey;
+    /// Map limits
+    double m_minSizeX;
+    double m_minSizeY;
 
-        /// Map limits
-        double m_minSizeX;
-        double m_minSizeY;
+    /// Conversion between frame id's must be done...
+    bool m_bConvert;
 
-        /// Conversion between frame id's must be done...
-        bool m_bConvert;
+    /// Grid scaling
+    unsigned m_multires2DScale;
 
-        /// Grid scaling
-        unsigned m_multires2DScale;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    }; // class CCollisionGridPlugin
+}; // class CCollisionGridPlugin
 
 
 } // namespace but_env_model
 
-
-
-// namespace but_env_model
-
-
 // CollisionGridPlugin_H_included
 #endif
-

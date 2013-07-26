@@ -130,7 +130,7 @@ protected:
 	tf::TransformListener m_tfListener, m_tfListener2;
 
 public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

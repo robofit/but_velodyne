@@ -56,8 +56,7 @@ public:
 	virtual ~CIMarkersPlugin();
 
 	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
-
+	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
 protected:
     /**
@@ -133,16 +132,13 @@ protected:
     /// Use external server services?
     bool m_bUseExternalServer;
 
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CIMarkersPlugin
 
 
 } // namespace but_env_model
-
-
-
- // namespace but_env_model
-
 
 // IMarkersPlugin_H_included
 #endif
