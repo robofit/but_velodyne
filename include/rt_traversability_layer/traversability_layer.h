@@ -26,7 +26,7 @@
 #include <costmap_2d/ObstaclePluginConfig.h>
 #include <costmap_2d/footprint_layer.h>
 
-namespace rt_traversability_layer
+namespace costmap_2d
 {
 class TraversabilityLayer : public Layer, public Costmap2D
 {
@@ -50,21 +50,23 @@ public:
     {
       return true;
     }
+    
+    virtual void matchSize();
 
 
 protected:
 
   void incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map);
+  
+  nav_msgs::OccupancyGridConstPtr map_ptr_;
 
   std::string global_frame_; ///< @brief The global frame for the costmap
 
-  bool map_recieved_;
-  bool track_unknown_space_;
+  bool map_received_;
   ros::Subscriber map_sub_;
 
-  unsigned char lethal_threshold_, unknown_cost_value_;
-
   bool rolling_window_;
+  
 
 };
 }
