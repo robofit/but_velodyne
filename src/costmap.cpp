@@ -346,7 +346,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 	if (!tfl_.waitForTransform(map_frame_,img->header.frame_id, img->header.stamp, ros::Duration(0.1))) {
 
-		ROS_INFO_THROTTLE(1.0,"Waiting for TF...");
+		ROS_INFO_THROTTLE(1.0,"Waiting for transform from %s to %s",img->header.frame_id.c_str(),map_frame_.c_str());
 		return;
 
 	} else ROS_INFO_ONCE("TF available.");
@@ -434,6 +434,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 				  try {
 
+            // TODO use cached transform...
 					  tfl_.transformPoint(map_frame_,pt,pt);
 
 				  } catch (tf::TransformException& ex) {
@@ -467,6 +468,14 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 			scan_dist.resize(imat.cols,max_proj_dist_);
 
 			sensor_msgs::PointCloud cloud;
+			
+			// TODO there is very small diff. in timestamps -> what about to modify scan timestamp slightly instead of waiting??? ;)
+			if (!tfl_.waitForTransform(map_frame_,scan->header.frame_id, scan->header.stamp + ros::Duration(scan->scan_time + 0.01), ros::Duration(0.2))) {
+			
+			  ROS_INFO_THROTTLE(1.0,"Waiting for transform from %s to %s",scan->header.frame_id.c_str(),map_frame_.c_str());
+			  return;
+			
+			}
 
 			try {
 
