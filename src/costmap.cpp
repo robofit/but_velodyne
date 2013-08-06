@@ -69,6 +69,8 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	occ_grid_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>("occ_map",5);
 
 	it_.reset(new image_transport::ImageTransport(nh_));
+	
+	occ_grid_img_pub_ = it_->advertise("occ_map_img", 1);
 
 	image_transport::TransportHints hints("raw", ros::TransportHints(), nh_);
 
@@ -227,11 +229,12 @@ bool TraversabilityCostmap::robotPose(geometry_msgs::PoseStamped& pose) {
 
 bool TraversabilityCostmap::getMap(nav_msgs::GetMap::Request& req, nav_msgs::GetMap::Response& res) {
 
-	nav_msgs::OccupancyGrid grid;
+	nav_msgs::OccupancyGridPtr grid(new nav_msgs::OccupancyGrid());
+	cv_bridge::CvImagePtr img;
 
-	createOccGridMsg(grid);
+	createOccGridMsg(grid,img);
 
-	res.map = grid;
+	res.map = *grid;
 
 	return true;
 
@@ -688,7 +691,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 }
 
-void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
+void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv_bridge::CvImagePtr img) {
 
 	toccmap occ;
 
@@ -723,16 +726,16 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 	}
 
 
-	grid.header.frame_id = map_frame_;
-	grid.header.stamp = ros::Time::now();
+	grid->header.frame_id = map_frame_;
+	grid->header.stamp = ros::Time::now();
 
-	grid.info = occ_grid_meta_;
+	grid->info = occ_grid_meta_;
 
-	grid.data.clear();
+	grid->data.clear();
 
 	uint32_t data_len = occ_grid_.rows * occ_grid_.cols;
 
-	grid.data.resize(data_len, -1);
+	grid->data.resize(data_len, -1);
 
 	for (int32_t u = 0; u < occ_grid_.rows; u++) {
 		  for (int32_t v = 0; v < occ_grid_.cols; v++) {
@@ -743,12 +746,20 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGrid& grid) {
 				  // TODO do some thresholding?
 				  float new_val = occ(u,v);
 
-				  grid.data[(v*occ_grid_.rows) + u] = (int8_t)round(new_val*100.0);
+				  grid->data[(v*occ_grid_.rows) + u] = (int8_t)round(new_val*100.0);
 
 			  }
 
 		  }
 
+	}
+	
+	if (img != NULL) {
+	
+	  img->header = grid->header;
+	  img->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+	  img->image = occ_grid_;
+	
 	}
 
 
@@ -791,12 +802,15 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 	}
 
-	if (occ_grid_pub_.getNumSubscribers() > 0) {
+	if (occ_grid_pub_.getNumSubscribers() > 0 || occ_grid_img_pub_.getNumSubscribers() > 0) {
 
-		nav_msgs::OccupancyGrid grid;
-		createOccGridMsg(grid);
+		nav_msgs::OccupancyGridPtr grid(new nav_msgs::OccupancyGrid);
+		cv_bridge::CvImagePtr img_msg(new cv_bridge::CvImage);
+		
+		createOccGridMsg(grid,img_msg);
 
 		occ_grid_pub_.publish(grid);
+		occ_grid_img_pub_.publish(img_msg->toImageMsg());
 
 	}
 

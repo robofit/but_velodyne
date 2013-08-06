@@ -121,6 +121,7 @@ namespace rt_road_detection {
 
 			nav_msgs::MapMetaData occ_grid_meta_;
 			ros::Publisher occ_grid_pub_;
+			image_transport::Publisher occ_grid_img_pub_;
 
 			inline bool isValidPoint(const cv::Vec3f& pt);
 
@@ -145,7 +146,7 @@ namespace rt_road_detection {
 			bool getMap(nav_msgs::GetMap::Request& req, nav_msgs::GetMap::Response& res);
 			bool resetMap(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res);
 
-			void createOccGridMsg(nav_msgs::OccupancyGrid& grid);
+			void createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv_bridge::CvImagePtr img);
 
 			void normalize(cv::Point3d& v);
 
