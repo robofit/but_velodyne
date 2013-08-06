@@ -25,14 +25,14 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <but_env_model/plugins/cmap_plugin.h>
+#include <but_env_model/plugins/collision_map_plugin.h>
 #include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 
 #define FIXED_FRAME "/map"
 
-but_env_model::CCMapPlugin::CCMapPlugin(const std::string & name)
+but_env_model::CCollisionMapPlugin::CCollisionMapPlugin(const std::string & name)
 : but_env_model::CServerPluginBase(name)
 , m_cmapPublisherName(COLLISION_MAP_PUBLISHER_NAME)
 , m_collisionMapLimitRadius(2.0)
@@ -48,7 +48,7 @@ but_env_model::CCMapPlugin::CCMapPlugin(const std::string & name)
 }
 
 //! Initialize plugin - called in server constructor
-void but_env_model::CCMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
+void but_env_model::CCollisionMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
 	m_collisionMapVersion = 0;
 	m_dataBuffer->boxes.clear();
@@ -71,26 +71,26 @@ void but_env_model::CCMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & pr
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create and publish service - get collision map
-	m_serviceGetCollisionMap = nh.advertiseService( GetCollisionMap_SRV, 	&CCMapPlugin::getCollisionMapSrvCallback, this);
+	m_serviceGetCollisionMap = nh.advertiseService( GetCollisionMap_SRV, 	&CCollisionMapPlugin::getCollisionMapSrvCallback, this);
 
 	// Create and publish service - is new collision map
-	m_serviceIsNewCMap = nh.advertiseService( IsNewCMap_SRV, &CCMapPlugin::isNewCmapSrvCallback, this );
+	m_serviceIsNewCMap = nh.advertiseService( IsNewCMap_SRV, &CCollisionMapPlugin::isNewCmapSrvCallback, this );
 
 	// Create and publish service - lock map
-	m_serviceLockCMap = nh.advertiseService( LockCMap_SRV, &CCMapPlugin::lockCmapSrvCallback, this );
+	m_serviceLockCMap = nh.advertiseService( LockCMap_SRV, &CCollisionMapPlugin::lockCmapSrvCallback, this );
 
 	// Create and publish service - remove cube from map
-	m_serviceRemoveCube = nh.advertiseService( RemoveCubeCMP_SRV, &CCMapPlugin::removeBoxCallback, this );
+	m_serviceRemoveCube = nh.advertiseService( RemoveCubeCMP_SRV, &CCollisionMapPlugin::removeBoxCallback, this );
 
 	// Create and publish service - add cube to map
-	m_serviceAddCube = nh.advertiseService( AddCubeCMP_SRV, &CCMapPlugin::addBoxCallback, this );
+	m_serviceAddCube = nh.advertiseService( AddCubeCMP_SRV, &CCollisionMapPlugin::addBoxCallback, this );
 
 	// Connect publishing services
 	pause( false, nh );
 }
 
 //! Called when new scan was inserted and now all can be published
-void but_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::CCollisionMapPlugin::publishInternal(const ros::Time & timestamp)
 {
 	// Lock data
 	boost::mutex::scoped_lock lock(m_lockData);
@@ -130,7 +130,7 @@ void but_env_model::CCMapPlugin::publishInternal(const ros::Time & timestamp)
 }
 
 //! Set used octomap frame id and timestamp
-void but_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
+void but_env_model::CCollisionMapPlugin::newMapDataCB( SMapWithParameters & par )
 {
 	if( m_bLocked )
 	{
@@ -202,7 +202,7 @@ void but_env_model::CCMapPlugin::newMapDataCB( SMapWithParameters & par )
 }
 
 /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-void but_env_model::CCMapPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+void but_env_model::CCollisionMapPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 	if( m_bLocked )
 			return;
@@ -250,7 +250,7 @@ void but_env_model::CCMapPlugin::handleOccupiedNode(but_env_model::tButServerOcT
  * @param map2 Second map to compare
  * @return true if maps are the same
  */
-bool but_env_model::CCMapPlugin::sameCMaps( moveit_msgs::CollisionMap * map1, moveit_msgs::CollisionMap * map2 )
+bool but_env_model::CCollisionMapPlugin::sameCMaps( moveit_msgs::CollisionMap * map1, moveit_msgs::CollisionMap * map2 )
 {
 	// Do not swap maps, if in the locked mode
 	if( m_bLocked )
@@ -304,7 +304,7 @@ bool but_env_model::CCMapPlugin::sameCMaps( moveit_msgs::CollisionMap * map1, mo
  * @param extent Bounding sphere of the collision object
  * @return
  */
-bool but_env_model::CCMapPlugin::isNearRobot( const tf::Vector3 & point, double extent )
+bool but_env_model::CCollisionMapPlugin::isNearRobot( const tf::Vector3 & point, double extent )
 {
 	tfScalar s( point.distance( m_robotBasePosition ) );
 
@@ -317,7 +317,7 @@ bool but_env_model::CCMapPlugin::isNearRobot( const tf::Vector3 & point, double 
  * @param req request - caller's map version
  * @param res response - current map and current version
  */
-bool but_env_model::CCMapPlugin::getCollisionMapSrvCallback( but_env_model::GetCollisionMap::Request & req, but_env_model::GetCollisionMap::Response & res )
+bool but_env_model::CCollisionMapPlugin::getCollisionMapSrvCallback( but_env_model::GetCollisionMap::Request & req, but_env_model::GetCollisionMap::Response & res )
 {
 
 	PERROR( "Get collision map service called" );
@@ -340,7 +340,7 @@ bool but_env_model::CCMapPlugin::getCollisionMapSrvCallback( but_env_model::GetC
 /**
  * @brief Returns true, if should be data published and are some subscribers.
  */
-bool but_env_model::CCMapPlugin::shouldPublish(  )
+bool but_env_model::CCollisionMapPlugin::shouldPublish(  )
 {
 	return(m_publishCollisionMap && (m_latchedTopics || m_cmapPublisher.getNumSubscribers() > 0));
 }
@@ -350,7 +350,7 @@ bool but_env_model::CCMapPlugin::shouldPublish(  )
  * @param req request - caller's map timestamp
  * @param res response - true, if new map and current timestamp
  */
-bool but_env_model::CCMapPlugin::isNewCmapSrvCallback( but_env_model::IsNewCollisionMap::Request & req, but_env_model::IsNewCollisionMap::Response & res )
+bool but_env_model::CCollisionMapPlugin::isNewCmapSrvCallback( but_env_model::IsNewCollisionMap::Request & req, but_env_model::IsNewCollisionMap::Response & res )
 {
 	PERROR( "Is new cmap service called ");
 
@@ -365,7 +365,7 @@ bool but_env_model::CCMapPlugin::isNewCmapSrvCallback( but_env_model::IsNewColli
  * @param req request - bool - lock/unlock
  * @param res response -
  */
-bool but_env_model::CCMapPlugin::lockCmapSrvCallback( but_env_model::LockCollisionMap::Request & req, but_env_model::LockCollisionMap::Response & res )
+bool but_env_model::CCollisionMapPlugin::lockCmapSrvCallback( but_env_model::LockCollisionMap::Request & req, but_env_model::LockCollisionMap::Response & res )
 {
 	boost::mutex::scoped_lock lock( m_lockData );
 
@@ -384,7 +384,7 @@ bool but_env_model::CCMapPlugin::lockCmapSrvCallback( but_env_model::LockCollisi
 /**
  *  Disconnect plugin from all topics
  */
-void but_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & nh )
+void but_env_model::CCollisionMapPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 		m_cmapPublisher.shutdown();
@@ -398,7 +398,7 @@ void but_env_model::CCMapPlugin::pause( bool bPause, ros::NodeHandle & nh )
  * @param size Clearing box sizes
  * @return Number of removed boxes.
  */
-long but_env_model::CCMapPlugin::removeInsideBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes )
+long but_env_model::CCollisionMapPlugin::removeInsideBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes )
 {
 	boost::mutex::scoped_lock lock( m_lockData );
 
@@ -444,7 +444,7 @@ long but_env_model::CCMapPlugin::removeInsideBox( const tBoxPoint & center, cons
  * @param req Request
  * @param res Response
  */
-bool but_env_model::CCMapPlugin::removeBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res )
+bool but_env_model::CCollisionMapPlugin::removeBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res )
 {
 	// Test frame id
 	if (req.frame_id != m_cmapFrameId)
@@ -493,7 +493,7 @@ bool but_env_model::CCMapPlugin::removeBoxCallback( but_env_model::RemoveCube::R
  * @param center Box center
  * @param size Box size
  */
-void but_env_model::CCMapPlugin::addBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes )
+void but_env_model::CCollisionMapPlugin::addBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes )
 {
 	boost::mutex::scoped_lock lock( m_lockData );
 	tBox box;
@@ -522,7 +522,7 @@ void but_env_model::CCMapPlugin::addBox( const tBoxPoint & center, const tBoxPoi
  * @param req Request
  * @param res Response
  */
-bool but_env_model::CCMapPlugin::addBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res )
+bool but_env_model::CCollisionMapPlugin::addBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res )
 {
 	// Test frame id
 	if (req.frame_id != m_cmapFrameId)
@@ -570,7 +570,7 @@ bool but_env_model::CCMapPlugin::addBoxCallback( but_env_model::RemoveCube::Requ
  * @brief retransform map to the new time frame
  * @param currentTime time frame to transform to
  */
-void but_env_model::CCMapPlugin::retransformTF( const ros::Time & currentTime )
+void but_env_model::CCollisionMapPlugin::retransformTF( const ros::Time & currentTime )
 {
 	// Listen and store current collision map transform matrix
 	tf::StampedTransform lockedToCurrentTF;

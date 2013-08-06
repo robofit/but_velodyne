@@ -91,15 +91,15 @@ but_env_model::CButServer::CButServer(const std::string& filename) :
     //=========================================================================
     // Create plugins
 
-	ROS_INFO_STREAM( "EnvModelSrv: Initializing plugins..." );
+	ROS_INFO( "EnvModelSrv: Initializing plugins..." );
 
-//    m_plugCMap = new CCMapPlugin( "CMAP" );
+//    m_plugCMap = new CCollisionMapPlugin( "CMAP" );
     m_plugInputPointCloud = boost::shared_ptr<CPointCloudPlugin>( new CPointCloudPlugin("PCIN", true) );
     m_plugOcMapPointCloud = boost::shared_ptr<CPointCloudPlugin>( new CPointCloudPlugin("PCOC", false) );
 //    m_plugVisiblePointCloud = boost::shared_ptr<CLimitedPointCloudPlugin>( new CLimitedPointCloudPlugin( "PCVIS") );
     m_plugOctoMap = boost::shared_ptr<COctoMapPlugin>( new COctoMapPlugin("OCM", filename) );
 //    m_plugCollisionObject = boost::shared_ptr<CCollisionObjectPlugin>( new CCollisionObjectPlugin( "COB") );
-    m_plugMap2D = boost::shared_ptr<CCollisionGridPlugin>( new CCollisionGridPlugin( "M2D") );
+    m_plugMap2D = boost::shared_ptr<COccupancyGridPlugin>( new COccupancyGridPlugin( "MAP2D") );
 //    m_plugMarkerArray = boost::shared_ptr<CMarkerArrayPlugin>( new CMarkerArrayPlugin( "MA") );
 //    m_plugObjTree = boost::shared_ptr<CObjTreePlugin>( new CObjTreePlugin( "OT") );
 //    m_plugCompressedPointCloud = boost::shared_ptr<CCompressedPointCloudPlugin>( new CCompressedPointCloudPlugin( "CPC") );
@@ -135,13 +135,13 @@ but_env_model::CButServer::CButServer(const std::string& filename) :
 
 	ROS_INFO( "EnvModelSrv: All plugins initialized. Starting server... " );
 
-	// Connect input point cloud input with octomap
+	// Connect input point cloud with octomap
 	m_plugInputPointCloud->getSigDataChanged().connect( boost::bind( &COctoMapPlugin::insertCloud, m_plugOctoMap, _1 ));
 
 	// Connect all crawlers
-//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCMapPlugin::handleNewMapData, m_plugCMap, _1 ) );
+//	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionMapPlugin::handleNewMapData, m_plugCMap, _1 ) );
 	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CPointCloudPlugin::handleNewMapData, m_plugOcMapPointCloud, _1 ) );
-	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionGridPlugin::handleNewMapData, m_plugMap2D, _1 ) );
+	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &COccupancyGridPlugin::handleNewMapData, m_plugMap2D, _1 ) );
 //	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CMarkerArrayPlugin::handleNewMapData, m_plugMarkerArray, _1 ) );
 //	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCompressedPointCloudPlugin::handleNewMapData, m_plugCompressedPointCloud, _1 ) );
 //	m_plugOctoMap->getSigOnNewData().connect( boost::bind( &CCollisionObjectPlugin::handleNewMapData, m_plugCollisionObject, _1 ) );

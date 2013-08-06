@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef CMapPubPlugin_H_included
 #define CMapPubPlugin_H_included
@@ -41,7 +42,7 @@
 namespace but_env_model
 {
 
-class CCMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< moveit_msgs::CollisionMap >
+class CCollisionMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< moveit_msgs::CollisionMap >
 {
 protected:
     //! Crawler type
@@ -58,7 +59,7 @@ protected:
 
 public:
     //! Constructor
-    CCMapPlugin(const std::string & name);
+    CCollisionMapPlugin(const std::string & name);
 
     //! Enable or disable publishing
     void enable( bool enabled ){ m_publishCollisionMap = enabled; }

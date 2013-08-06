@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /PointCloud21
+        - /Map1
       Splitter Ratio: 0.5
     Tree Height: 540
   - Class: rviz/Selection
@@ -71,12 +72,19 @@ Visualization Manager:
       Queue Size: 1
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.01
-      Style: Flat Squares
+      Size (m): 0.02
+      Style: Spheres
       Topic: /but_env_model/pointcloud_centers
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Draw Behind: false
+      Enabled: false
+      Name: Map
+      Topic: /but_env_model/map2d
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -100,17 +108,17 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.3847
+      Distance: 13.9238
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: -0.931588
+        Y: -0.63449
+        Z: 0.768314
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.840398
+      Pitch: 0.594796
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.8354
+      Yaw: 2.94039
     Saved: ~
 Window Geometry:
   Displays:
@@ -128,5 +136,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 529
+  X: 515
   Y: 175

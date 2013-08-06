@@ -58,7 +58,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
 
-#include <but_env_model/plugins/cmap_plugin.h>
+#include <but_env_model/plugins/collision_map_plugin.h>
 #include <but_env_model/plugins/point_cloud_plugin.h>
 #include <but_env_model/plugins/octomap_plugin.h>
 #include <but_env_model/plugins/collision_object_plugin.h>
@@ -67,7 +67,7 @@
 #include <but_env_model/plugins/limited_point_cloud_plugin.h>
 #include <but_env_model/plugins/compressed_point_cloud_plugin.h>
 #include <but_env_model/plugins/objtree_plugin.h>
-#include <but_env_model/plugins/collision_grid_plugin.h>
+#include <but_env_model/plugins/occupancy_grid_plugin.h>
 
 #include <but_env_model/EnvModelPause.h>
 #include <but_env_model/UseInputColor.h>
@@ -171,7 +171,7 @@ protected:
 #define FOR_ALL_PLUGINS_PARAM2( X, Y, Z ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y,Z); } }
 
     /// Collision map
-    boost::shared_ptr< CCMapPlugin > m_plugCMap;
+    boost::shared_ptr< CCollisionMapPlugin > m_plugCMap;
 
     /// Incoming depth points cloud
     boost::shared_ptr< CPointCloudPlugin > m_plugInputPointCloud;
@@ -189,7 +189,7 @@ protected:
     boost::shared_ptr< CCollisionObjectPlugin > m_plugCollisionObject;
 
     /// 2D map plugin
-    boost::shared_ptr< CCollisionGridPlugin > m_plugMap2D;
+    boost::shared_ptr< COccupancyGridPlugin > m_plugMap2D;
 
     /// Interactive markers server plugin
     boost::shared_ptr< CIMarkersPlugin > m_plugIMarkers;
