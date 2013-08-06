@@ -24,9 +24,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
-#ifndef CollisionGridPlugin_H_included
-#define CollisionGridPlugin_H_included
+#ifndef OccupancyGridPlugin_H_included
+#define OccupancyGridPlugin_H_included
 
 #include <but_env_model/server_tools.h>
 
@@ -37,17 +38,17 @@
 namespace but_env_model
 {
 
-class CCollisionGridPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
+class COccupancyGridPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< nav_msgs::OccupancyGrid >
 {
 public:
     /// Constructor
-    CCollisionGridPlugin(const std::string & name);
+    COccupancyGridPlugin(const std::string & name);
 
     /// Destructor
-    virtual ~CCollisionGridPlugin();
+    virtual ~COccupancyGridPlugin();
 
     //! Enable or disable publishing
-    void enable( bool enabled ){ m_publishGrid = enabled; }
+    void enable( bool enabled ) { m_publishGrid = enabled; }
 
     //! Initialize plugin - called in server constructor
     virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
@@ -112,10 +113,10 @@ protected:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-}; // class CCollisionGridPlugin
+}; // class COccupancyGridPlugin
 
 
 } // namespace but_env_model
 
-// CollisionGridPlugin_H_included
+// OccupancyGridPlugin_H_included
 #endif

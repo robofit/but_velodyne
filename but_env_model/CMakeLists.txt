@@ -44,11 +44,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 set( SERVER_SOURCES src/env_model/env_model_server.cpp
                     src/env_model/server_tools.cpp
                     src/env_model/octonode.cpp
-                    src/env_model/plugins/cmap_plugin.cpp
+                    src/env_model/plugins/collision_map_plugin.cpp
                     src/env_model/plugins/octomap_plugin.cpp
                     src/env_model/plugins/point_cloud_plugin.cpp
                     src/env_model/plugins/collision_object_plugin.cpp
-                    src/env_model/plugins/collision_grid_plugin.cpp
+                    src/env_model/plugins/occupancy_grid_plugin.cpp
                     src/env_model/plugins/imarkers_plugin.cpp
                     src/env_model/plugins/marker_array_plugin.cpp
                     src/env_model/plugins/limited_point_cloud_plugin.cpp

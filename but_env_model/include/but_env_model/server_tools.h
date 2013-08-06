@@ -128,7 +128,8 @@ namespace but_env_model
 	//! Server plugin base class
 	class CServerPluginBase
 	{
-	#define PERROR(x) ROS_INFO_STREAM( "EnvModelSrv plugin " << this->m_name << ": " << x );
+	#define PERROR(x) ROS_INFO_STREAM( "EnvModelSrv plugin " << this->m_name << " error: " << x );
+    #define PINFO(x) ROS_INFO_STREAM( "EnvModelSrv plugin " << this->m_name << " info: " << x );
 
 	public:
 		//! Constructor

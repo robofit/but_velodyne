@@ -43,7 +43,7 @@ but_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 : but_env_model::CServerPluginBase(name)
 , m_publishPointCloud(true)
 , m_pcPublisherName(POINTCLOUD_CENTERS_PUBLISHER_NAME)
-, m_pcSubscriberName("")
+, m_pcSubscriberName(SUBSCRIBER_POINT_CLOUD_NAME)
 , m_inputPcFrameId(DEFAULT_INPUT_CLOUD_FRAME_ID)
 , m_bSubscribe( subscribe )
 , m_latchedTopics( false )
@@ -73,21 +73,12 @@ but_env_model::CPointCloudPlugin::~CPointCloudPlugin()
 //! Initialize plugin - called in server constructor
 void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-//	PERROR( "Initializing PointCloudPlugin" );
+    PINFO( "Initializing CPointCloudPlugin" );
 
 	// Frame skipping
 	int fs( m_use_every_nth );
 	private_nh.param( "pointcloud_frame_skip", fs, 1 );
 	m_use_every_nth = (fs >= 1) ? fs : 1;
-
-	// Point cloud publishing topic name
-	private_nh.param("pointcloud_centers_publisher", m_pcPublisherName, POINTCLOUD_CENTERS_PUBLISHER_NAME );
-
-	// Point cloud subscribing topic name - try to get it from parameter server if not given
-	if( m_pcSubscriberName.length() == 0 )
-	    private_nh.param("pointcloud_subscriber", m_pcSubscriberName, SUBSCRIBER_POINT_CLOUD_NAME);
-	else
-		m_bSubscribe = true;
 
 	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
 	// We will use the same frame id as octomap plugin
@@ -111,39 +102,33 @@ void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandl
 	private_nh.param("pointcloud_octree_depth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
-//	std::cerr << "Use input color: " << std::string(m_bUseInputColor ? "yes" : "no") << std::endl;
-//	std::cerr << "Color: " << m_r << ", " << m_g << ", " << m_b << std::endl;
+	PINFO( "Use input color: " << std::string(m_bUseInputColor ? "yes" : "no") );
+	PINFO( "Default color: " << int(m_r) << ", " << int(m_g) << ", " << int(m_b) );
 
 	// Create publisher
 	m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
-
 	// If should subscribe, create message filter and connect to the topic
 	if( m_bSubscribe )
 	{
-		std::cerr << "Plugin name: " << this->m_name << std::endl;
+		PINFO( "Subscribing input topic " << m_pcSubscriberName << ", frame ID " << m_inputPcFrameId );
 
-//		PERROR("Subscribing to: " << m_pcSubscriberName );
 		// Create subscriber
 		m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(nh, m_pcSubscriberName, 1);
-
 		if (!m_pcSubscriber)
 		{
-			ROS_ERROR("Not subscribed...");
-			PERROR( "Not subscirbed to point clouds subscriber...");
+			PERROR( "Not subscribed to point cloud publisher..." );
 		}
 
 		// Create message filter
-		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_inputPcFrameId, 1);
+		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_inputPcFrameId, 10);
 		m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
-
-		//std::cerr << "SUBSCRIBER NAME: " << m_pcSubscriberName << ", FRAMEID: " << m_pcFrameId << std::endl;
 	}
 
 	// Clear old pointcloud data
 	m_data->clear();
 
-//	PERROR( "PointCloudPlugin initialized..." );
+	PINFO( "CPointCloudPlugin initialized" );
 }
 
 //! Called when new scan was inserted and now all can be published
@@ -186,18 +171,14 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	if( ! m_publishPointCloud )
 		return;
 
-//	PERROR("New map: Try lock");
-
 	boost::mutex::scoped_lock lock(m_lockData);
-
-//	PERROR("New map: Lock");
 
 	m_data->clear();
 
 	// Just for sure
 	if(m_frame_id != par.frameId)
 	{
-		PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
+		PERROR("Map frame ID has changed, this should never happen. Exiting newMapDataCB.");
 		return;
 	}
 
@@ -228,7 +209,6 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	m_data->header.stamp = par.currentTime;
 
 	lock.unlock();
-//	PERROR( "New map: Unlocked");
 
 	invalidate();
 }
@@ -237,7 +217,8 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 void but_env_model::CPointCloudPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
 //	std::cerr << "PCP: handle occupied" << std::endl;
-	tPclPoint point;
+
+    tPclPoint point;
 
 	// Set position
 	point.x = it.getX();
@@ -436,11 +417,7 @@ bool but_env_model::CPointCloudPlugin::isRGBCloud( const tIncommingPointCloud::C
  */
 void but_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
-//	PERROR("Try lock");
-
 	boost::mutex::scoped_lock lock(m_lockData);
-
-//	PERROR("Lock");
 
 	if( bPause )
 	{
@@ -471,9 +448,6 @@ void but_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh 
 			m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
 		}
 	}
-
-//	PERROR("Unlock");
-
 }
 
 /**

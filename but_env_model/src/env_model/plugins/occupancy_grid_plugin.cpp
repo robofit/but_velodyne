@@ -25,16 +25,16 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <but_env_model/plugins/collision_grid_plugin.h>
+#include <but_env_model/plugins/occupancy_grid_plugin.h>
 #include <but_env_model/topics_list.h>
 
 #include <pcl_ros/transforms.h>
 
 
-but_env_model::CCollisionGridPlugin::CCollisionGridPlugin(const std::string & name)
+but_env_model::COccupancyGridPlugin::COccupancyGridPlugin(const std::string & name)
 : but_env_model::CServerPluginBase(name)
 , m_publishGrid(true)
-, m_gridPublisherName(COLLISIONGRID_PUBLISHER_NAME)
+, m_gridPublisherName(OCCUPANCYGRID_PUBLISHER_NAME)
 , m_latchedTopics(false)
 , m_minSizeX(0.0)
 , m_minSizeY(0.0)
@@ -44,28 +44,27 @@ but_env_model::CCollisionGridPlugin::CCollisionGridPlugin(const std::string & na
 
 
 
-but_env_model::CCollisionGridPlugin::~CCollisionGridPlugin()
+but_env_model::COccupancyGridPlugin::~COccupancyGridPlugin()
 {
 }
 
 
 
-bool but_env_model::CCollisionGridPlugin::shouldPublish()
+bool but_env_model::COccupancyGridPlugin::shouldPublish()
 {
 	return( m_publishGrid && m_gridPublisher.getNumSubscribers() > 0 );
 }
 
 
 
-void but_env_model::CCollisionGridPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
+void but_env_model::COccupancyGridPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-	private_nh.param("grid_publisher", m_gridPublisherName, COLLISIONGRID_PUBLISHER_NAME );
-	private_nh.param("grid_min_x_size", m_minSizeX, m_minSizeX);
-	private_nh.param("grid_min_y_size", m_minSizeY, m_minSizeY);
+	private_nh.param("map2d_min_x_size", m_minSizeX, m_minSizeX);
+	private_nh.param("map2d_min_y_size", m_minSizeY, m_minSizeY);
 
 	// Get collision map crawling depth
 	int depth(m_crawlDepth);
-	private_nh.param("collision_grid_octree_depth", depth, depth);
+	private_nh.param("map2d_treedepth", depth, depth);
 	m_crawlDepth = depth > 0 ? depth : 0;
 
 	// Create publisher
@@ -74,18 +73,24 @@ void but_env_model::CCollisionGridPlugin::init(ros::NodeHandle & nh, ros::NodeHa
 
 
 
-void but_env_model::CCollisionGridPlugin::publishInternal(const ros::Time & timestamp)
+void but_env_model::COccupancyGridPlugin::publishInternal(const ros::Time & timestamp)
 {
 	boost::mutex::scoped_lock lock(m_lockData);
 
 	if( shouldPublish() )
-		m_gridPublisher.publish(*m_data);
+	{
+	    ROS_INFO_ONCE( "COccupancyGridPlugin published a 2D map" );
+
+	    m_gridPublisher.publish(*m_data);
+	}
 }
 
 
 
-void but_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
+void but_env_model::COccupancyGridPlugin::newMapDataCB(SMapWithParameters & par)
 {
+    ROS_INFO_ONCE( "COccupancyGridPlugin::newMapDataCB() called" );
+
 	// init projected 2D map:
 	m_data->header.frame_id = par.frameId;
 	m_data->header.stamp = par.currentTime;
@@ -209,7 +214,7 @@ void but_env_model::CCollisionGridPlugin::newMapDataCB(SMapWithParameters & par)
 /**
  * Occupied node handler
  */
-void but_env_model::CCollisionGridPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
+void but_env_model::COccupancyGridPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
 	if (it.getDepth() == m_crawlDepth)
 	{
@@ -236,7 +241,7 @@ void but_env_model::CCollisionGridPlugin::handleOccupiedNode(but_env_model::tBut
 /**
  * Free node handler
  */
-void but_env_model::CCollisionGridPlugin::handleFreeNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
+void but_env_model::COccupancyGridPlugin::handleFreeNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
 {
 	if (it.getDepth() == m_crawlDepth) {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)
@@ -263,7 +268,7 @@ void but_env_model::CCollisionGridPlugin::handleFreeNode(but_env_model::tButServ
 /**
  * Pause/resume plugin. All publishers and subscribers are disconnected on pause
  */
-void but_env_model::CCollisionGridPlugin::pause( bool bPause, ros::NodeHandle & nh )
+void but_env_model::COccupancyGridPlugin::pause( bool bPause, ros::NodeHandle & nh )
 {
 	if( bPause )
 	{
