@@ -157,8 +157,8 @@ bool TraversabilityCostmap::updateMapOrigin() {
 	geometry_msgs::Point newp = robot_pose.pose.position;
 	worldToMap(newp);
 
-	int dx = (int)round(newp.x - oldp.x);
-	int dy = (int)round(newp.y - oldp.y);
+	int dx = (int)floor(newp.x - oldp.x); // TODO floor or round???
+	int dy = (int)floor(newp.y - oldp.y);
 
 	if (!robotPose(map_origin_)) return false;
 
@@ -758,7 +758,7 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv
 	
 	  img->header = grid->header;
 	  img->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
-	  img->image = occ_grid_;
+	  img->image = occ;
 	
 	}
 

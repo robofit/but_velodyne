@@ -75,10 +75,11 @@ bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImage
 
   cv::Mat hsv;
 
-  //in->image.convertTo(hsv, CV_16UC3);
+  // we don't need high level of details
+  cv::GaussianBlur(in->image, hsv,cv::Size(11,11),0);
 
-  if (in->encoding == "rgb8") cv::cvtColor( in->image, hsv, CV_RGB2HSV ); // Hue in range 0-360
-  else if ((in->encoding == "bgr8")) cv::cvtColor( in->image, hsv, CV_BGR2HSV );
+  if (in->encoding == "rgb8") cv::cvtColor( hsv, hsv, CV_RGB2HSV ); // Hue in range 0-360
+  else if ((in->encoding == "bgr8")) cv::cvtColor( hsv, hsv, CV_BGR2HSV );
   else {
 
     ROS_WARN_THROTTLE(1,"Strange encoding!");
@@ -89,11 +90,6 @@ bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImage
   cv::split(hsv,hsv_vec);
 
   cv::Mat_<float> bin_mask(hsv_vec[0]);
-
-  // hue channel is quite noisy... and we don't need high level of details
-  cv::medianBlur(hsv_vec[0],hsv_vec[0],median_blur_ks_);
-  cv::GaussianBlur(hsv_vec[0], hsv_vec[0],cv::Size(5,5),0);
-
 
   for(int row = 0; row < hsv_vec[0].rows; row++) {
       uchar* h = hsv_vec[0].ptr(row);

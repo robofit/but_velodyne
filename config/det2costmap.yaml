@@ -1,17 +1,17 @@
-proj_dist: 20.0
+proj_dist: 8.0
 
 morph_filter_ks_size: 3
 median_filter_ks_size: 3
 morph_filter_iter: 1
 
-grid_filter: false
+grid_filter: true
 
 use_disparity: false
 use_scan: true
 
 map_frame: "odom"
-map_size: 50
-map_res: 0.25
+map_size: 25
+map_res: 0.15
 origin_update_th: 2.0
 
 
