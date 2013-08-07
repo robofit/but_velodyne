@@ -91,10 +91,10 @@ protected:
     /// Crawled octomap frame id
     std::string m_ocFrameId;
 
-    /// Transformation from octomap to the collision object frame id - rotation
+    /// Transformation from octomap to the map frame id - rotation
     Eigen::Matrix3f m_ocToGridRot;
 
-    /// Transformation from octomap to the collision object frame id - translation
+    /// Transformation from octomap to the map frame id - translation
     Eigen::Vector3f m_ocToGridTrans;
 
     /// Padded key minimum
@@ -109,6 +109,9 @@ protected:
 
     /// Grid scaling
     unsigned m_multires2DScale;
+
+    /// Minimum and maximum height above the ground projected to the 2D map
+    double m_minZ, m_maxZ;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
