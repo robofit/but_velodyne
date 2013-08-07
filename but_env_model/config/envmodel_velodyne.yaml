@@ -1,0 +1,198 @@
+###############################################################################
+# Common Environment server parameters
+
+###############################################################################
+# Octomap plugin
+
+# Octomap resolution
+#ocmap_resolution: .05
+ocmap_resolution: .025
+
+# Tree depth used for crawling. Zero means full tree
+ocmap_treedepth: 0
+
+# Internal and published octomap frame id
+ocmap_frame_id: "/odom"
+
+# Probablility for a "hit" - or "occupied" (will be converted to logodds)
+ocmap_sensor_model/hit: .7
+
+# Probablility for a "miss" - or "free" (will be converted to logodds)
+ocmap_sensor_model/miss: .4
+
+# Probability threshold - if value of the node reaches this value, node is marked
+# as "stable" and can be compressed
+ocmap_sensor_model/min: .12
+
+# Probability threshold - if value of the node reaches this value, node is marked
+# as "stable" and can be compressed
+ocmap_sensor_model/max: .97
+
+# Maximum range for raycasting (-1: unlimited, but it leads to out of memory 
+# because octomap is trying to be too much precise)
+#ocmap_max_range: 4.5
+ocmap_max_range: 15.0
+
+# Debugging information - visualize visible cone marker
+ocmap_visualize_markers: false
+
+# Filter ground plane?
+ocmap_filter_ground: false
+
+# Ground filter parameters - distance of points from the plane for RANSAC
+ocmap_ground_filter/distance: 0.04
+
+# Ground plane angle
+ocmap_ground_filter/angle: 0.15
+
+# Ground plane distance
+ocmap_ground_filter/plane_distance: 0.07
+
+# Raytrace input and try to delete all cells that should be free
+#ocmap_filter_outdated: true
+ocmap_filter_outdated: false
+
+
+###############################################################################
+# Point cloud plugin
+
+# Input frames (clouds) skipping - use every n-th input message
+pointcloud_frame_skip: 1
+
+# Point cloud limits in z-axis - minimum
+pointcloud_min_z: 0.1
+
+# Point cloud limits in z-axis - maximum
+pointcloud_max_z: 4.0
+
+# Use input color if possible
+pointcloud_use_input_color: false
+
+# Default color
+pointcloud_default_color_r: 150
+pointcloud_default_color_g: 150
+pointcloud_default_color_b: 150
+
+
+###############################################################################
+# Point cloud plugin - registration
+
+# Common parameters
+
+# Registration mode. Possible values: 
+# "none" - do not use pointcloud registration 
+# "icp" - use ICP algorithm
+# "icpnl" - use nonlinear ICP algorithm
+# "sca" - use sample consensus alignment
+registration_mode: "none"
+#registration_mode: "icp"
+
+# Maximum iterations
+registration_maximum_iterations: 20
+#registration_maximum_iterations: 50
+
+# RANSAC outlier threshold
+registration_ransac_outlier_rejection_threshold: .02
+#registration_ransac_outlier_rejection_threshold: .005
+
+# Maximal correspondence distance
+registration_maximal_correspondence_distance: 5.0
+#registration_maximal_correspondence_distance: 50.0
+
+# Transformation epsilon
+registration_transformation_epsilon: 0.1
+
+# SCA parameters
+
+# Minimum distances between samples
+registration_sca_min_sample_distance: .0
+
+# Number of samples to use during each iteration.
+registration_sca_num_of_samples: 3
+
+# Number of neighbors to use when selecting a random feature correspondence
+m_scaCorrespondenceRamdomness: 10
+
+# As a point cloud that is registered to is generated one from the octomap.
+# Part visible from robot camera is taken. As an addition, voxels out of the view
+# frustum can be used too. This parameter desribes "scaling" of frustum. 
+# Default value means use whole frustum and half of half (1 + 2*0.25 = 1.5) on both sides. 
+registration_patch_view_fraction_x: 1.0
+
+# The same as before, but in y axis (x and y axis is related to the robot camera
+# coordinate system)
+registration_patch_view_fraction_y: 1.0
+
+# Patch cloud creation - should be patch cloud published? (f.e. for debug purposes)
+registration_patch_publish_cloud: true 
+
+
+###############################################################################
+# 2D occupancy grid plugin
+
+# Internal and published frame id
+map2d_frame_id: "/odom"
+
+# Tree depth used for crawling. Zero means full tree
+map2d_treedepth: 0
+
+# Minimal map size in x
+map2d_min_x_size: 0.0
+
+# Minimal map size in y
+map2d_min_y_size: 0.0
+
+
+###############################################################################
+# Collision map plugin
+
+# Get collision map radius
+collision_map_radius: 2.0
+
+# Internal and published collision map frame id
+collision_map_frame_id: "/base_footprint"
+
+
+###############################################################################
+# Collision objects plugin
+
+# Internal and published frame id
+collision_object_frame_id: "/odom"
+
+
+###############################################################################
+# Compressed point cloud plugin 
+# - the same parameters as point cloud plugin and:
+
+# Should simple cloud (without camera position) be published too?
+publish_simple_cloud: false
+
+# How many differential frames should be published before full cloud
+compressed_pc_differential_frames_count: 5
+
+# Stereo camera parameters - left camera offset
+compressed_pc_camera_stereo_offset_left: 0
+
+# Stereo camera parameters - right camera offset
+compressed_pc_camera_stereo_offset_right: 0
+
+
+###############################################################################
+# Interactive markers plugin
+
+
+###############################################################################
+# Limited point cloud plugin
+# - the same parameters as point cloud plugin and:
+
+
+###############################################################################
+# Marker array plugin
+
+# Internal and published frame id
+marker_array_frame_id: "/odom"
+
+
+###############################################################################
+# Objtree plugin
+

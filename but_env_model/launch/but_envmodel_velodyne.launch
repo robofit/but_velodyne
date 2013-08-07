@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="rgb_points_in" default="/velodyne_points" />
+    <arg name="camera_info_in" default="" />
+
+    <!-- Run our dynamic scene model server node -->
+    <node name="but_env_model_node" pkg="but_env_model" type="but_env_model_node">
+        <rosparam file="$(find but_env_model)/config/envmodel_velodyne.yaml" command="load"/>
+        <remap from="camera_info" to="$(arg camera_info_in)" />
+        <remap from="points_in" to="$(arg rgb_points_in)" />
+    </node>
+
+</launch>

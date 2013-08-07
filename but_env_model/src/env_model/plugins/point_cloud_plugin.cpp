@@ -28,11 +28,11 @@
 #include <but_env_model/plugins/point_cloud_plugin.h>
 #include <but_env_model/topics_list.h>
 
-#include <pcl/ros/conversions.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/transforms.h>
+#include <pcl_ros/pcl_nodelet.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/io/io.h>
-#include "pcl_ros/pcl_nodelet.h"
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
@@ -106,7 +106,7 @@ void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandl
 	PINFO( "Default color: " << int(m_r) << ", " << int(m_g) << ", " << int(m_b) );
 
 	// Create publisher
-	m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+	m_pcPublisher = nh.advertise<tIncommingPointCloud> (m_pcPublisherName, 5, m_latchedTopics);
 
 	// If should subscribe, create message filter and connect to the topic
 	if( m_bSubscribe )
@@ -147,7 +147,7 @@ void but_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timesta
 		return;
 
 	// Convert data
-	sensor_msgs::PointCloud2 cloud;
+	tIncommingPointCloud cloud;
 	pcl::toROSMsg< tPclPoint >(*m_data, cloud);
 
 	// Set message parameters and publish
@@ -437,7 +437,7 @@ void but_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh 
 	else
 	{
 		// Create publisher
-		m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+		m_pcPublisher = nh.advertise<tIncommingPointCloud> (m_pcPublisherName, 5, m_latchedTopics);
 
 		if( m_bSubscribe )
 		{
