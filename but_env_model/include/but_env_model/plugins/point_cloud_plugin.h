@@ -154,11 +154,14 @@ protected:
     //! Transform pointcloud?
     bool m_bTransformPC;
 
-    //! Minimal Z value
-    double m_pointcloudMinZ;
+    //! TF frame used during the input point cloud filtering
+    std::string m_filterFrameId;
 
-    //! Maximal Z value
-    double m_pointcloudMaxZ;
+    //! Minimal and maximal Z value (base frame id)
+    double m_pointcloudMinZ, m_pointcloudMaxZ;
+
+    //! Minimal and maximal distance from the sensor (base frame id)
+    double m_pointcloudMinDist, m_pointcloudMaxDist;
 
     //! Counter
     long counter;

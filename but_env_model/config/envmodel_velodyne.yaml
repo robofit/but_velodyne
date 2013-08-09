@@ -60,11 +60,16 @@ ocmap_filter_outdated: false
 # Input frames (clouds) skipping - use every n-th input message
 pointcloud_frame_skip: 1
 
-# Point cloud limits in z-axis - minimum
-pointcloud_min_z: 0.1
+# Frame id used for the input point cloud filtering
+pointcloud_filter_frame_id: "/base_footprint"
 
-# Point cloud limits in z-axis - maximum
-pointcloud_max_z: 4.0
+# Point cloud limits in z-axis
+pointcloud_min_z: -0.2
+pointcloud_max_z: 2.5
+
+# Minimal and maximal allowed distance from the origin/sensor
+pointcloud_min_dist: 0.5
+pointcloud_max_dist: 5.0
 
 # Use input color if possible
 pointcloud_use_input_color: false

@@ -32,6 +32,7 @@
 #include <pcl_ros/transforms.h>
 #include <pcl_ros/pcl_nodelet.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/conditional_removal.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
@@ -47,8 +48,11 @@ but_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_latchedTopics( false )
 , m_bFilterPC(true)
 , m_bTransformPC(true)
+, m_filterFrameId(BASE_FRAME_ID)
 , m_pointcloudMinZ(-std::numeric_limits<double>::max())
 , m_pointcloudMaxZ(std::numeric_limits<double>::max())
+, m_pointcloudMinDist(0.0)
+, m_pointcloudMaxDist(std::numeric_limits<double>::max())
 , m_oldCloud( new tPointCloud )
 , m_bufferCloud( new tPointCloud )
 , m_frame_number( 0 )
@@ -82,9 +86,12 @@ void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandl
 	// so we will use the same frame id as the Octomap plugin
 	private_nh.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
-	// Point cloud limits
+	// Point cloud filtering
+    private_nh.param("pointcloud_filter_frame_id", m_filterFrameId, m_filterFrameId);
 	private_nh.param("pointcloud_min_z", m_pointcloudMinZ, m_pointcloudMinZ);
 	private_nh.param("pointcloud_max_z", m_pointcloudMaxZ, m_pointcloudMaxZ);
+    private_nh.param("pointcloud_min_dist", m_pointcloudMinDist, m_pointcloudMinDist);
+    private_nh.param("pointcloud_max_dist", m_pointcloudMaxDist, m_pointcloudMaxDist);
 
 	// Use input color default state
 	private_nh.param("pointcloud_use_input_color", m_bUseInputColor, m_bUseInputColor);
@@ -325,21 +332,21 @@ void but_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	}
 
 	// Filter input pointcloud
-	if( m_bFilterPC )		// TODO: Optimize this by removing redundant transforms
+	if( m_bFilterPC )		// TODO: Optimize this by removing unnecessary transforms
 	{
-//		PERROR( "Wait for filtering transform");
+		ROS_INFO_STREAM_ONCE( "Transforming point cloud from " << m_frame_id << " frame id to " << m_filterFrameId << " before filtering." );
 
 		// Get transforms to and from base id
 		tf::StampedTransform pcToBaseTf, baseToPcTf;
 		try {
 			// Transformation - to, from, time, waiting time
-			m_tfListener.waitForTransform(BASE_FRAME_ID, m_frame_id,
+			m_tfListener.waitForTransform(m_filterFrameId, m_frame_id,
 					cloud->header.stamp, ros::Duration(5));
 
-			m_tfListener.lookupTransform(BASE_FRAME_ID, m_frame_id,
+			m_tfListener.lookupTransform(m_filterFrameId, m_frame_id,
 					cloud->header.stamp, pcToBaseTf);
 
-			m_tfListener.lookupTransform(m_frame_id, BASE_FRAME_ID,
+			m_tfListener.lookupTransform(m_frame_id, m_filterFrameId,
 					cloud->header.stamp, baseToPcTf );
 
 		}
@@ -358,12 +365,47 @@ void but_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 		// transform pointcloud from pc frame to the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, pcToBaseTM);
 
+//        ROS_INFO_STREAM_ONCE( "Distance filter params: min_dist = " << m_pointcloudMinDist << ", max_dist = " << m_pointcloudMaxDist );
+
 		// filter height and range, also removes NANs:
-		pcl::PassThrough<tPclPoint> pass;
+/*		pcl::PassThrough<tPclPoint> pass;
+        pass.setInputCloud(m_data->makeShared());
 		pass.setFilterFieldName("z");
 		pass.setFilterLimits(m_pointcloudMinZ, m_pointcloudMaxZ);
-		pass.setInputCloud(m_data->makeShared());
-		pass.filter(*m_data);
+        pass.setNegative(false);
+		pass.filter(*m_data);*/
+
+		pcl::ConditionAnd<tPclPoint>::Ptr cond( new pcl::ConditionAnd<tPclPoint>() );
+        cond->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("x", pcl::ComparisonOps::GT, -m_pointcloudMaxDist)) );
+        cond->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("x", pcl::ComparisonOps::LT, m_pointcloudMaxDist)) );
+        cond->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("y", pcl::ComparisonOps::GT, -m_pointcloudMaxDist)) );
+        cond->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("y", pcl::ComparisonOps::LT, m_pointcloudMaxDist)) );
+        cond->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("z", pcl::ComparisonOps::GT, m_pointcloudMinZ)) );
+        cond->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("z", pcl::ComparisonOps::LT, m_pointcloudMaxZ)) );
+
+        pcl::ConditionalRemoval<tPclPoint> pass(cond);
+        pass.setInputCloud(m_data->makeShared());
+        pass.setKeepOrganized(false);
+        pass.filter(*m_data);
+
+        pcl::ConditionOr<tPclPoint>::Ptr cond2( new pcl::ConditionOr<tPclPoint>() );
+        cond2->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("x", pcl::ComparisonOps::LT, -m_pointcloudMinDist)) );
+        cond2->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("x", pcl::ComparisonOps::GT, m_pointcloudMinDist)) );
+        cond2->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("y", pcl::ComparisonOps::LT, -m_pointcloudMinDist)) );
+        cond2->addComparison( pcl::FieldComparison<tPclPoint>::ConstPtr( new pcl::FieldComparison<tPclPoint>("y", pcl::ComparisonOps::GT, m_pointcloudMinDist)) );
+
+        pcl::ConditionalRemoval<tPclPoint> pass2(cond2);
+        pass2.setInputCloud(m_data->makeShared());
+        pass2.setKeepOrganized(false);
+        pass2.filter(*m_data);
+
+//        pass.setFilterLimits(-m_pointcloudMinDist, m_pointcloudMinDist);
+//        pass.setNegative(true);
+//        pass.filter(*m_data);
+//
+//        pass.setFilterLimits(-m_pointcloudMinDist, m_pointcloudMinDist);
+//        pass.setNegative(true);
+//        pass.filter(*m_data);
 
 		// transform pointcloud back to pc frame from the base frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, baseToPcTM);
