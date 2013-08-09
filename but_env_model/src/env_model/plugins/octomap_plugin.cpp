@@ -43,7 +43,7 @@
 #include <but_interaction_primitives/AddUnknownObject.h>
 
 #define DEFAULT_RESOLUTION 0.1
-#define SENSOR_FRAME_ID "/head_cam3d_link"
+//#define SENSOR_FRAME_ID "/head_cam3d_link"
 
 void but_env_model::COctoMapPlugin::setDefaults()
 {
@@ -76,7 +76,7 @@ void but_env_model::COctoMapPlugin::setDefaults()
 	m_probDeleted = m_mapParameters.probMiss * 0.1;
 	m_r = m_g = m_b = 128;
 
-	m_sensor_frame_id = SENSOR_FRAME_ID;
+//	m_sensor_frame_id = SENSOR_FRAME_ID;
 }
 
 but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
@@ -192,6 +192,7 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 			m_mapParameters.maxRange);
 
 	private_nh.param("ocmap_frame_id", m_mapParameters.frameId, m_mapParameters.frameId );
+//    private_nh.param("sensor_frame_id", m_sensor_frame_id, m_sensor_frame_id );
 
 	// Set octomap parameters...
 	{
@@ -274,7 +275,7 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 	m_filterSingleSpecles.setTimerLap(20);
 
 	// Create and connect filter cloud plugin, is needed
-	if(!m_bFilterWithInput)
+	if( !m_bFilterWithInput )
 	{
 		// Initialize filter pointcloud plugin
 		std::cerr << "Initializing filter-in pointcloud plugin." << std::endl;
@@ -372,11 +373,11 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 		m_tfListener.lookupTransform(m_mapParameters.frameId,
 				cloud->header.frame_id, cloud->header.stamp, cloudToMapTf);
 
-		m_tfListener.waitForTransform(m_mapParameters.frameId,
-						m_sensor_frame_id, cloud->header.stamp, ros::Duration(5));
+//		m_tfListener.waitForTransform(m_mapParameters.frameId,
+//						m_sensor_frame_id, cloud->header.stamp, ros::Duration(5));
 
-		m_tfListener.lookupTransform(m_mapParameters.frameId,
-				m_sensor_frame_id, cloud->header.stamp, sensorToMapTf);
+//		m_tfListener.lookupTransform(m_mapParameters.frameId,
+//				m_sensor_frame_id, cloud->header.stamp, sensorToMapTf);
 
 	} catch (tf::TransformException& ex) {
 		ROS_ERROR_STREAM("Transform error: " << ex.what() << ", quitting callback");
@@ -398,7 +399,6 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 
 	// Compute sensor to octomap transform
 
-
 	// Use registration transform
 	pcl::transformPointCloud( pc_ground, pc_ground, registration_transform );
 
@@ -412,7 +412,8 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 	m_DataTimeStamp = cloud->header.stamp;
 	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud->header.stamp.toSec());
 
-	insertScan(sensorToMapTf.getOrigin(), pc_ground, pc_nonground);
+//	insertScan(sensorToMapTf.getOrigin(), pc_ground, pc_nonground);
+    insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
 
 	if (m_removeSpecles)
 	{

@@ -21,6 +21,7 @@ ROS dynamic environment model provided by Robo@FIT group.
 	<depend package="moveit_msgs" />
 	<depend package="pcl" />
 	<depend package="pcl_ros" />
+	<depend package="pcl_conversions" />
 	<depend package="ogre" />
 	<depend package="interactive_markers" />
 	<depend package="octomap_ros" />

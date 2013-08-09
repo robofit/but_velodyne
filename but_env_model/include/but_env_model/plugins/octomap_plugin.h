@@ -273,7 +273,7 @@ protected:
 	uint8_t m_r, m_g, m_b;
 
 	// Input sensor frame id
-	std::string m_sensor_frame_id;
+//	std::string m_sensor_frame_id;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -32,22 +32,22 @@
 
 
 but_env_model::COccupancyGridPlugin::COccupancyGridPlugin(const std::string & name)
-: but_env_model::CServerPluginBase(name)
-, m_publishGrid(true)
-, m_gridPublisherName(OCCUPANCYGRID_PUBLISHER_NAME)
-, m_latchedTopics(false)
-, m_minSizeX(0.0)
-, m_minSizeY(0.0)
+    : but_env_model::CServerPluginBase(name)
+    , m_publishGrid(true)
+    , m_gridPublisherName(OCCUPANCYGRID_PUBLISHER_NAME)
+    , m_latchedTopics(false)
+    , m_minSizeX(0.0)
+    , m_minSizeY(0.0)
+    , m_minZ(0.1)
+    , m_maxZ(2.0)
 {
 	assert( m_data != 0 );
 }
 
 
-
 but_env_model::COccupancyGridPlugin::~COccupancyGridPlugin()
 {
 }
-
 
 
 bool but_env_model::COccupancyGridPlugin::shouldPublish()
@@ -62,6 +62,9 @@ void but_env_model::COccupancyGridPlugin::init(ros::NodeHandle & nh, ros::NodeHa
 	private_nh.param("map2d_min_x_size", m_minSizeX, m_minSizeX);
 	private_nh.param("map2d_min_y_size", m_minSizeY, m_minSizeY);
 
+    private_nh.param("map2d_min_z", m_minZ, m_minZ);
+    private_nh.param("map2d_max_z", m_maxZ, m_maxZ);
+
 	// Get collision map crawling depth
 	int depth(m_crawlDepth);
 	private_nh.param("map2d_treedepth", depth, depth);
@@ -70,7 +73,6 @@ void but_env_model::COccupancyGridPlugin::init(ros::NodeHandle & nh, ros::NodeHa
 	// Create publisher
 	m_gridPublisher = nh.advertise<nav_msgs::OccupancyGrid> (m_gridPublisherName, 5, m_latchedTopics);
 }
-
 
 
 void but_env_model::COccupancyGridPlugin::publishInternal(const ros::Time & timestamp)
@@ -84,7 +86,6 @@ void but_env_model::COccupancyGridPlugin::publishInternal(const ros::Time & time
 	    m_gridPublisher.publish(*m_data);
 	}
 }
-
 
 
 void but_env_model::COccupancyGridPlugin::newMapDataCB(SMapWithParameters & par)
@@ -101,6 +102,8 @@ void but_env_model::COccupancyGridPlugin::newMapDataCB(SMapWithParameters & par)
 	double minX, minY, minZ, maxX, maxY, maxZ;
 	par.map->getTree().getMetricMin(minX, minY, minZ);
 	par.map->getTree().getMetricMax(maxX, maxY, maxZ);
+	minZ = (m_minZ > minZ) ? m_minZ : minZ;
+    maxZ = (m_maxZ < maxZ) ? m_maxZ : maxZ;
 
 	octomap::point3d minPt(minX, minY, minZ);
 	octomap::point3d maxPt(maxX, maxY, maxZ);
@@ -216,21 +219,26 @@ void but_env_model::COccupancyGridPlugin::newMapDataCB(SMapWithParameters & par)
  */
 void but_env_model::COccupancyGridPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp)
 {
-	if (it.getDepth() == m_crawlDepth)
-	{
+    if( it.getZ() < m_minZ || it.getZ() > m_maxZ )
+    {
+        return;
+    }
 
+    if( it.getDepth() == m_crawlDepth )
+	{
 		octomap::OcTreeKey nKey = it.getKey(); // TODO: remove intermedate obj (1.4)
 		int i = (nKey[0] - m_paddedMinKey[0])/m_multires2DScale;;
 		int j = (nKey[1] - m_paddedMinKey[1])/m_multires2DScale;;
 		m_data->data[m_data->info.width * j + i] = 100;
 
 	} else {
-
 		int intSize = 1 << (m_crawlDepth - it.getDepth());
 		octomap::OcTreeKey minKey = it.getIndexKey();
-		for (int dx = 0; dx < intSize; dx++) {
+		for (int dx = 0; dx < intSize; dx++)
+		{
 			int i = (minKey[0] + dx - m_paddedMinKey[0])/m_multires2DScale;;
-			for (int dy = 0; dy < intSize; dy++) {
+			for (int dy = 0; dy < intSize; dy++)
+			{
 				int j = (minKey[1] + dy - m_paddedMinKey[1])/m_multires2DScale;;
 				m_data->data[m_data->info.width * j + i] = 100;
 			}
@@ -243,21 +251,31 @@ void but_env_model::COccupancyGridPlugin::handleOccupiedNode(but_env_model::tBut
  */
 void but_env_model::COccupancyGridPlugin::handleFreeNode(but_env_model::tButServerOcTree::iterator & it, const SMapWithParameters & mp )
 {
-	if (it.getDepth() == m_crawlDepth) {
+    if( it.getZ() < m_minZ || it.getZ() > m_maxZ )
+    {
+        return;
+    }
+
+    if( it.getDepth() == m_crawlDepth )
+    {
 		octomap::OcTreeKey nKey = it.getKey(); //TODO: remove intermedate obj (1.4)
 		int i = (nKey[0] - m_paddedMinKey[0])/m_multires2DScale;;
 		int j = (nKey[1] - m_paddedMinKey[1])/m_multires2DScale;
-		if (m_data->data[m_data->info.width * j + i] == -1) {
+		if (m_data->data[m_data->info.width * j + i] == -1)
+		{
 			m_data->data[m_data->info.width * j + i] = 0;
 		}
 	} else {
 		int intSize = 1 << (m_crawlDepth - it.getDepth());
 		octomap::OcTreeKey minKey = it.getIndexKey();
-		for (int dx = 0; dx < intSize; dx++) {
+		for (int dx = 0; dx < intSize; dx++)
+		{
 			int i = (minKey[0] + dx - m_paddedMinKey[0])/m_multires2DScale;
-			for (int dy = 0; dy < intSize; dy++) {
+			for (int dy = 0; dy < intSize; dy++)
+			{
 				int j = (minKey[1] + dy - m_paddedMinKey[1])/m_multires2DScale;
-				if (m_data->data[m_data->info.width * j + i] == -1) {
+				if (m_data->data[m_data->info.width * j + i] == -1)
+				{
 					m_data->data[m_data->info.width * j + i] = 0;
 				}
 			}
