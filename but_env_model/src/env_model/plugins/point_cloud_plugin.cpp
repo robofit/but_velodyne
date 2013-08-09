@@ -36,7 +36,6 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-#define DEFAULT_INPUT_CLOUD_FRAME_ID "/head_cam3d_link"
 
 /// Constructor
 but_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bool subscribe)
@@ -44,7 +43,6 @@ but_env_model::CPointCloudPlugin::CPointCloudPlugin(const std::string & name, bo
 , m_publishPointCloud(true)
 , m_pcPublisherName(POINTCLOUD_CENTERS_PUBLISHER_NAME)
 , m_pcSubscriberName(SUBSCRIBER_POINT_CLOUD_NAME)
-, m_inputPcFrameId(DEFAULT_INPUT_CLOUD_FRAME_ID)
 , m_bSubscribe( subscribe )
 , m_latchedTopics( false )
 , m_bFilterPC(true)
@@ -80,8 +78,8 @@ void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandl
 	private_nh.param( "pointcloud_frame_skip", fs, 1 );
 	m_use_every_nth = (fs >= 1) ? fs : 1;
 
-	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
-	// We will use the same frame id as octomap plugin
+	// The map is published in the Octomap TF frame,
+	// so we will use the same frame id as the Octomap plugin
 	private_nh.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
 	// Point cloud limits
@@ -111,7 +109,7 @@ void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandl
 	// If should subscribe, create message filter and connect to the topic
 	if( m_bSubscribe )
 	{
-		PINFO( "Subscribing input topic " << m_pcSubscriberName << ", frame ID " << m_inputPcFrameId );
+		PINFO( "Subscribing input topic " << m_pcSubscriberName << ", frame ID " << m_frame_id );
 
 		// Create subscriber
 		m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(nh, m_pcSubscriberName, 1);
@@ -121,8 +119,8 @@ void but_env_model::CPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandl
 		}
 
 		// Create message filter
-		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_inputPcFrameId, 10);
-		m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
+		m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_frame_id, 10 );
+		m_tfPointCloudSub->registerCallback( boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1) );
 	}
 
 	// Clear old pointcloud data
@@ -153,11 +151,13 @@ void but_env_model::CPointCloudPlugin::publishInternal(const ros::Time & timesta
 	// Set message parameters and publish
 	if( m_bTransformPC && m_data->header.frame_id != m_frame_id )
 	{
-		ROS_ERROR("CPointCloudPlugin::publishInternal(): Internal frame id is not compatible with the output one." );
+		ROS_INFO_ONCE( "CPointCloudPlugin::publishInternal(): Internal frame id is not compatible with the output one." );
 		return;
 	}
 	if( m_bTransformPC )
+	{
 		cloud.header.frame_id = m_frame_id;
+	}
 	cloud.header.stamp = timestamp;
 
 	ROS_INFO_STREAM_ONCE( "Publishing point cloud, size: " << m_data->size() << ", topic: " << m_pcPublisher.getTopic() );
@@ -176,9 +176,9 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 	m_data->clear();
 
 	// Just for sure
-	if(m_frame_id != par.frameId)
+	if( m_frame_id != par.frameId )
 	{
-		PERROR("Map frame ID has changed, this should never happen. Exiting newMapDataCB.");
+		ROS_INFO_ONCE( "CPointCloudPlugin::newMapDataCB(): Map frame ID has changed, this should never happen." );
 		return;
 	}
 
@@ -444,8 +444,8 @@ void but_env_model::CPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh 
 			m_pcSubscriber  = new message_filters::Subscriber<tIncommingPointCloud>(nh, m_pcSubscriberName, 1);
 
 			// Create message filter
-			m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_inputPcFrameId, 1);
-			m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1));
+			m_tfPointCloudSub = new tf::MessageFilter<tIncommingPointCloud>( *m_pcSubscriber, m_tfListener, m_frame_id, 1 );
+			m_tfPointCloudSub->registerCallback(boost::bind( &CPointCloudPlugin::insertCloudCallback, this, _1) );
 		}
 	}
 }

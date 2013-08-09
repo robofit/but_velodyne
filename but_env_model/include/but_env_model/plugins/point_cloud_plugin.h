@@ -130,19 +130,16 @@ protected:
     //! Point cloud subscriber name
     std::string m_pcSubscriberName;
 
-    /// Subscriber - point cloud
+    //! Point cloud subscriber
     message_filters::Subscriber<tIncommingPointCloud> *m_pcSubscriber;
 
-    //! Message filter (we only want point cloud 2 messages)
+    //! Message filter (we only want PointCloud2 messages)
     tf::MessageFilter<tIncommingPointCloud> *m_tfPointCloudSub;
 
-    /// Point cloud publisher
+    //! Point cloud publisher
     ros::Publisher m_pcPublisher;
 
-    /// Input pointcloud frame id used to filter messages
-    std::string m_inputPcFrameId;
-
-    //! Should this plugin subscribe to some publishing topic?
+    //! Should this plugin subscribe to some published topic?
     bool m_bSubscribe;
 
     //! Transform listener
