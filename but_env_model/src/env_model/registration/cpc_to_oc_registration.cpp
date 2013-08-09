@@ -294,7 +294,6 @@ void but_env_model::COcPatchMaker::onCameraChangedCB(const sensor_msgs::CameraIn
 	// Set camera position frame id
 	m_cameraFrameId = cam_info->header.frame_id;
 
-
 	ROS_DEBUG("COcToPcl: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
 	m_camera_model_buffer.fromCameraInfo(*cam_info);
 	m_camera_size_buffer = m_camera_model_buffer.fullResolution();

@@ -136,11 +136,13 @@ map2d_frame_id: "/map"
 # Tree depth used for crawling. Zero means full tree
 map2d_treedepth: 0
 
-# Minimal map size in x
+# Minimal map size in x and y
 map2d_min_x_size: 0.0
-
-# Minimal map size in y
 map2d_min_y_size: 0.0
+
+# Minimal and maximal z coordinate of projected points
+map2d_min_z: 0.2
+map2d_max_z: 2.0
 
 
 ###############################################################################

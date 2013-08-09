@@ -79,7 +79,7 @@ protected:
     //! Collision object publisher name
     std::string m_gridPublisherName;
 
-    /// Collision object publisher
+    //! Collision object publisher
     ros::Publisher m_gridPublisher;
 
     //! Transform listener
@@ -88,29 +88,29 @@ protected:
     //
     bool m_latchedTopics;
 
-    /// Crawled octomap frame id
+    //! Crawled octomap frame id
     std::string m_ocFrameId;
 
-    /// Transformation from octomap to the map frame id - rotation
+    //! Transformation from octomap to the map frame id - rotation
     Eigen::Matrix3f m_ocToGridRot;
 
-    /// Transformation from octomap to the map frame id - translation
+    //! Transformation from octomap to the map frame id - translation
     Eigen::Vector3f m_ocToGridTrans;
 
-    /// Padded key minimum
+    //! Padded key minimum
     octomap::OcTreeKey m_paddedMinKey;
 
-    /// Map limits
+    //! Map limits
     double m_minSizeX;
     double m_minSizeY;
 
-    /// Conversion between frame id's must be done...
+    //! Conversion between frame id's must be done...
     bool m_bConvert;
 
-    /// Grid scaling
+    //! Grid scaling
     unsigned m_multires2DScale;
 
-    /// Minimum and maximum height above the ground projected to the 2D map
+    //! Minimum and maximum height above the ground projected to the 2D map
     double m_minZ, m_maxZ;
 
 public:
