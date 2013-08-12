@@ -151,9 +151,10 @@ namespace rt_road_detection {
 			void normalize(cv::Point3d& v);
 
 			bool robotPose(geometry_msgs::PoseStamped& pose);
+			bool updateMapOrigin(geometry_msgs::PoseStamped& robot_pose);
 			bool updateMapOrigin();
 
-			void worldToMap(geometry_msgs::Point& p);
+			bool worldToMap(geometry_msgs::Point& p);
 
 			bool initialized_;
 
