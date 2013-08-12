@@ -1,0 +1,10 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~prob_miss" : \b [double] prob miss min: 0.0, default: 0.3, max: 1.0
+- \b "~prob_hit" : \b [double] prob hit min: 0.0, default: 0.7, max: 1.0
+- \b "~hue_min" : \b [int] minimal hue min: 0, default: 90, max: 179
+- \b "~hue_max" : \b [int] maximal hue min: 0, default: 130, max: 179
+- \b "~median_ks" : \b [int] median filter kernel size min: 0, default: 5, max: 21
+

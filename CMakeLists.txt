@@ -14,7 +14,7 @@ rosbuild_init()
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
+add_definitions (-Wno-missing-field-initializers -O4 -mfpmath=sse -msse2 -fopenmp)
 # generate dynamic reconfigure stuff
 rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
@@ -30,6 +30,20 @@ target_link_libraries(sample_hue_detector_node sample_hue_detector_ros)
 
 #rosbuild_add_library( detector_nodelets src/nodelets/sample_hue_detector_nodelet.cpp)
 #target_link_libraries( detector_nodelets sample_hue_detector_ros)
+
+# LBP detector
+rosbuild_add_library(lbp_detector_ros src/detectors/lbp_detector.cpp src/detectors/lbp_detector_ros.cpp src/detectors/lbp.cpp  )
+
+rosbuild_add_executable(lbp_detector_node src/nodes/lbp_detector_node.cpp)
+target_link_libraries(lbp_detector_node lbp_detector_ros)
+
+
+# LBP training tool
+rosbuild_add_library(lbp_training_ros src/detectors/lbp_detector.cpp src/detectors/lbp_training_ros.cpp src/detectors/lbp.cpp  )
+
+rosbuild_add_executable(lbp_training_node src/nodes/lbp_training_node.cpp)
+target_link_libraries(lbp_training_node lbp_training_ros)
+
 
 rosbuild_add_library(traversability_costmap src/costmap.cpp)
 rosbuild_add_executable( costmap_node src/nodes/costmap_node.cpp )
