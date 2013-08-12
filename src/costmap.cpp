@@ -146,21 +146,30 @@ double TraversabilityCostmap::round(double d)
 
 bool TraversabilityCostmap::updateMapOrigin() {
 
-
-	geometry_msgs::Point oldp = map_origin_.pose.position;
-	worldToMap(oldp);
-
 	geometry_msgs::PoseStamped robot_pose;
 
 	if (!robotPose(robot_pose)) return false;
 
-	geometry_msgs::Point newp = robot_pose.pose.position;
-	worldToMap(newp);
+	return updateMapOrigin(robot_pose);
 
-	int dx = (int)floor(newp.x - oldp.x); // TODO floor or round???
-	int dy = (int)floor(newp.y - oldp.y);
+}
 
-	if (!robotPose(map_origin_)) return false;
+bool TraversabilityCostmap::updateMapOrigin(geometry_msgs::PoseStamped& robot_pose) {
+
+
+	float fdx = robot_pose.pose.position.x - map_origin_.pose.position.x;
+	float fdy = robot_pose.pose.position.y - map_origin_.pose.position.y;
+
+	// correction
+	fdx = floor(fdx / map_res_) * map_res_;
+	fdy = floor(fdy / map_res_) * map_res_;
+
+	map_origin_.pose.position.x += fdx;
+	map_origin_.pose.position.y += fdy;
+	map_origin_.header.stamp = robot_pose.header.stamp;
+
+	int dx = (int)floor(fdx / map_res_);
+	int dy = (int)floor(fdy / map_res_);
 
 	occ_grid_meta_.origin.position.x = map_origin_.pose.position.x - map_size_/2.0;
 	occ_grid_meta_.origin.position.y = map_origin_.pose.position.y - map_size_/2.0;
@@ -329,16 +338,47 @@ void TraversabilityCostmap::normalize(cv::Point3d& v)
   v.z /= len;
 }
 
-void TraversabilityCostmap::worldToMap(geometry_msgs::Point& p) {
+bool TraversabilityCostmap::worldToMap(geometry_msgs::Point& p) {
 
 	p.x = round((p.x - map_origin_.pose.position.x)/map_res_ + ((map_size_/2.0)/map_res_));
 	p.y = round((p.y - map_origin_.pose.position.y)/map_res_ + ((map_size_/2.0)/map_res_));
 
-	if (p.x < 0) p.x = 0;
-	if (p.y < 0) p.y = 0;
+	bool err = false;
 
-	if (p.x > (double)occ_grid_.rows) p.x = (double)occ_grid_.rows;
-	if (p.y > (double)occ_grid_.cols) p.y = (double)occ_grid_.cols;
+	if (p.x < 0) {
+
+		p.x = 0;
+		err = true;
+
+	}
+	if (p.y < 0) {
+
+		p.y = 0;
+		err = true;
+
+	}
+
+	if (p.x > (double)occ_grid_.rows) {
+
+		p.x = (double)occ_grid_.rows;
+		err = true;
+
+	}
+
+
+	if (p.y > (double)occ_grid_.cols) {
+
+		p.y = (double)occ_grid_.cols;
+		err = true;
+
+	}
+
+	if (err) {
+
+		ROS_WARN_THROTTLE(0.5,"Point out of map.");
+		return false;
+
+	} else return true;
 
 
 }
@@ -779,6 +819,8 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 
 			ROS_INFO("Initialized.");
 
+			//cout << "ix " << map_origin_.pose.position.x << " iy " << map_origin_.pose.position.y << endl;
+
 			initialized_ = true;
 
 		} else {
@@ -798,7 +840,7 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 	if (dist > origin_update_th_) { // TODO make configurable
 
 		ROS_INFO("Robot traveled %f meters. Updating map origin.",dist);
-		updateMapOrigin();
+		updateMapOrigin(p);
 
 	}
 
