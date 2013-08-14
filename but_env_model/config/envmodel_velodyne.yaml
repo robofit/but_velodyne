@@ -12,8 +12,8 @@ ocmap_resolution: .025
 ocmap_treedepth: 0
 
 # Internal and published octomap frame id
-#ocmap_frame_id: "/odom"
-ocmap_frame_id: "/base_link"
+ocmap_frame_id: "/odom"
+#ocmap_frame_id: "/base_footprint"
 
 # Probablility for a "hit" - or "occupied" (will be converted to logodds)
 ocmap_sensor_model/hit: .7
@@ -146,8 +146,8 @@ registration_patch_publish_cloud: true
 # 2D occupancy grid plugin
 
 # Internal and published frame id
-#map2d_frame_id: "/odom"
-map2d_frame_id: "/base_link"
+map2d_frame_id: "/odom"
+#map2d_frame_id: "/base_footprint"
 
 # Tree depth used for crawling. Zero means full tree
 map2d_treedepth: 0
@@ -157,7 +157,7 @@ map2d_min_x_size: 0.0
 map2d_min_y_size: 0.0
 
 # Minimal and maximal z coordinate of projected points
-map2d_min_z: 0.05
+map2d_min_z: 0.2
 map2d_max_z: 1.5
 
 

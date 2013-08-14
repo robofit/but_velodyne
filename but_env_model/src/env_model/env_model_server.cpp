@@ -62,10 +62,10 @@
 /**
  Constructor
  */
-but_env_model::CButServer::CButServer(const std::string& filename) :
+but_env_model::CButServer::CButServer(ros::NodeHandle nh, ros::NodeHandle private_nh, const std::string& filename) :
     m_bIsPaused(false),
-    m_nh(),
-    m_privnh("~"),
+    m_nh(nh),
+    m_privnh(private_nh),
     m_latchedTopics(false),
     m_numPCFramesProcessed(1.0),
     m_frameCounter(0),

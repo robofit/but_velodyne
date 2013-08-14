@@ -5,6 +5,7 @@
 
     <!-- Run our dynamic scene model server node -->
     <include file="$(find but_env_model)/launch/but_envmodel_velodyne.launch">
+        <!--arg name="run_nodelet_version" value="1" /-->
         <arg name="rgb_points_in" value="/velodyne_points" />
     </include>
 

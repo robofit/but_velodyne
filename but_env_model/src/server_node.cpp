@@ -76,7 +76,7 @@ int main(int argc, char** argv)
     }
     try {
         // Run server
-        but_env_model::CButServer ms(mapFilename);
+        but_env_model::CButServer ms(ros::NodeHandle(), ros::NodeHandle("~"), mapFilename);
         ros::Rate loop_rate(10);
 
         int count = 0;
