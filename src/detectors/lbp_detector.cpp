@@ -22,7 +22,7 @@ using namespace cv;
 using namespace rt_road_detection;
 
 
-LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, float _prob_min, float _prob_max, string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
+LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7, string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
 {
 	ifstream fin(svm_file.c_str());
 	

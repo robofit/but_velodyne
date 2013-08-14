@@ -41,7 +41,7 @@ LBPTrainingRos::LBPTrainingRos(ros::NodeHandle private_nh) {
 	
 	fin.close();
 	
-	LBPDetector * detector=new LBPDetector(width_cell,height_cell,width_block,height_block,fileName);
+	LBPDetector * detector=new LBPDetector(width_cell,height_cell,width_block,height_block,0.0,0.0,fileName);
 	
 	detector->trainLBP(fileNameCSV,fileName);
 	
