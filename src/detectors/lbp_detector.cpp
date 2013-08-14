@@ -269,9 +269,9 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 			this->detect(histogram,&probability);
 			
 			if(probability>0)
-			  probability=prob_max;
-			else
 			  probability=prob_min;
+			else
+			  probability=prob_max;
 
 			for(int a=0;a <height_block;a++)
 			{
@@ -287,7 +287,7 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 					{
 					
 					  //compute average of the previous and current value
-					  map.at<float> (j+a,i+b)= (float) (( probability+ (map.at<float> (j+a,i+b)))/2);
+					  map.at<float> (j+a,i+b)= (float) ((probability+ (map.at<float> (j+a,i+b)))/2);
 					}
 						
 				}

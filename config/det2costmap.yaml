@@ -23,7 +23,7 @@ detectors:
     name: sample_grass
     # some more values...
     
-  #- 
-  #  name: sample_asphalt
+  - 
+    name: lbp
 
 

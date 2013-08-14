@@ -5,8 +5,8 @@
   <node pkg="rt_road_detection" name="lbp_detector_node" type="lbp_detector_node" output="screen" ns="detectors">
    <param value="$(find rt_road_detection)/constants/svm.xml" name="file_svm" />
    
-   <remap from="rgb_in" to="/stereo/left/image_raw"/>
-   <remap from="det_out" to="/detectors/sample_asphalt"/>
+   <remap from="rgb_in" to="/stereo/left/image_rect_color"/>
+   <remap from="det_out" to="/detectors/lbp"/>
    
    <param name="width_block" value="64"/> 
    <param name="height_block" value="64"/>
