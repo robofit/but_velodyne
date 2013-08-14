@@ -20,6 +20,9 @@ rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
 
+rosbuild_gensrv()
+
+
 include_directories( include/rt_road_detection )
 
 # Sample hue detector
@@ -55,6 +58,7 @@ target_link_libraries( costmap_node traversability_costmap )
 rosbuild_add_library(road_detection_nodelets src/nodelets/costmap_nodelet.cpp src/nodelets/sample_hue_detector_nodelet.cpp)
 target_link_libraries( road_detection_nodelets sample_hue_detector_ros traversability_costmap)
 
+rosbuild_add_executable(wp_corrector_node src/nodes/waypoint_corrector_main.cpp src/nodes/WaypointCorrector.cpp)
 
 # Parse check all the launch/*.launch files
 rosbuild_add_roslaunch_check(launch)
