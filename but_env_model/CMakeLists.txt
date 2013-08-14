@@ -85,10 +85,16 @@ rosbuild_add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
 set( SRS_ENV_MODEL_LIB_NAME but_env_model )
 rosbuild_add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
 
+
 # Add environment model server executable
-rosbuild_add_executable( but_env_model_node ${SERVER_SOURCES} src/server_node.cpp )
-target_link_libraries( but_env_model_node octomap_ros ${OBJTREE_LIB_NAME} )
-target_link_libraries( but_env_model_node ${OpenCV_LIBRARIES} ${OCTOMAP_LIBRARIES} )
+rosbuild_add_executable( but_env_model_node src/server_node.cpp )
+target_link_libraries( but_env_model_node ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME} )
+target_link_libraries( but_env_model_node octomap_ros ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} )
+
+# Environment model server nodelet
+rosbuild_add_library( but_env_model_nodelet src/server_nodelet.cpp )
+target_link_libraries( but_env_model_nodelet ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME} )
+target_link_libraries( but_env_model_nodelet octomap_ros ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} )
 
 
 # Add compressed pc subscriber-publisher executable

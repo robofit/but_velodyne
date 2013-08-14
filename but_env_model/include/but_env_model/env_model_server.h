@@ -91,7 +91,7 @@ public:
     typedef pcl::PointCloud<pcl::PointXYZ> tPCLPointCloud;
 
     //! Constructor - load file
-    CButServer(const std::string& filename= "");
+    CButServer(ros::NodeHandle nh, ros::NodeHandle private_nh, const std::string& filename = std::string("") );
 
     //! Destructor
     virtual ~CButServer();
@@ -101,7 +101,6 @@ public:
 
     /// Pause-resume server
     void pause( bool bPause );
-
 
 protected:
     //! Publish all

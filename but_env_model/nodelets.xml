@@ -1,0 +1,9 @@
+<library path="lib/libbut_env_model_nodelet">
+  <class name="but_env_model/EnvModelNodelet"
+         type="but_env_model::EnvModelNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Dynamic environment model based on Octomap library.
+    </description>
+  </class>
+</library>
