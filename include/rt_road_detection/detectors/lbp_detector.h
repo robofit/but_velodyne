@@ -42,7 +42,7 @@ namespace rt_road_detection {
 		LBP lbp;
 
 	public: 
-		LBPDetector(int _width_cell,int _height_cell, int _width_block, int _height_block,string svm_file);
+		LBPDetector(int _width_cell,int _height_cell, int _width_block, int _height_block, double _prob_min, double _prob_max , string svm_file);
 		void trainLBP(string train_data_path,string output_file);
 		
 		
@@ -57,6 +57,9 @@ namespace rt_road_detection {
 		int height_block;
 		int width_cell;
 		int height_cell;
+		
+		double prob_min;
+		double prob_max;
   };
 
 }

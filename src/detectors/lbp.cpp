@@ -32,10 +32,6 @@ typedef Vec<uchar,1>  Vec1b;
 *
 */
 
-
-
-
-
 LBP::LBP(int radius=1,int neighbors=8,int _type=ROTARY_INVARIANT_OLBP):_radius(radius),_neighbors(neighbors),type(_type),max_rotary_invariantion_bin(0) 
 {
     if (type==UNIFORM_LBP  || type==UNIFORM_OLBP) {
@@ -52,7 +48,7 @@ LBP::LBP(int radius=1,int neighbors=8,int _type=ROTARY_INVARIANT_OLBP):_radius(r
 	else
 	{
 		string error_message = "Bad LBP type";
-        CV_Error(CV_StsError, error_message);
+		CV_Error(CV_StsError, error_message);
 	}
 }
 
@@ -97,6 +93,11 @@ void LBP::initRotaryInvariantLookup()
 }
 
 
+
+/**
+* RotateLeft
+*
+*/
 
 unsigned int LBP::rotateLeft( unsigned int i, unsigned int samples ) {
     unsigned int bg = ((i & (1 << (samples - 1))) >> (samples - 1)); // bitget(r,samples)
@@ -278,7 +279,7 @@ void LBP::histogram(Mat src, OutputArray _dst,int x,int y,int width,int height)
 	Mat dst=_dst.getMat();
 	dst.setTo(0);
 	
-	//cout << "LBP HISTOGRAM: start \n";
+
 	for(int i=y; i < y+height;i++) {
 	    for(int j=x;j < (x+width) ;j++) {
 
@@ -286,10 +287,6 @@ void LBP::histogram(Mat src, OutputArray _dst,int x,int y,int width,int height)
 	    }
 	}
 
-	
-	//cout << "LBP HISTOGRAM: normalize \n";
-	
-	//normalize(dst,dst);
 }
 
 
