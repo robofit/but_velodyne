@@ -22,7 +22,7 @@ using namespace cv;
 using namespace rt_road_detection;
 
 
-LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64,string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
+LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, float _prob_min, float _prob_max, string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
 {
 	ifstream fin(svm_file.c_str());
 	
@@ -38,6 +38,11 @@ LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_bloc
 	
 	fin.close();
 
+	
+	prob_min=_prob_min;
+	prob_max=_prob_max;
+	
+	
 	width_cell=_width_cell;
 	width_block=_width_block;
 	height_cell=_height_cell;
@@ -181,7 +186,6 @@ void LBPDetector::trainLBP(std::string csv_file,string output_file)
 
 		//lbp compute for one channel
 		lbp.compute(channels[0],output);
-		imshow("image", image_hue);
 		
 		
 		//compute normalize histogram
@@ -235,12 +239,12 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 	
 	lbp.compute(hsv_vec[0],src);
   
-	map.create(input.rows,input.cols,CV_8U);
+	//map.create(input.rows,input.cols,CV_8U);
 	
 	
 	//if the output is float matrix
 	
-	//map.create(input.rows,input.cols,CV_32F);
+	map.create(input.rows,input.cols,CV_32F);
 	
 	map.setTo(0);
 	
@@ -265,35 +269,25 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 			this->detect(histogram,&probability);
 			
 			if(probability>0)
-			  probability=255;
+			  probability=prob_min;
 			else
-			  probability=0;
+			  probability=prob_max;
 
 			for(int a=0;a <height_block;a++)
 			{
 				for(int b=0;b <width_block; b++)
 				{
-					//if(map.at<float> (j+a,i+b)==0.0)
-					//{
-					//  map.at<float> (j+a,i+b)=probability;
-					//}
-						
-					//else
-					//{
-					//  map.at<float> (j+a,i+b)=(probability+map.at<float> (j+a,i+b))/2;
-					//}
-					
-					
-					//Visual version !! only for testing
-					if(map.at<uchar> (j+a,i+b)==0.0)
+					//if cell is empty
+					if(map.at<float> (j+a,i+b)==0.0)
 					{
-					  map.at<uchar> (j+a,i+b)=probability;
+					  map.at<float> (j+a,i+b)=probability;
 					}
 						
 					else
 					{
-					  
-					  map.at<uchar> (j+a,i+b)= (uchar) (((int) probability+(int) (map.at<uchar> (j+a,i+b)))/2);
+					
+					  //compute average of the previous and current value
+					  map.at<float> (j+a,i+b)= (float) (((int) probability+(int) (map.at<float> (j+a,i+b)))/2);
 					}
 						
 				}
@@ -332,9 +326,9 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
       width_block=width_block_ref;
       
       //if the output is float matrix
-      //out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
+      out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
       
-      out->encoding = sensor_msgs::image_encodings::MONO8;
+      //out->encoding = sensor_msgs::image_encodings::MONO8;
       out->header = in->header;
       out->image = map;
     

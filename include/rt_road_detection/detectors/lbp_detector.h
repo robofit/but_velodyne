@@ -57,6 +57,9 @@ namespace rt_road_detection {
 		int height_block;
 		int width_cell;
 		int height_cell;
+		
+		float prob_min;
+		float prob_max;
   };
 
 }
