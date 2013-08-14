@@ -51,7 +51,7 @@ namespace rt_road_detection
 		float dest_y = reqest.wp_in.y / resolution;
 
 		Point2f res;
-		correctWaypoint(Point2i(dest_x, dest_y), res);
+		if (!correctWaypoint(Point2i(dest_x, dest_y), res)) ROS_WARN("Error on correcting waypoint.");
 
 		response.wp_out.x = res.x;
 		response.wp_out.y = res.y;
@@ -116,6 +116,8 @@ namespace rt_road_detection
 
 	void WaypointCorrector::mapCallback(const nav_msgs::OccupancyGridConstPtr& msg)
 	{
+	
+	  ROS_INFO_ONCE("Received map.");
 		got_map = true;
 		//now create Opencv image from map
 		width 		= (*msg).info.width;
