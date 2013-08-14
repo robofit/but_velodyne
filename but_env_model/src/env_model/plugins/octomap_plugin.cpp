@@ -7,7 +7,7 @@
  *
  * This file is part of software developed by Robo@FIT group.
  *
- * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Author: Vit Stancl (stancl@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
  * 
@@ -43,7 +43,6 @@
 #include <but_interaction_primitives/AddUnknownObject.h>
 
 #define DEFAULT_RESOLUTION 0.1
-//#define SENSOR_FRAME_ID "/head_cam3d_link"
 
 void but_env_model::COctoMapPlugin::setDefaults()
 {
@@ -76,13 +75,17 @@ void but_env_model::COctoMapPlugin::setDefaults()
 	m_probDeleted = m_mapParameters.probMiss * 0.1;
 	m_r = m_g = m_b = 128;
 
-//	m_sensor_frame_id = SENSOR_FRAME_ID;
+	// Octomap aging is disabled by default
+    m_agingEnabled = false;
+    m_agingProb = m_mapParameters.probMiss;
+    m_agingProbLog = octomap::logodds(m_agingProb);
+    m_agingPeriod = 1.0;
 }
 
 but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
     : but_env_model::CServerPluginBase(name)
     , CDataHolderBase< tButServerOcMap >( new tButServerOcMap(DEFAULT_RESOLUTION) )
-    , filecounter(0)
+    , m_filecounter(0)
     , m_filterSingleSpecles("/map")
     , m_filterRaycast("/map")
     , m_filterGround("/map")
@@ -90,7 +93,6 @@ but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name)
     , m_bNewDataToFilter(false)
     , m_bMapLoaded(false)
 {
-	//
 	setDefaults();
 
 	assert( m_data != 0 );
@@ -132,9 +134,11 @@ but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const st
 	m_mapParameters.crawlDepth = m_crawlDepth;
 
 	// is filename valid?
-	if (filename.length() > 0) {
+	if (filename.length() > 0)
+	{
 		// Try to load data
-		if (m_data->getTree().readBinary(filename)) {
+		if (m_data->getTree().readBinary(filename))
+		{
 			ROS_INFO("Octomap file %s loaded (%zu nodes).", filename.c_str(), m_data->getTree().size());
 
 			// get tree depth
@@ -148,9 +152,9 @@ but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const st
 
 			// We have new data
 			invalidate();
-
-		} else {
-
+		}
+		else
+		{
 			// Something is wrong - cannot load data...
 			ROS_ERROR("Could not open requested file %s, continuing in standard mode.", filename.c_str());
 			PERROR( "Transform error.");
@@ -161,7 +165,7 @@ but_env_model::COctoMapPlugin::COctoMapPlugin(const std::string & name, const st
 /**
  * Destructor
  */
-but_env_model::COctoMapPlugin::~COctoMapPlugin()\
+but_env_model::COctoMapPlugin::~COctoMapPlugin()
 {
 	// Remove tester
 	if (m_removeTester != 0)
@@ -175,24 +179,16 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 
 	reset(false);
 
-	private_nh.param("ocmap_resolution", m_mapParameters.resolution,
-			m_mapParameters.resolution);
-	int td( m_mapParameters.treeDepth);
+	private_nh.param("ocmap_resolution", m_mapParameters.resolution, m_mapParameters.resolution);
+	int td( m_mapParameters.treeDepth );
 	private_nh.param("ocmap_treedepth", td, td );
 	m_mapParameters.treeDepth = ( td < 0 ) ? 0 : td;
-	private_nh.param("ocmap_sensor_model/hit", m_mapParameters.probHit,
-			m_mapParameters.probHit);
-	private_nh.param("ocmap_sensor_model/miss", m_mapParameters.probMiss,
-			m_mapParameters.probMiss);
-	private_nh.param("ocmap_sensor_model/min", m_mapParameters.thresMin,
-			m_mapParameters.thresMin);
-	private_nh.param("ocmap_sensor_model/max", m_mapParameters.thresMax,
-			m_mapParameters.thresMax);
-	private_nh.param("ocmap_max_range", m_mapParameters.maxRange,
-			m_mapParameters.maxRange);
-
+	private_nh.param("ocmap_sensor_model/hit", m_mapParameters.probHit, m_mapParameters.probHit);
+	private_nh.param("ocmap_sensor_model/miss", m_mapParameters.probMiss, m_mapParameters.probMiss);
+	private_nh.param("ocmap_sensor_model/min", m_mapParameters.thresMin, m_mapParameters.thresMin);
+	private_nh.param("ocmap_sensor_model/max", m_mapParameters.thresMax, m_mapParameters.thresMax);
+	private_nh.param("ocmap_max_range", m_mapParameters.maxRange, m_mapParameters.maxRange);
 	private_nh.param("ocmap_frame_id", m_mapParameters.frameId, m_mapParameters.frameId );
-//    private_nh.param("sensor_frame_id", m_sensor_frame_id, m_sensor_frame_id );
 
 	// Set octomap parameters...
 	{
@@ -219,8 +215,16 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 	private_nh.param("use_input_for_filter", m_bFilterWithInput, m_bFilterWithInput );
 
 	// Octomap publishing topic
-	private_nh.param("ocmap_publishing_topic", m_ocPublisherName,
-			OCTOMAP_PUBLISHER_NAME);
+	private_nh.param("ocmap_publishing_topic", m_ocPublisherName, OCTOMAP_PUBLISHER_NAME);
+
+	// Octomap aging
+    private_nh.param("ocmap_aging", m_agingEnabled, m_agingEnabled );
+    private_nh.param("ocmap_aging_prob", m_agingProb, m_agingProb );
+    m_agingProb = (m_agingProb < 0.0) ? 0.0 : m_agingProb;
+    m_agingProb = (m_agingProb > 0.5) ? 0.5 : m_agingProb;
+    m_agingProbLog = octomap::logodds(m_agingProb);
+    private_nh.param("ocmap_aging_period", m_agingPeriod, m_agingPeriod );
+    m_agingPeriod = (m_agingPeriod < 0.1) ? 0.1 : m_agingPeriod;
 
 	// Advertise services
 	m_serviceResetOctomap = nh.advertiseService(ResetOctomap_SRV,
@@ -250,6 +254,8 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 	m_serviceSaveFullMap = nh.advertiseService( SaveFullMap_SRV,
 				&but_env_model::COctoMapPlugin::saveFullOctreeCB, this);
 
+    m_serviceAgingPause = nh.advertiseService( OctomapAgingPause_SRV,
+                &but_env_model::COctoMapPlugin::agingPauseCB, this);
 
 	// Create publisher
 	m_ocPublisher = nh.advertise<octomap_msgs::Octomap> (
@@ -292,6 +298,12 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 
 		// Connect input point cloud input with octomap
 		m_filterCloudPlugin->getSigDataChanged().connect( boost::bind( &COctoMapPlugin::filterCloud, this, _1 ));
+	}
+
+	// Initialize the aging timer
+	if( m_agingEnabled )
+	{
+	    m_agingTimer = nh.createTimer( m_agingPeriod, &COctoMapPlugin::agingCallback, this );
 	}
 }
 
@@ -527,6 +539,44 @@ void but_env_model::COctoMapPlugin::filterCloud( tPointCloudConstPtr & cloud)
 	}
 }
 
+/**
+ * Octomap aging that decreases probabilities in time
+ */
+void but_env_model::COctoMapPlugin::agingCallback(const ros::TimerEvent & event)
+{
+    ROS_INFO_ONCE( "COctoMapPlugin::agingCallback() called" );
+
+    // Lock data
+    boost::mutex::scoped_lock lock(m_lockData);
+
+    // If no data, do nothing
+    if( getSize() <= 1 )
+    {
+        return;
+    }
+
+    // Decrease probabilities stored in the octree
+    tButServerOcTree & tree( m_data->getTree() );
+    but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+    for( it = tree.begin_leafs(); it != itEnd; ++it )
+    {
+        if( m_data->getTree().isNodeOccupied(*it) )
+        {
+            m_data->getTree().updateNodeLogOdds(&*it, m_agingProbLog);
+        }
+    }
+
+    // Compress the octree
+    m_data->getTree().prune();
+
+    // Release lock
+    lock.unlock();
+
+    // Publish new data
+    invalidate();
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //  OCTOMAP CRAWLING
 ///////////////////////////////////////////////////////////////////////////////
@@ -539,7 +589,6 @@ void but_env_model::COctoMapPlugin::crawl(const ros::Time & currentTime)
 
 	// Call new data signal
 	m_sigOnNewData( m_mapParameters );
-
 }
 
 //! Should plugin publish data?
@@ -587,7 +636,7 @@ void but_env_model::COctoMapPlugin::fillMapParameters(const ros::Time & time)
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Reset octomap - service callback
+ * Reset octomap - service callback
  *
  */
 bool but_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
@@ -604,7 +653,7 @@ bool but_env_model::COctoMapPlugin::resetOctomapCB(std_srvs::Empty::Request& req
 	return true;
 }
 
-// ============================================================================
+///////////////////////////////////////////////////////////////////////////////
 // Filtering
 
 /**
@@ -643,6 +692,7 @@ long int but_env_model::COctoMapPlugin::doObjectTesting(but_env_model::CTestingO
 
 	return counter;
 }
+
 /**
  * Remove cube as a service - callback
  */
@@ -1054,4 +1104,22 @@ bool but_env_model::COctoMapPlugin::saveFullOctreeCB( but_env_model::LoadSaveReq
 
 	res.all_ok = true;
 	return true;
+}
+
+
+/**
+ * Starts/stops octomap crowling - service callback
+ */
+bool but_env_model::COctoMapPlugin::agingPauseCB( but_env_model::OctomapAgingPause::Request & req, but_env_model::OctomapAgingPause::Response & res )
+{
+    if( req.pause )
+    {
+        m_agingTimer.stop();
+    }
+    else
+    {
+        m_agingTimer.start();
+    }
+
+    return true;
 }
