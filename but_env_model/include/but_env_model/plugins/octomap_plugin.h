@@ -7,7 +7,7 @@
  *
  * This file is part of software developed by Robo@FIT group.
  *
- * Author: Vit Stancl (stancl@fit.vutbr.cz)
+ * Author: Vit Stancl (stancl@fit.vutbr.cz), Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
  * 
@@ -24,6 +24,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 #ifndef OCTOMAPPLUGIN_H_INCLUDED
 #define OCTOMAPPLUGIN_H_INCLUDED
@@ -32,6 +33,9 @@
 #include <but_env_model/plugins/octomap_plugin_tools/testing_oriented_box.h>
 #include <but_env_model/plugins/octomap_plugin_tools/testing_sphere.h>
 #include <but_env_model/plugins/octomap_plugin_tools/testing_polymesh.h>
+#include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_single_specles.h>
+#include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_raycast.h>
+#include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_ground.h>
 
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
@@ -41,17 +45,12 @@
 #include <but_env_model/SetCrawlingDepth.h>
 #include <but_env_model/GetTreeDepth.h>
 #include <but_env_model/LoadSave.h>
+#include <but_env_model/OctomapAgingPause.h>
 
 // Registration
 #include <but_env_model/registration/cpc_to_oc_registration.h>
 
-#include "octomap_plugin_tools/octomap_filter_single_specles.h"
-#include "octomap_plugin_tools/octomap_filter_raycast.h"
-#include "octomap_plugin_tools/octomap_filter_ground.h"
-
-//========================
 // Filtering
-
 #include <image_geometry/pinhole_camera_model.h>
 
 namespace but_env_model
@@ -117,9 +116,7 @@ protected:
 	/// Set octomap default parameters
 	void setDefaults();
 
-	/**
-	 * @brief Insert scan to the octomap
-	 */
+	/// Insert scan to the octomap
 	void insertScan(const tf::Point& sensorOriginTf, const tPointCloud& ground, const tPointCloud& nonground);
 
 	/// Fill map parameters
@@ -131,12 +128,14 @@ protected:
 	/// Use pointcloud to raycast filter map
 	void filterCloud( tPointCloudConstPtr & cloud);
 
+    /// Do octomap testing by object
+    long int doObjectTesting( CTestingObjectBase * object );
+
+    /// Aging timer callback
+    void agingCallback( const ros::TimerEvent & event );
 
 	// ------------------------------------------------------------------------
-	// Obstacle cleaning
-
-	/// Do octomap testing by object
-	long int doObjectTesting( CTestingObjectBase * object );
+	// Service callbacks
 
 	/// Remove cube as a service - callback
 	bool removeCubeCB( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
@@ -165,9 +164,10 @@ protected:
 	/// Save map service callback - full octree
 	bool saveFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
 
+    /// Starts/stops octomap crowling - service callback
+    bool agingPauseCB( but_env_model::OctomapAgingPause::Request & req, but_env_model::OctomapAgingPause::Response & res );
 
 protected:
-
     /// Should ground plane be filtered?
     bool m_filterGroundPlane;
 
@@ -180,51 +180,38 @@ protected:
      /// Octomap parameters
     SMapWithParameters m_mapParameters;
 
-    //! Transform listener
+    /// Transform listener
     tf::TransformListener m_tfListener;
 
-    /// Reset octomap service
+    /// Service servers
     ros::ServiceServer m_serviceResetOctomap;
-
-    /// Remove oriented box from octomap service
     ros::ServiceServer m_serviceRemoveCube;
-
-    /// Add oriented box to the octomap service
     ros::ServiceServer m_serviceAddCube;
-
-    /// Set crawling depth
     ros::ServiceServer m_serviceSetCrawlDepth;
-
-    /// Get octtree depth service
     ros::ServiceServer m_serviceGetTreeDepth;
-
-    /// Load map service
     ros::ServiceServer m_serviceLoadMap;
-
-    /// Save map service
     ros::ServiceServer m_serviceSaveMap;
-
-    /// Load full map service
 	ros::ServiceServer m_serviceLoadFullMap;
-
-	/// Save full map service
 	ros::ServiceServer m_serviceSaveFullMap;
+    ros::ServiceServer m_serviceAgingPause;
 
     /// Should octomap be published
     bool m_bPublishOctomap;
 
-    //! Octomap publisher name
+    /// Octomap publisher name
     std::string m_ocPublisherName;
 
     /// Octomap publisher
     ros::Publisher m_ocPublisher;
 
+    /// ?
     bool m_latchedTopics;
 
     /// Remove specle nodes now
     bool m_removeSpecles;
 
-    int filecounter;
+    /// ?
+    int m_filecounter;
 
     //=========================================================================
     // Filtering
@@ -233,10 +220,10 @@ protected:
     COcFilterRaycast m_filterRaycast;
     COcFilterGround m_filterGround;
 
-    //! Use input cloud to raycast filter data?
+    /// Use input cloud to raycast filter data?
     bool m_bFilterWithInput;
 
-    //! Filter pointcloud plugin
+    /// Filter pointcloud plugin
     boost::shared_ptr< CPointCloudPlugin > m_filterCloudPlugin;
 
     /// Should be outdated nodes be removed?
@@ -257,23 +244,36 @@ protected:
     /// Maximal depth of tree used when crawling
     unsigned char m_crawlDepth;
 
-    //! Registration module
+    /// Registration module
     CPcToOcRegistration m_registration;
 
-    //! First frame is already inserted
+    /// First frame is already inserted
     bool m_bNotFirst;
 
-    //! Was map loaded
+    /// Was map loaded
     bool m_bMapLoaded;
 
-    //! Deleted node probability
+    /// Deleted node probability
     float m_probDeleted;
 
-	//! Created geometry color
+	/// Created geometry color
 	uint8_t m_r, m_g, m_b;
 
-	// Input sensor frame id
-//	std::string m_sensor_frame_id;
+    //=========================================================================
+    // Aging (decreases probabilities in time and republishes the map)
+
+	/// Is the octomap aging enabled?
+	bool m_agingEnabled;
+
+    /// Value p in (0, 0.5) used to decrement probabilities in the Octomap that stores log(p/(1-p))
+    double m_agingProb;
+    float m_agingProbLog;
+
+    /// Defines frequency how often the aging routine is called.
+    double m_agingPeriod;
+
+    /// Timer implementing the aging
+    ros::Timer m_agingTimer;
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -285,4 +285,3 @@ public:
 
 // OCTOMAPPLUGIN_H_INCLUDED
 #endif
-

@@ -86,6 +86,7 @@ namespace but_env_model
     static const std::string SaveMap_SRV = PACKAGE_NAME_PREFIX + std::string("/save_octomap");
     static const std::string LoadFullMap_SRV = PACKAGE_NAME_PREFIX + std::string("/load_octomap_full");
     static const std::string SaveFullMap_SRV = PACKAGE_NAME_PREFIX + std::string("/save_octomap_full");
+    static const std::string OctomapAgingPause_SRV = PACKAGE_NAME_PREFIX + std::string("/pause_octomap_aging");
 
     /**
      * Compressed pointcloud plugin

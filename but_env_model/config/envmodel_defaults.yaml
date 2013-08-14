@@ -52,6 +52,15 @@ ocmap_ground_filter/plane_distance: 0.07
 #ocmap_filter_outdated: true
 ocmap_filter_outdated: false
 
+# Octomap aging enabled?
+ocmap_aging: false
+
+# Probablility for used while updating octomap nodes (will be converted to logodds)
+ocmap_aging_prob: 0.47
+
+# Defines frequency how often is the aging routine called
+ocmap_aging_period: 1.0
+
 
 ###############################################################################
 # Point cloud plugin
