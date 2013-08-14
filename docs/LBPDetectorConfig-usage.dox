@@ -1,0 +1,11 @@
+\subsubsection usage Usage
+\verbatim
+<node name="lbp_detector_node" pkg="rt_road_detection" type="lbp_detector_node">
+  <param name="width_cell" type="int" value="16" />
+  <param name="width_block" type="int" value="32" />
+  <param name="height_block" type="int" value="32" />
+  <param name="height_cell" type="int" value="16" />
+  <param name="filename" type="str" value="svm.xml" />
+</node>
+\endverbatim
+

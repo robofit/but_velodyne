@@ -1,0 +1,10 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~width_cell" : \b [int] width cell min: 16, default: 16, max: 64
+- \b "~width_block" : \b [int] width block min: 32, default: 32, max: 128
+- \b "~height_block" : \b [int] height block min: 32, default: 32, max: 128
+- \b "~height_cell" : \b [int] height cell min: 16, default: 16, max: 64
+- \b "~filename" : \b [str] filename str_t min: , default: svm.xml, max: 
+
