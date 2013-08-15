@@ -43,8 +43,8 @@ namespace rt_road_detection
 		wp_service = nh.advertiseService("wp_corrector", &WaypointCorrector::serviceCallback, this);
 	}
 
-	bool WaypointCorrector::serviceCallback(robotour_waypoint_corrector::getCorrectedWaypoint::Request &reqest,
-			robotour_waypoint_corrector::getCorrectedWaypoint::Response &response) {
+	bool WaypointCorrector::serviceCallback(rt_road_detection::getCorrectedWaypoint::Request &reqest,
+			rt_road_detection::getCorrectedWaypoint::Response &response) {
 
 		//extract destiation point
 		float dest_x = reqest.wp_in.x / resolution;
