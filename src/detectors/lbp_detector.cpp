@@ -22,7 +22,7 @@ using namespace cv;
 using namespace rt_road_detection;
 
 
-LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7, string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
+LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7,double _flat_surface_in_block=0.7, double _prob_overexposure=0.5, string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
 {
 	ifstream fin(svm_file.c_str());
 	
@@ -47,6 +47,10 @@ LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_bloc
 	width_block=_width_block;
 	height_cell=_height_cell;
 	height_block=_height_block;
+	
+	
+	prob_overexposure= _prob_overexposure;
+	flat_surface_in_block = _flat_surface_in_block;
 }
 
 
@@ -251,6 +255,10 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 	//cout << "MAP: Properties src.cols: " << src.cols << "src.rows: " << src.rows <<  "height_block: " << height_block <<  "width_block: " << width_block <<  "width_cell: " << width_cell << " \n";
 
 	float probability=0;
+	int color_avg=0;
+	int color=0;
+	
+	
 	for (int i = 0; i < src.cols; i+= width_cell) {
 
 		if(i+width_block >=src.cols)
@@ -263,16 +271,62 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 		for (int j = 0; j < src.rows; j += height_cell) 
 		{
 
+		    
+			Scalar result = sum(histogram);
+			
+			
+			 /********************************************************/
+			 /***************** overexposure_detect *********************/
+			if((histogram.at<float>(0)/result[0]) > flat_surface_in_block)
+			{
+			      color=0;
+			      
+			      for(int a=0;a <height_block;a++)
+			      {
+				      for(int b=0;b <width_block; b++)
+				      {
+						color +=hsv_vec[0].at<uchar> (j+a,i+b);	  
+				      }
+			      }
+			      
+			      
+			      //average color in the block
+			      color_avg=color/(height_block*width_block);
+			      
+
+			      if(color_avg > 245)
+			      {
+				  probability=prob_overexposure;
+			      }
+			      else
+			      {
+				  //TO Do
+				  this->detect(histogram,&probability);
+			
+				  if(probability>0)
+				    probability=prob_min;
+				  else
+				    probability=prob_max;
+			      }
+			}
+			else
+			{
+			    /********************************************************/
+			    /***************** texture classification *********************/
+			  
+			    this->detect(histogram,&probability);
+			
+			    if(probability>0)
+			      probability=prob_min;
+			    else
+			      probability=prob_max;
+			}
+			
+
+			
 			/********************************************************/
 			/***************** save probability *********************/
 			
-			this->detect(histogram,&probability);
-			
-			if(probability>0)
-			  probability=prob_min;
-			else
-			  probability=prob_max;
-
 			for(int a=0;a <height_block;a++)
 			{
 				for(int b=0;b <width_block; b++)
