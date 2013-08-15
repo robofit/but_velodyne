@@ -47,14 +47,16 @@ namespace rt_road_detection
 			rt_road_detection::getCorrectedWaypoint::Response &response) {
 
 		//extract destiation point
-		float dest_x = reqest.wp_in.x / resolution;
-		float dest_y = reqest.wp_in.y / resolution;
+		float dest_x = originX + reqest.wp_in.x / resolution;
+		float dest_y = originY - reqest.wp_in.y / resolution;
 
 		Point2f res;
 		if (!correctWaypoint(Point2i(dest_x, dest_y), res)) ROS_WARN("Error on correcting waypoint.");
 
 		response.wp_out.x = res.x;
 		response.wp_out.y = res.y;
+
+		//cout << "robopos: " << _x << " " << _y << endl;
 
 		return true;
 	}
@@ -173,7 +175,7 @@ namespace rt_road_detection
 
 		// CASE 1. - Point is on path - find middle of the road
 		if( cv_map.at<unsigned char>(wp.y, wp.x) == 255 ) {
-			cout << "case 1" << endl;
+			//cout << "case 1: " << wp.x << " " << wp.y << endl;
 			//find vector perpendicular to roboline
 			Point2f line1(wp.y - robo_y, -(wp.x - robo_x));
 			line1.x = line1.x / sqrt(line1.x*line1.x + line1.y*line1.y);
@@ -235,6 +237,7 @@ namespace rt_road_detection
 
 		// CASE 2. - Point is out of path
 		else {
+			//cout << "case 2: "<< wp.x << " " << wp.y << " " << resolution << endl;
 			float radius = sqrt( pow(robo_x - wp.x, 2) + pow(robo_y - wp.y, 2) );
 			vector<pair<Point3f, Point2f> > segments = getSegments(radius);
 
