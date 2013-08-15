@@ -1,4 +1,4 @@
-#include "robotour_waypoint_corrector/WaypointCorrector.h"
+#include "rt_road_detection/WaypointCorrector.h"
 
 #define OBSTACLE_THRESH 10
 #define UNKNOWN_THRESH 100
