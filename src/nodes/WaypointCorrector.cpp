@@ -171,51 +171,115 @@ namespace rt_road_detection
 		circle(draw, Point(robo_x, robo_y), 2, Scalar(150), 3);
 #endif
 
-		//isolate segments
-		float radius = sqrt( pow(robo_x - wp.x, 2) + pow(robo_y - wp.y, 2) );
-		vector<pair<Point3f, Point2f> > segments = getSegments(radius);
+		// CASE 1. - Point is on path - find middle of the road
+		if( cv_map.at<unsigned char>(wp.y, wp.x) == 255 ) {
+			cout << "case 1" << endl;
+			//find vector perpendicular to roboline
+			Point2f line1(wp.y - robo_y, -(wp.x - robo_x));
+			line1.x = line1.x / sqrt(line1.x*line1.x + line1.y*line1.y);
+			line1.y = line1.y / sqrt(line1.x*line1.x + line1.y*line1.y);
 
-		//get the valid segment that is closest to waypoint
-		float min_width = path_min_width_;
-		float max_width = path_max_width_;
-		float angle_tolerance = CV_PI / 2;
-		vector<pair<Point3f, Point2f> > valid_segments = processSegments(segments, min_width, max_width, angle_tolerance);
+			//now in both directions, find corner points
+			bool got1 = false, got2 = false;
+			Point2f pt1, pt2;
+			for(unsigned int i = 0; i < height; i ++) {
+				if(!got1) {
+					pt1.x = wp.x + i*line1.x;
+					pt1.y = wp.y + i*line1.y;
+				}
+				if(!got2) {
+					pt2.x = wp.x - i*line1.x;
+					pt2.y = wp.y - i*line1.y;
+				}
+				if(!got1 && pt1.x >= 0 && pt1.x < width && pt1.y >= 0 && pt1.y < height ) {
+					if(cv_map.at<unsigned char>(pt1.y, pt1.x) != 255)
+						got1 = true;
+				} else {
+					got1 = true;
+				}
 
-		//now take the closest waypoint to waypoint
-		float score = 10000;
-		Point2f waypoint, correct_waypoint;
-		for(unsigned int i = 0; i < valid_segments.size(); ++i) {
-			waypoint.x = (valid_segments.at(i).first.x + valid_segments.at(i).second.x)/2;
-			waypoint.y = (valid_segments.at(i).first.y + valid_segments.at(i).second.y)/2;
-
-			//cout << "p1: " << waypoint.x << " " << waypoint.y << " |p2: " << wp.x << " " << wp.y << endl;
-
-			float dist = sqrt( pow((wp.x - waypoint.x ), 2) +
-								pow((wp.y - waypoint.y ), 2));
-			if(dist < score) {
-				correct_waypoint.x = waypoint.x;
-				correct_waypoint.y = waypoint.y;
-				score = dist;
+				if(!got2 && pt2.x >= 0 && pt2.x < width && pt2.y >= 0 && pt2.y < height ) {
+					if(cv_map.at<unsigned char>(pt2.y, pt2.x) != 255)
+						got2 = true;
+				} else {
+					got2 = true;
+				}
+				//end sooner if possible
+				if(got1 && got2)
+					break;
 			}
-		}
-#ifdef CV_VISUALIZE
-		//ok, we got it and can return it
-		circle(draw, Point(correct_waypoint.x, correct_waypoint.y), 4, Scalar(150), 3);
-		circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
 
-		//draw
-		imshow( "win3", draw );
-		waitKey(10);
+			//when we have it, check the middlepoint if it is valid
+			Point2f res((pt1.x + pt2.x) / 2, (pt1.y + pt2.y) / 2);
+#ifdef CV_VISUALIZE
+			line(draw, pt1, pt2, Scalar(200), 1, 8, 0);
+			circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
+			imshow( "win3", draw );
+			waitKey(10);
 #endif
 
-		if(score != 10000) {
-			result.x = -originX * resolution + correct_waypoint.x * resolution;
-			result.y = -(correct_waypoint.y - originY)*resolution;
-			/*cout << result.x << " " << result.y << endl;
-			cout << "r: " << _x << " " << _y << endl;*/
-			return true;
-		} else {
+			if(cv_map.at<unsigned char>(res.y, res.x) == 255) {
+#ifdef CV_VISUALIZE
+				circle(draw, res, 4, Scalar(150), 3);
+				//draw
+				imshow( "win3", draw );
+				waitKey(10);
+#endif
+				result.x = -originX * resolution + res.x * resolution;
+				result.y = -(res.y - originY)*resolution;
+
+				return true;
+			}
 			return false;
+		}
+
+		// CASE 2. - Point is out of path
+		else {
+			float radius = sqrt( pow(robo_x - wp.x, 2) + pow(robo_y - wp.y, 2) );
+			vector<pair<Point3f, Point2f> > segments = getSegments(radius);
+
+			//get the valid segment that is closest to waypoint
+			float min_width = path_min_width_;
+			float max_width = path_max_width_;
+			float angle_tolerance = CV_PI / 2;
+			vector<pair<Point3f, Point2f> > valid_segments = processSegments(segments, min_width, max_width, angle_tolerance);
+
+			//now take the closest waypoint to waypoint
+			float score = 10000;
+			Point2f waypoint, correct_waypoint;
+			for(unsigned int i = 0; i < valid_segments.size(); ++i) {
+				waypoint.x = (valid_segments.at(i).first.x + valid_segments.at(i).second.x)/2;
+				waypoint.y = (valid_segments.at(i).first.y + valid_segments.at(i).second.y)/2;
+
+				//cout << "p1: " << waypoint.x << " " << waypoint.y << " |p2: " << wp.x << " " << wp.y << endl;
+
+				float dist = sqrt( pow((wp.x - waypoint.x ), 2) +
+									pow((wp.y - waypoint.y ), 2));
+				if(dist < score) {
+					correct_waypoint.x = waypoint.x;
+					correct_waypoint.y = waypoint.y;
+					score = dist;
+				}
+			}
+	#ifdef CV_VISUALIZE
+			//ok, we got it and can return it
+			circle(draw, Point(correct_waypoint.x, correct_waypoint.y), 4, Scalar(150), 3);
+			circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
+
+			//draw
+			imshow( "win3", draw );
+			waitKey(10);
+	#endif
+
+			if(score != 10000) {
+				result.x = -originX * resolution + correct_waypoint.x * resolution;
+				result.y = -(correct_waypoint.y - originY)*resolution;
+				/*cout << result.x << " " << result.y << endl;
+				cout << "r: " << _x << " " << _y << endl;*/
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 
