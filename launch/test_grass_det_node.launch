@@ -7,9 +7,9 @@
    <remap from="det_out" to="/detectors/sample_grass"/>
    <param name="hue_min" value="35"/> <!-- hue values for grass (46) -->
    <param name="hue_max" value="51"/>
-   <param name="sat_min" value="23"/>
+   <param name="sat_min" value="28"/>
    <param name="median_ks" value="5"/>
-   <param name="prob_hit" value="0.6"/>
+   <param name="prob_hit" value="0.7"/>
    <param name="prob_miss" value="0.5"/>
   </node>
 

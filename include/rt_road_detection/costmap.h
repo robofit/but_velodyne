@@ -30,6 +30,8 @@
 #include <boost/circular_buffer.hpp>
 #include <laser_geometry/laser_geometry.h>
 
+#include <visualization_msgs/Marker.h>
+
 namespace rt_road_detection {
 
 	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, stereo_msgs::DisparityImage> ApproximatePolicy;
@@ -69,6 +71,9 @@ namespace rt_road_detection {
 
 
 		protected:
+
+			/*ros::Publisher marker_pub_;
+			visualization_msgs::Marker marker_;*/
 
 			boost::shared_ptr<tcache_buff> cache_buff_;
 			//tcache_ptr cache_;

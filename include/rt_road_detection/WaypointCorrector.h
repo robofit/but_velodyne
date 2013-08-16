@@ -7,7 +7,7 @@
 #include <sensor_msgs/Image.h>
 #include "rt_road_detection/getCorrectedWaypoint.h"
 
-//#define CV_VISUALIZE 1
+#define CV_VISUALIZE 1
 
 namespace rt_road_detection
 {

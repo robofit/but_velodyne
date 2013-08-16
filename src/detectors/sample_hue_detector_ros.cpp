@@ -48,6 +48,8 @@ SampleHueDetectorRos::SampleHueDetectorRos(ros::NodeHandle private_nh) {
 	dyn_reconf_f_ = boost::bind(&SampleHueDetectorRos::reconfigureCallback, this, _1, _2);
 	dyn_reconf_srv_.setCallback(dyn_reconf_f_);
 
+	ROS_INFO("Prob miss: %f, prob hit: %f.",prob_miss_, prob_hit_);
+
 }
 
 SampleHueDetectorRos::~SampleHueDetectorRos() {

@@ -19,8 +19,8 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	ros::param::param<float>("~map_size",map_size_,10.0);
 	ros::param::param("~queue_length",queue_length_,10);
 
-	ros::param::param<float>("~prob_max",prob_max_,0.95);
-	ros::param::param<float>("~prob_min",prob_min_,0.05);
+	ros::param::param<float>("~prob_max",prob_max_,0.97);
+	ros::param::param<float>("~prob_min",prob_min_,0.12);
 
 	ros::param::param<double>("~proj_dist",max_proj_dist_,3.0);
 
@@ -57,9 +57,6 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 
 	occ_grid_meta_.width = (uint32_t)floor(map_size_/map_res_);
 	occ_grid_meta_.height = (uint32_t)floor(map_size_/map_res_);
-
-	uint32_t data_len = occ_grid_meta_.width * occ_grid_meta_.height;
-
 
 	occ_grid_ = toccmap::ones(occ_grid_meta_.width, occ_grid_meta_.height);
 	occ_grid_ *= 0.5;
@@ -135,6 +132,17 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	srv_reset_map_ = nh_.advertiseService("reset_map",&TraversabilityCostmap::resetMap,this);
 
 	cache_buff_.reset(new tcache_buff(5));
+
+	/*marker_pub_ = nh_.advertise<visualization_msgs::Marker>("updated_area", 10);
+
+	marker_.header.frame_id = "odom";
+	marker_.action = visualization_msgs::Marker::ADD;
+	marker_.type = visualization_msgs::Marker::POINTS;
+	marker_.scale.x = 0.2;
+	marker_.scale.y = 0.2;
+
+	marker_.color.r = 1.0;
+	marker_.color.a = 1.0;*/
 
 }
 
@@ -614,6 +622,15 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 		//int lim_pts = 0;
 
+		geometry_msgs::Point p1,p2,p3,p4;
+
+		p1.z = p2.z = p3.z = p4.z = 0.1;
+
+		int32_t min_u,min_v,max_v,max_u;
+
+		min_u = min_v = 10000;
+		max_v = max_u = -1000;
+
 		// cache rays
 		for (int32_t u = 0; u < imat.rows; u++)
 		for (int32_t v = 0; v < imat.cols; v++) {
@@ -651,7 +668,9 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 			  float dy = pt.y - cameraOrigin.getY();
 			  double dist = sqrt(dx*dx + dy*dy);
 
+
 			  if (dist < max_proj_dist_) {
+
 
 				  if (use_scan_ && (dist > scan_dist[v]) ) {
 
@@ -662,9 +681,11 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 				  } else {
 
-					  worldToMap(pt);
+					  if (!worldToMap(pt)) {
 
-					  cache->pts[u][v] = pt;
+						  cache->pts[u][v].x = -1.0;
+
+					  } else cache->pts[u][v] = pt;
 
 				  }
 
@@ -678,6 +699,18 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 
 		} // for for
+
+		/*marker_.points.clear();
+
+		marker_.points.push_back(p1);
+		marker_.points.push_back(p2);
+		marker_.points.push_back(p3);
+		marker_.points.push_back(p4);
+
+
+		marker_.header.stamp = img->header.stamp;
+
+		marker_pub_.publish(marker_);*/
 
 		//cout << "lim pts " << lim_pts << endl;
 
@@ -715,13 +748,14 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 			  float val = imat(u,v);
 
-			  // limit probability values
-			  if (val > prob_max_) val = prob_max_;
-			  if (val < prob_min_) val = prob_min_;
-
 			  // update of occupancy grid
-			  // TODO should we limit also value of occ_grid_(x,y)????
-			  if (val != 0.5) occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
+			  occ_grid_(x,y) = (occ_grid_(x,y)*val) / ( (val*occ_grid_(x,y)) + (1.0-val)*(1-occ_grid_(x,y)));
+
+			  // limit probability values
+			  if (occ_grid_(x,y) > prob_max_) occ_grid_(x,y) = prob_max_;
+			  if (occ_grid_(x,y) < prob_min_) occ_grid_(x,y) = prob_min_;
+
+			  // TODO update (with some weight) also surrounding cells???
 
 
 		  } // if cache pts
@@ -783,8 +817,10 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv
 
 			if (occ(u,v) != 0.5) { // keep -1 for 0.5
 
-				  // TODO do some thresholding?
 				  float new_val = occ(u,v);
+
+				  // scale values to range <0,1> instead of <prob_min,prob_max>
+				  //new_val = (new_val - prob_min_) / (prob_max_ - prob_min_);
 
 				  grid->data[(v*occ_grid_.rows) + u] = (int8_t)round(new_val*100.0);
 
