@@ -3,9 +3,15 @@
     <!-- Set to use simulation time -->
     <param name="/use_sim_time" value="true"/>
 
+    <!-- Start nodelet manager -->
+    <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
+        <arg name="model" value="32E"/>
+    </include>
+
     <!-- Run our dynamic scene model server node -->
     <include file="$(find but_env_model)/launch/but_envmodel_velodyne.launch">
-        <!--arg name="run_nodelet_version" value="1" /-->
+        <arg name="run_nodelet_version" value="1" />
+        <arg name="manager_name" value="velodyne_nodelet_manager" />
         <arg name="rgb_points_in" value="/velodyne_points" />
     </include>
 
