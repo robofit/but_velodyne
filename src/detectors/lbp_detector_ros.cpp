@@ -16,7 +16,7 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 
 	it_.reset(new image_transport::ImageTransport(nh_));
 
-	int width_block,width_cell,height_block,height_cell;
+	int width_block,width_cell,height_block,height_cell,flat_surface_avg_color;
 	
 	double prob_max_, prob_min_, flat_surface_in_block,prob_overexposure;
 	
@@ -38,6 +38,7 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 	
 	nh_.param("flat_surface_in_block",flat_surface_in_block, 0.3);
 	nh_.param("prob_overexposure",prob_overexposure, 0.5);
+	nh_.param("flat_surface_avg_color",flat_surface_avg_color, 220);
 
 	skiped_ = 0;
 
@@ -52,8 +53,8 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 	
 	ROS_INFO("PARAM: width cell: %d height cell: %d width block: %d height block: %d", width_cell, height_cell, width_block, height_block);
 	
-	det_.reset(new LBPDetector(width_cell,height_cell,width_block,height_block,prob_min_,prob_max_,flat_surface_in_block,prob_overexposure,fileName));
-
+	det_.reset(new LBPDetector(width_cell,height_cell,width_block,height_block,prob_min_,prob_max_,flat_surface_in_block,prob_overexposure,flat_surface_avg_color,fileName));
+	cout << flat_surface_in_block;
 	std::string top_rgb_in = "rgb_in";
 	std::string top_det_out = "det_out";
 

@@ -22,7 +22,7 @@ using namespace cv;
 using namespace rt_road_detection;
 
 
-LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7,double _flat_surface_in_block=0.7, double _prob_overexposure=0.5, string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
+LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7,double _flat_surface_in_block=0.7, double _prob_overexposure=0.5, int _flat_surface_avg_color=220,string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
 {
 	ifstream fin(svm_file.c_str());
 	
@@ -51,6 +51,7 @@ LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_bloc
 	
 	prob_overexposure= _prob_overexposure;
 	flat_surface_in_block = _flat_surface_in_block;
+	flat_surface_avg_color=_flat_surface_avg_color;
 }
 
 
@@ -292,9 +293,8 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 			      
 			      //average color in the block
 			      color_avg=color/(height_block*width_block);
-			      
 
-			      if(color_avg > 245)
+			      if(color_avg > flat_surface_avg_color)
 			      {
 				  probability=prob_overexposure;
 			      }
