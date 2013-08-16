@@ -550,7 +550,7 @@ void but_env_model::COctoMapPlugin::agingCallback(const ros::TimerEvent & event)
     boost::mutex::scoped_lock lock(m_lockData);
 
     // If no data, do nothing
-    if( getSize() <= 1 )
+    if( !m_bNotFirst || getSize() <= 1 )
     {
         return;
     }
@@ -569,11 +569,27 @@ void but_env_model::COctoMapPlugin::agingCallback(const ros::TimerEvent & event)
     // Compress the octree
     m_data->getTree().prune();
 
+    // If the point cloud was not published within a required period, try to publish it again
+    // and update the timestamp
+    ros::Time ctime = ros::Time::now();
+    ros::Duration delay = ctime - m_mapParameters.currentTime;
+    bool bPublish = (delay.toSec() > m_agingPeriod) ? true : false;
+    if( bPublish )
+    {
+        fillMapParameters(ctime);
+    }
+
     // Release lock
     lock.unlock();
 
     // Publish new data
-    invalidate();
+    if( bPublish )
+    {
+//        invalidate();
+
+        // Call new data signal
+        m_sigOnNewData( m_mapParameters );
+    }
 }
 
 

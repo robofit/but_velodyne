@@ -191,7 +191,6 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 
 	m_frame_id = par.frameId;
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
-	counter = 0;
 
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
@@ -207,9 +206,9 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 		if (tree.isNodeOccupied(*it))
 		{
 			handleOccupiedNode(it, par);
-		}// Node is occupied?
+		}
 
-	} // Iterate through octree
+	}
 
 	// 2013/01/31 Majkl
 	m_data->header.frame_id = par.frameId;
@@ -237,16 +236,7 @@ void but_env_model::CPointCloudPlugin::handleOccupiedNode(but_env_model::tButSer
 	point.g = it->g();
 	point.b = it->b();
 
-//	std::cerr << "Occupied node r " << (int)point.r << ", g " << (int)point.g << ", b " << (int)point.b << std::endl;
-	/*
-	// Set color
-	point.r = 255 - counter % 255;
-	point.g = counter % 255;
-	point.b = 128;
-*/
 	m_data->push_back( point );
-
-	++counter;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

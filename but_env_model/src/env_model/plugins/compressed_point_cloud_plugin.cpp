@@ -196,7 +196,6 @@ void but_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
     // Clear data
 	m_data->clear();
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
-	counter = 0;
 
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;
