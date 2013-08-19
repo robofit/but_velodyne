@@ -99,7 +99,7 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
 
           if (val == 50) costmap_[index] = NO_INFORMATION;
           else if (val < 50) costmap_[index] = FREE_SPACE;
-          else costmap_[index] = val;
+          else costmap_[index] = LETHAL_OBSTACLE;
 
           *min_x = std::min(px, *min_x);
           *min_y = std::min(py, *min_y);
