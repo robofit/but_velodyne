@@ -34,21 +34,14 @@
 
 namespace rt_road_detection {
 
-	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, stereo_msgs::DisparityImage> ApproximatePolicy;
-	typedef message_filters::Synchronizer<ApproximatePolicy> ApproximateSync;
-
-	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::LaserScan> ApproximatePolicyScan;
+	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo> ApproximatePolicyScan;
 	typedef message_filters::Synchronizer<ApproximatePolicyScan> ApproximateSyncScan;
-
-	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::CameraInfo, sensor_msgs::CameraInfo> CamInfoApproximatePolicy;
-	typedef message_filters::Synchronizer<CamInfoApproximatePolicy> CamInfoApproximateSync;
 
 	typedef cv::Mat_<float> toccmap;
 
 	typedef struct {
 
 		ros::Time stamp;
-		std::vector< std::vector<bool> > disp_skip; // skip some points based on disparity
 		std::vector< std::vector<geometry_msgs::Point> > pts;
 		tf::StampedTransform tCamToBase;
 		tf::StampedTransform tBaseToCam;
@@ -84,34 +77,30 @@ namespace rt_road_detection {
 			float prob_max_;
 			float prob_min_;
 
-			image_geometry::StereoCameraModel model_;
+			image_geometry::PinholeCameraModel model_;
 
-			void camInfoCB(const sensor_msgs::CameraInfoConstPtr& cam_info_left, const sensor_msgs::CameraInfoConstPtr& cam_info_right);
+			void laserCB(const sensor_msgs::LaserScanConstPtr& scan);
 
 			// callback for detectors detecting traversable areas (e.g. roads / pavements)
-			void detectorCB(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const int& idx);
-			void detectorCBalt(const sensor_msgs::ImageConstPtr& img, const int& idx);
-			void detectorCBscan(const sensor_msgs::ImageConstPtr& img, const sensor_msgs::LaserScanConstPtr& scan, const int& idx);
+			void detectorCBscan(const sensor_msgs::ImageConstPtr& img, const sensor_msgs::CameraInfoConstPtr& cam_info, const int& idx);
 
 			ros::NodeHandle nh_;
 
 
-			std::vector< boost::shared_ptr<image_transport::Subscriber> > sub_list_wo_disp_;
 			std::vector< boost::shared_ptr<image_transport::SubscriberFilter> > sub_list_;
-			std::vector< boost::shared_ptr<ApproximateSync> > approximate_sync_list_;
 
 			std::vector< boost::shared_ptr<ApproximateSyncScan> > approximate_sync_scan_list_;
 
 			int queue_length_;
 
 			message_filters::Subscriber<stereo_msgs::DisparityImage> disparity_sub_;
-			message_filters::Subscriber<sensor_msgs::LaserScan> scan_sub_;
+			ros::Subscriber scan_sub_;
 
-			boost::shared_ptr<ApproximateSync> approximate_sync_;
 			boost::shared_ptr<ApproximateSyncScan> approximate_sync_scan_;
 
-			message_filters::Subscriber<sensor_msgs::CameraInfo> sub_l_info_, sub_r_info_;
-			boost::shared_ptr<CamInfoApproximateSync> cam_info_approximate_sync_;
+			message_filters::Subscriber<sensor_msgs::CameraInfo> sub_info_;
+
+			sensor_msgs::PointCloud cloud_;
 
 
 			boost::shared_ptr<image_transport::ImageTransport> it_;
@@ -136,7 +125,7 @@ namespace rt_road_detection {
 
 			tf::TransformListener tfl_;
 
-			void updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img, const stereo_msgs::DisparityImageConstPtr& disp, const sensor_msgs::LaserScanConstPtr& scan);
+			void updateIntOccupancyGrid(const sensor_msgs::ImageConstPtr& img);
 
 			void subscribe(std::string topic);
 
@@ -166,9 +155,6 @@ namespace rt_road_detection {
 			bool filter_output_;
 
 			double max_proj_dist_;
-
-			bool use_disparity_;
-			bool use_scan_;
 
 			double origin_update_th_;
 
