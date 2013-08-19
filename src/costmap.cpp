@@ -366,7 +366,7 @@ bool TraversabilityCostmap::worldToMap(geometry_msgs::Point& p) {
 
 	}
 
-	if (p.x > (double)occ_grid_.rows) {
+	if (p.x >= (double)occ_grid_.rows) {
 
 		p.x = (double)occ_grid_.rows;
 		err = true;
@@ -374,7 +374,7 @@ bool TraversabilityCostmap::worldToMap(geometry_msgs::Point& p) {
 	}
 
 
-	if (p.y > (double)occ_grid_.cols) {
+	if (p.y >= (double)occ_grid_.cols) {
 
 		p.y = (double)occ_grid_.cols;
 		err = true;
@@ -521,7 +521,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 			sensor_msgs::PointCloud cloud;
 			
 			// TODO there is very small diff. in timestamps -> what about to modify scan timestamp slightly instead of waiting??? ;)
-			if (!tfl_.waitForTransform(map_frame_,scan->header.frame_id, scan->header.stamp + ros::Duration(scan->scan_time + 0.01), ros::Duration(0.2))) {
+			if (!tfl_.waitForTransform(map_frame_,scan->header.frame_id, scan->header.stamp /*+ ros::Duration(scan->scan_time + 0.01)*/, ros::Duration(0.5))) {
 			
 			  ROS_INFO_THROTTLE(1.0,"Waiting for transform from %s to %s",scan->header.frame_id.c_str(),map_frame_.c_str());
 			  return;
@@ -626,10 +626,10 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 		p1.z = p2.z = p3.z = p4.z = 0.1;
 
-		int32_t min_u,min_v,max_v,max_u;
+		/*int32_t min_u,min_v,max_v,max_u;
 
 		min_u = min_v = 10000;
-		max_v = max_u = -1000;
+		max_v = max_u = -1000;*/
 
 		// cache rays
 		for (int32_t u = 0; u < imat.rows; u++)
@@ -739,7 +739,7 @@ void TraversabilityCostmap::updateIntOccupancyGrid(const sensor_msgs::ImageConst
 
 			  // TODO move this to caching part
 			  // check if indexes are ok, if not skip the point
-			  if (x > occ_grid_meta_.width || y > occ_grid_meta_.width)  {
+			  if (x >= occ_grid_meta_.width || y >= occ_grid_meta_.width)  {
 
 				  ROS_WARN_THROTTLE(1.0, "idx out of occ map!!!");
 				  continue;
@@ -775,7 +775,7 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv
 
 		occ = occ_grid_.clone();
 
-		int erosion_size = morph_filter_ks_size_;
+		//int erosion_size = morph_filter_ks_size_;
 		int dilation_size = morph_filter_ks_size_;
 
 		cv::Mat element = cv::getStructuringElement( cv::MORPH_CROSS,
