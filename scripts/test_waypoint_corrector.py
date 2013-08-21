@@ -34,6 +34,10 @@ import tf
 from tf import TransformListener
 from geometry_msgs.msg import PoseStamped
 
+import actionlib
+from actionlib_msgs.msg import *
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
 def main():
     
   rospy.init_node('test_waypoint_corrector')
@@ -73,6 +77,45 @@ def main():
   resp = srv(req)
   
   print "RESP: " + str(resp.wp_out.x) + " " + str(resp.wp_out.y)
+  
+  rospy.sleep(2)
+  
+  move_base = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+  
+  rospy.loginfo("Waiting for move_base server")
+  
+  move_base.wait_for_server()
+  
+  goal = MoveBaseGoal()
+  goal.target_pose.header.stamp = rospy.Time.now()
+  goal.target_pose.header.frame_id = "odom"
+  goal.target_pose.pose.position.x = resp.wp_out.x
+  goal.target_pose.pose.position.y = resp.wp_out.y
+  goal.target_pose.pose.position.z = 0
+  
+  #goal.target_pose.pose.orientation = pose.pose.orientation
+  goal.target_pose.pose.orientation.x = 0
+  goal.target_pose.pose.orientation.y = 0
+  goal.target_pose.pose.orientation.z = 0
+  goal.target_pose.pose.orientation.w = 1
+  
+  move_base.send_goal(goal)
+  
+  rospy.loginfo("Waiting for result.")
+  
+  move_base.wait_for_result()  
+  
+  rospy.loginfo("Finished.")
+  
+  state = move_base.get_state()
+  
+  if state == GoalStatus.SUCCEEDED:
+      
+      rospy.loginfo("SUCCEEDED")
+      
+  else:
+      
+      rospy.logwarn("Some error...")
   
   
 if __name__ == '__main__':
