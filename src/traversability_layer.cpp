@@ -95,9 +95,10 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
           unsigned int index = getIndex(mx, my);
           //costmap_[index] = LETHAL_OBSTACLE;
 
-          unsigned char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
+          char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
 
-          if (val == 50) costmap_[index] = NO_INFORMATION;
+
+          if (val < 0) costmap_[index] = NO_INFORMATION;
           else if (val < 50) costmap_[index] = FREE_SPACE;
           else costmap_[index] = LETHAL_OBSTACLE;
 
