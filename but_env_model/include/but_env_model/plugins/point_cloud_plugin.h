@@ -163,9 +163,6 @@ protected:
     //! Minimal and maximal distance from the sensor (base frame id)
     double m_pointcloudMinDist, m_pointcloudMaxDist;
 
-    //! Counter
-    long counter;
-
     //! Pointcloud working mode
     bool m_bAsInput;
 

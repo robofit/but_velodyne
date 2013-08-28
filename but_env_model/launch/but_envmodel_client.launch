@@ -1,10 +1,9 @@
-<?xml version="1.0"?>
+B<?xml version="1.0"?>
 <launch>
 	<!-- Run differential point cloud decompressor node -->
-    	<include file="$(find srs_env_model)/launch/but_envmodel_diff_pcl_client.launch" />
+	<include file="$(find but_env_model)/launch/but_envmodel_diff_pcl_client.launch" />
 
 	<!-- Run rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find srs_env_model)/config/envmodel_robot.vcg"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find but_env_model)/config/envmodel_robot.vcg"/>
 
 </launch>
-

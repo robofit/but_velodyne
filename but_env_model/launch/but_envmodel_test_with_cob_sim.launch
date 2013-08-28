@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Configuration for COB, bringup simulation -->
+    <include file="$(find but_env_model)/launch/run_cob_sim.launch" />
+
+    <!-- Run depth image publishing node (simulation only) -->
+    <!--node pkg="srs_ui_but" type="but_depthtoimage_node" name="but_depthtoimage_node" /-->
+
+    <!-- Kinect throttling -->
+    <!--include file="$(find but_env_model_utils)/launch/kinect_throttling.launch">
+        <arg name="max_rate" value="3.0" />
+    </include-->
+
+    <!-- Run our dynamic scene model server node -->
+    <include file="$(find but_env_model)/launch/but_envmodel_common.launch" />
+
+    <!-- Run our interactive teleop -->
+    <include file="$(find cob_interactive_teleop)/launch/interactive_teleop.launch" />
+
+    <!-- Run our GUI nodes -->
+    <include file="$(find but_interaction_primitives)/launch/interaction_primitives.launch" />
+
+    <!-- Run rviz -->
+    <node pkg="rviz" type="rviz" name="rviz" args="-l -f /map -d $(find but_env_model)/config/envmodel_common.rviz" />
+
+</launch>
+

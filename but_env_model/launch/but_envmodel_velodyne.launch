@@ -12,7 +12,7 @@
         </node>
     </group>
 
-    <group if="$(arg run_nodelet_version)">
+    <group if="$(arg run_nodelet_version)">   
         <!-- Run our dynamic scene model server nodelet -->
         <node pkg="nodelet" type="nodelet" name="but_env_model_nodelet" args="load but_env_model/EnvModelNodelet $(arg manager_name)" output="screen">
             <rosparam file="$(find but_env_model)/config/envmodel_velodyne.yaml" command="load" />

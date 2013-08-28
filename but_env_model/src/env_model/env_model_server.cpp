@@ -181,8 +181,9 @@ void but_env_model::CButServer::publishAll(const ros::Time& rostime)
 //	ros::WallTime startTime = ros::WallTime::now();
 
 	// If no data, do nothing
-	if (m_plugOctoMap->getSize() <= 1) {
-		ROS_WARN("Nothing to publish, octree is empty");
+	if( m_plugOctoMap->getSize() <= 1 )
+	{
+		ROS_INFO( "Nothing to publish, octree is empty." );
 		return;
 	}
 
@@ -214,10 +215,9 @@ void but_env_model::CButServer::reset()
 {
   ROS_INFO( "Reseting environment server..." );
 
-  FOR_ALL_PLUGINS(reset());
+  FOR_ALL_PLUGINS( reset() );
 
   ROS_INFO( "Environment server reset finished." );
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -226,13 +226,14 @@ void but_env_model::CButServer::reset()
  */
 bool but_env_model::CButServer::onPause( EnvModelPause::Request & request, EnvModelPause::Response & response )
 {
-	std::cerr << "On pause" << std::endl;
-
 	if( request.pause == 0 )
-		pause( false );
+	{
+	    pause( false );
+	}
 	else
-		pause( true );
-
+	{
+	    pause( true );
+	}
 
 	return m_bIsPaused;
 }
@@ -255,15 +256,17 @@ void but_env_model::CButServer::pause( bool bPause )
 		(*p)->pause( bPause, m_nh );
 	}
 
-	if( bPause )
-		std::cerr << "BUT server paused..." << std::endl;
-	else
-		std::cerr << "BUT server resumed..." << std::endl;
+    if( bPause )
+    {
+        ROS_INFO( "Environment server paused." );
+    }
+    else
+    {
+        ROS_INFO( "Environment server resumed." );
+    }
 
 	m_bIsPaused = bPause;
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 /**

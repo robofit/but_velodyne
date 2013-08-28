@@ -142,7 +142,6 @@ void but_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
     //	Clear data
 	m_data->clear();
 	m_DataTimeStamp = m_time_stamp = par.currentTime;
-	counter = 0;
 
 	// Pointcloud is used as output for octomap...
 	m_bAsInput = false;

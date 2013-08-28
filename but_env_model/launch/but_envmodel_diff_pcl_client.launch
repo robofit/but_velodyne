@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<!-- Run differential point cloud decompressor node -->
-	<node pkg="srs_env_model" type="but_cpc_node" name="but_cpc_node" >
+	<node pkg="but_env_model" type="but_cpc_node" name="but_cpc_node" >
 		<remap from="input" to="/but_env_model/octomap_updates"/>
 		<remap from="output" to="/but_env_model/cpc_pointcloud_centers" />
 	</node>
