@@ -573,10 +573,12 @@ void but_env_model::COctoMapPlugin::agingCallback(const ros::TimerEvent & event)
     // and update the timestamp
     ros::Time ctime = ros::Time::now();
     ros::Duration delay = ctime - m_mapParameters.currentTime;
-    bool bPublish = (delay.toSec() > m_agingPeriod) ? true : false;
+    bool bPublish = (delay.toSec() > 2 * m_agingPeriod) ? true : false;
     if( bPublish )
     {
-        fillMapParameters(ctime);
+        ROS_INFO_STREAM( "Delay = " << delay.toSec() );
+        m_DataTimeStamp = ctime;
+//        fillMapParameters(ctime);
     }
 
     // Release lock
@@ -585,10 +587,7 @@ void but_env_model::COctoMapPlugin::agingCallback(const ros::TimerEvent & event)
     // Publish new data
     if( bPublish )
     {
-//        invalidate();
-
-        // Call new data signal
-        m_sigOnNewData( m_mapParameters );
+        invalidate();
     }
 }
 
