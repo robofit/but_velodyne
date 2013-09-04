@@ -3,13 +3,13 @@
  *
  * $Id:$
  *
- * Copyright (C) Brno University of Technology
+ * Copyright (C) Brno University of Technology (BUT)
  *
  * This file is part of software developed by Robo@FIT group.
  *
  * Author: Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
- * Date: 01/07/2013
+ * Date: 04/09/2013
  *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -25,26 +25,17 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-#ifndef BUT_VELODYNE_TOPICS_LIST_H
-#define BUT_VELODYNE_TOPICS_LIST_H
+#include <ros/ros.h>
 
-#include <string>
+#include <but_velodyne/ground_map.h>
 
 
-namespace but_velodyne
+/** Main node entry point. */
+int main(int argc, char **argv)
 {
-    /**
-      * laser scan - input topics
-      */
-	static const std::string INPUT_POINT_CLOUD_TOPIC = "points_in";
-	static const std::string OUTPUT_LASER_SCAN_TOPIC = "scan_out";
+  ros::init( argc, argv, "but_velodyne_groundmap_node" );
+  but_velodyne::GroundMap scan( ros::NodeHandle(), ros::NodeHandle("~") );
+  ros::spin();
 
-    /**
-      * ground map - input topics
-      */
-    //static const std::string INPUT_POINT_CLOUD_TOPIC = "points_in";
-    static const std::string OUTPUT_GROUND_MAP_TOPIC = "map2d_out";
+  return 0;
 }
-
-#endif // BUT_VELODYNE_TOPICS_LIST_H

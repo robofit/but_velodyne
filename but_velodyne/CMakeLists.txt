@@ -25,23 +25,30 @@ rosbuild_add_boost_directories()
 
 # BUT Velodyne processing library
 rosbuild_add_library( butvelo 
-                      src/lib/laser_scan.cpp )
+                      src/but_velodyne_lib/laser_scan.cpp
+                      src/but_velodyne_lib/ground_map.cpp )
 #rosbuild_add_openmp_flags( butvelo )
 
 
-# Simulated laser scan nodelets
-rosbuild_add_library( butvelo_laserscan_nodelet
-                      src/laser_scan_nodelet.cpp )
+# Simulated laser scan nodelet
+rosbuild_add_library( butvelo_laserscan_nodelet src/laser_scan_nodelet.cpp )
 target_link_libraries( butvelo_laserscan_nodelet butvelo )
 
-
 # Simulated laser scan node
-rosbuild_add_executable( laser_scan
-                         src/laser_scan_node.cpp )
+rosbuild_add_executable( laser_scan src/laser_scan_node.cpp )
 #rosbuild_add_openmp_flags( laser_scan )
 target_link_libraries( laser_scan butvelo )
 
 
+# Ground map nodelet
+rosbuild_add_library( butvelo_groundmap_nodelet src/ground_map_nodelet.cpp )
+target_link_libraries( butvelo_groundmap_nodelet butvelo )
+
+# Ground map node
+rosbuild_add_executable( ground_map src/ground_map_node.cpp )
+#rosbuild_add_openmp_flags( ground_map )
+target_link_libraries( ground_map butvelo )
+
+
 # Parse check all the launch/*.launch files
 rosbuild_add_roslaunch_check(launch)
-

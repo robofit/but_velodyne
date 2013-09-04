@@ -71,8 +71,7 @@ LaserScan::LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh)
     }
     else
     {
-//        points_sub_filtered_.subscribe(nh_, INPUT_POINT_CLOUD_TOPIC, 10);
-        points_sub_filtered_.subscribe(nh_, INPUT_POINT_CLOUD_TOPIC, 10);
+        points_sub_filtered_.subscribe( nh_, INPUT_POINT_CLOUD_TOPIC, 10 );
         tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>( points_sub_filtered_, listener_, params_.frame_id, 10 );
         tf_filter_->registerCallback( boost::bind(&LaserScan::process, this, _1) );
     }
@@ -83,16 +82,15 @@ LaserScan::LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh)
  */
 void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 {
-    ROS_INFO_STREAM_ONCE( "Point cloud received" );
+    ROS_INFO_STREAM_ONCE( "LaserScan::process(): Point cloud received" );
 
     if( scan_pub_.getNumSubscribers() == 0 )
     {
         return;
     }
 
-    //! Ouput scan
+    // Output scan
     sensor_msgs::LaserScan::Ptr scan_out;
-
     scan_out = boost::make_shared<sensor_msgs::LaserScan>();
 
     // Retrieve the input point cloud
@@ -204,4 +202,4 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 }
 
 
-} // namespace velodyne_pointcloud
+} // namespace but_velodyne
