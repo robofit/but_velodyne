@@ -3,9 +3,9 @@
 
   <!-- this node detects road/asphalt -->
   <node pkg="rt_road_detection" name="lbp_detector_node" type="lbp_detector_node" output="screen" ns="detectors">
-   <param value="$(find rt_road_detection)/constants/svm.xml" name="file_svm" />
+   <param value="$(find rt_road_detection)/constants/svm.xml" name="svm_file" />
    
-   <remap from="rgb_in" to="/stereo/left/image_rect_color"/>
+   <remap from="rgb_in" to="/stereo/left/image_raw"/>
    <remap from="det_out" to="/detectors/lbp"/>
    
    <param name="width_block" value="64"/> 
@@ -15,11 +15,12 @@
    
    <param name="prob_min" value="0.4"/>
    <param name="prob_max" value="0.55"/>
-   
-   <param name="flat_surface_in_block" value="0.25"/>
    <param name="prob_overexposure" value="0.5"/>
-   <param name="flat_surface_avg_color" value="180"/>
+   <param name="flat_surface_in_block" value="0.25"/>
    
+
+   
+   <param name="svm_threshold" value="0"/>
    <param name="frame_skip" value="2"/>
 
   </node>
