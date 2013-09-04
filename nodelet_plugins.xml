@@ -12,4 +12,12 @@
   </description>
   </class>
   
+  
+  <class name="rt_road_detection/LBPDetectorNodelet" type="rt_road_detection::LBPDetectorNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  LBP detector plugin.
+  </description>
+  </class>
+  
+  
 </library>

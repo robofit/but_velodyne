@@ -22,13 +22,13 @@ using namespace cv;
 using namespace rt_road_detection;
 
 
-LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7,double _flat_surface_in_block=0.7, double _prob_overexposure=0.5, int _flat_surface_avg_color=220,string svm_file=""):lbp(1,8,ROTARY_INVARIANT_OLBP)
+LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7,double _flat_surface_in_block=0.7, double _prob_overexposure=0.5, double _svm_threshold=0.0,string svm_file=""):lbp(ROTARY_INVARIANT_LBP)
 {
 	ifstream fin(svm_file.c_str());
 	
 	if (!fin)  // check to see if file exists
 	{
-	  cout << "LBP DETECTOR: File with SVM coeficients doesnt exists\n";
+	  cout << "LBP DETECTOR: File with SVM coeficients doesn't exists\n";
 	}
 	else
 	{
@@ -47,13 +47,18 @@ LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_bloc
 	width_block=_width_block;
 	height_cell=_height_cell;
 	height_block=_height_block;
-	
+	svm_threshold=_svm_threshold;
 	
 	prob_overexposure= _prob_overexposure;
 	flat_surface_in_block = _flat_surface_in_block;
-	flat_surface_avg_color=_flat_surface_avg_color;
+	//flat_surface_avg_color=_flat_surface_avg_color;
 }
 
+
+LBPDetector::LBPDetector():lbp(ROTARY_INVARIANT_LBP)
+{
+
+}
 
 
 /**
@@ -70,15 +75,33 @@ void LBPDetector::detect(InputArray input,float * probability)
 	normalize(src,histogram);
 	
 	
-	*probability=svm.predict(histogram);
+	*probability=svm.predict(histogram,true);
+	
+	
+	//DFVal
+	if(*probability>svm_threshold)
+	{
+	  *probability=-1.0;
+	}
+	else
+	  *probability=1.0;
 }
 
 
-//TO DO metho for dynamic change param
-bool LBPDetector::setParams(int width_cell,int height_cell, int width_block, int height_block) {
+/**
+ *  Method for ROS dynamic reconfigure
+ * 
+ * 
+ */
+bool LBPDetector::setParams(int _width_cell,int _height_cell, int _width_block, int _height_block, double _svm_threshold, double _flat_surface_in_block) {
 
-	// TODO check param values
-
+	
+	width_cell=_width_cell;
+	width_block=_width_block;
+	height_cell=_height_cell;
+	height_block=_height_block;
+	svm_threshold=_svm_threshold;
+	flat_surface_in_block = _flat_surface_in_block;
 
 	return true;
 }
@@ -118,25 +141,48 @@ void LBPDetector::read_csv(const string& filename, vector<Mat>& images, vector<i
 	getline(liness, _height);
 
 	
-	
 	//conver string to int
 	istringstream ( _width  ) >> width;
 	istringstream ( _height  ) >> height;
 	istringstream ( _x  ) >> x;
 	istringstream ( _y  ) >> y;
 	
-
-	//cout << x << " " << y << " " << width  << " " << height << "\n";
 	
         getline(liness, classlabel);
+	
         if(!path.empty() && !classlabel.empty()) {
-            images.push_back(imread(path, 1));
-            labels.push_back(atoi(classlabel.c_str()));
-	    rois.push_back(Rect(x,y,width,height));
+	  
+	    Mat img=imread(path,1);
+	    
+	    if(y > 0 && x>0 && img.cols > (x+width) && img.rows > (y+height) && width !=0 && height !=0 && width>2 && height >2)
+	    {
+	      images.push_back(imread(path, 1));
+	      labels.push_back(atoi(classlabel.c_str()));
+	      rois.push_back(Rect(x,y,width,height));  
+	    }
+            
         }
     }
 }
 
+
+
+void LBPDetector::feature_extractor(InputArray input,OutputArray output)
+{
+    Mat src=input.getMat();
+    
+    output.create(src.rows-2, src.cols-2, CV_8UC1);
+
+    Mat dst=output.getMat();
+    dst.setTo(0);
+    
+    vector<Mat> channels;
+
+    split(src,channels);
+
+    //lbp compute for one channel
+    lbp.compute(channels[0],dst);
+}
 
 
 /** 
@@ -146,7 +192,7 @@ void LBPDetector::read_csv(const string& filename, vector<Mat>& images, vector<i
 *
 */
 
-void LBPDetector::trainLBP(std::string csv_file,string output_file)
+void LBPDetector::train(std::string csv_file,string output_file)
 {	
       vector<Mat> images;
       vector<int> labels;
@@ -180,18 +226,10 @@ void LBPDetector::trainLBP(std::string csv_file,string output_file)
 		histogram.setTo(0);
 		Mat image_hue;
 
+		//feature extraction
 		cv::cvtColor(images[i], image_hue, CV_BGR2GRAY);
-		//cv::cvtColor(images[i], image_hue, CV_RGB2HSV);
-		
-		//TO DO
-		Mat dst_roi = image_hue(rois[i]);
-		vector<Mat> channels;
+		feature_extractor(image_hue(rois[i]),output);
 
-		split(dst_roi,channels);
-
-		//lbp compute for one channel
-		lbp.compute(channels[0],output);
-		
 		
 		//compute normalize histogram
 		lbp.histogram(output,histogram,0,0,output.cols,output.rows);
@@ -227,14 +265,10 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 	if (in->encoding == "rgb8") cv::cvtColor( in->image, input, CV_RGB2GRAY);
 	else if ((in->encoding == "bgr8")) cv::cvtColor( in->image, input, CV_BGR2GRAY);
 	else {
-
-	  ROS_WARN_THROTTLE(1,"Strange encoding!");
 	  return false;
 	}
   
-	std::vector<cv::Mat> hsv_vec;
-	cv::split(input,hsv_vec);
-
+	
 	Mat histogram,src,map;
 	int bins = lbp.getBins();
 
@@ -242,13 +276,14 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 	int width_block_ref=width_block;
 	histogram.create(1, bins , CV_32F);
 	
+	
+	std::vector<cv::Mat> hsv_vec;
+	cv::split(input,hsv_vec);
+
 	lbp.compute(hsv_vec[0],src);
   
-	//map.create(input.rows,input.cols,CV_8U);
 	
-	
-	//if the output is float matrix
-	
+	//if the output is float matrix	
 	map.create(input.rows,input.cols,CV_32F);
 	
 	map.setTo(0);
@@ -256,7 +291,7 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 	//cout << "MAP: Properties src.cols: " << src.cols << "src.rows: " << src.rows <<  "height_block: " << height_block <<  "width_block: " << width_block <<  "width_cell: " << width_cell << " \n";
 
 	float probability=0;
-	int color_avg=0;
+
 	int color=0;
 	
 	
@@ -266,8 +301,6 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 				width_block=src.cols-i;
 
 		lbp.histogram(src,histogram,i, 0, width_block, height_block);
-		
-		int rotate=0;
 
 		for (int j = 0; j < src.rows; j += height_cell) 
 		{
@@ -292,22 +325,22 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 			      
 			      
 			      //average color in the block
-			      color_avg=color/(height_block*width_block);
+			      //color_avg=color/(height_block*width_block);
 
-			      if(color_avg > flat_surface_avg_color)
-			      {
-				  probability=prob_overexposure;
-			      }
-			      else
-			      {
+			      //if(color_avg > flat_surface_avg_color)
+			      //{
+			      probability=prob_overexposure;
+			      //}
+			      //else
+			      //{
 				  //TO Do
-				  this->detect(histogram,&probability);
+				//  this->detect(histogram,&probability);
 			
-				  if(probability>0)
-				    probability=prob_min;
-				  else
-				    probability=prob_max;
-			      }
+				 // if(probability>0)
+				 //   probability=prob_min;
+				 // else
+				 //   probability=prob_max;
+			      //}
 			}
 			else
 			{
@@ -375,14 +408,13 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 	
 		//reset height block values
 		height_block=height_block_ref;
-    }
+      }
     
       width_block=width_block_ref;
       
       //if the output is float matrix
       out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
       
-      //out->encoding = sensor_msgs::image_encodings::MONO8;
       out->header = in->header;
       out->image = map;
     

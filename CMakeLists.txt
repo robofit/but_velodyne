@@ -35,14 +35,14 @@ target_link_libraries(sample_hue_detector_node sample_hue_detector_ros)
 #target_link_libraries( detector_nodelets sample_hue_detector_ros)
 
 # LBP detector
-rosbuild_add_library(lbp_detector_ros src/detectors/lbp_detector.cpp src/detectors/lbp_detector_ros.cpp src/detectors/lbp.cpp  )
+rosbuild_add_library(lbp_detector_ros src/detectors/lbp_detector.cpp src/detectors/lbp_detector_ros.cpp src/detectors/lbp/lbp.cpp  )
 
 rosbuild_add_executable(lbp_detector_node src/nodes/lbp_detector_node.cpp)
 target_link_libraries(lbp_detector_node lbp_detector_ros)
 
 
 # LBP training tool
-rosbuild_add_library(lbp_training_ros src/detectors/lbp_detector.cpp src/detectors/lbp_training_ros.cpp src/detectors/lbp.cpp  )
+rosbuild_add_library(lbp_training_ros src/detectors/lbp_detector.cpp src/detectors/lbp_training_ros.cpp src/detectors/lbp/lbp.cpp  )
 
 rosbuild_add_executable(lbp_training_node src/nodes/lbp_training_node.cpp)
 target_link_libraries(lbp_training_node lbp_training_ros)

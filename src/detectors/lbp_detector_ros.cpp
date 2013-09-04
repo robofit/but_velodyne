@@ -16,29 +16,33 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 
 	it_.reset(new image_transport::ImageTransport(nh_));
 
-	int width_block,width_cell,height_block,height_cell,flat_surface_avg_color;
+	int width_block,width_cell,height_block,height_cell;
 	
-	double prob_max_, prob_min_, flat_surface_in_block,prob_overexposure;
+	double prob_max_, prob_min_, flat_surface_in_block,prob_overexposure,svm_threshold;
 	
 	string fileName;
-
+	string svm_file="svm.xml";
+	
+	//param for histogram compute
 	nh_.param("width_cell",width_cell,16);
 	nh_.param("width_block",width_block,64);
 	nh_.param("height_cell",height_cell,16);
 	nh_.param("height_block",height_block,64);
 
-	string svm_file="svm.xml";
-	nh_.param("file_svm",fileName,svm_file);
+	
+	nh_.param("svm_file",fileName,svm_file);
+	nh_.param("svm_threshold",svm_threshold,0.0);
 	nh_.param("frame_skip",frame_skip_,2);
 	
 	
+	//probability param
 	nh_.param("prob_min",prob_min_, 0.3);
 	nh_.param("prob_max",prob_max_, 0.7);
-	
+	nh_.param("prob_overexposure",prob_overexposure, 0.5);
 	
 	nh_.param("flat_surface_in_block",flat_surface_in_block, 0.3);
-	nh_.param("prob_overexposure",prob_overexposure, 0.5);
-	nh_.param("flat_surface_avg_color",flat_surface_avg_color, 220);
+	
+	//nh_.param("flat_surface_avg_color",flat_surface_avg_color, 220);
 
 	skiped_ = 0;
 
@@ -46,15 +50,16 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 	
 	if (!fin)  // check to see if file exists
 	{
-	  ROS_ERROR("File with coeficients for SVM classifier %s doesnt exists",fileName.c_str());
+	  ROS_ERROR("File with coeficients for SVM classifier %s doesn't exists",fileName.c_str());
 	}
 	
 	fin.close();
 	
 	ROS_INFO("PARAM: width cell: %d height cell: %d width block: %d height block: %d", width_cell, height_cell, width_block, height_block);
 	
-	det_.reset(new LBPDetector(width_cell,height_cell,width_block,height_block,prob_min_,prob_max_,flat_surface_in_block,prob_overexposure,flat_surface_avg_color,fileName));
-	cout << flat_surface_in_block;
+	det_.reset(new LBPDetector(width_cell,height_cell,width_block,height_block,prob_min_,prob_max_,flat_surface_in_block,prob_overexposure,svm_threshold,fileName));
+
+	
 	std::string top_rgb_in = "rgb_in";
 	std::string top_det_out = "det_out";
 
@@ -104,11 +109,12 @@ void LBPDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 	//if (pub_.getNumSubscribers() == 0) return;
 
-	ROS_INFO_ONCE("Publishing first detection.");
 
 	cv_bridge::CvImagePtr out_msg(new cv_bridge::CvImage);
 
 	det_->map(rgb,out_msg);
+	
+	ROS_INFO_ONCE("Publishing first detection.");
 
 	pub_.publish(out_msg->toImageMsg());
 
@@ -116,9 +122,8 @@ void LBPDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 void LBPDetectorRos::reconfigureCallback(rt_road_detection::LBPDetectorConfig &config, uint32_t level) {
 
-	//TO DO
+	
+	det_->setParams(config.width_cell,config.height_cell,config.width_block,config.height_block, config.svm_threshold,config.flat_surface_in_block);
 	ROS_INFO("New settings used.");
-	det_->setParams(config.width_cell,config.height_cell,config.width_block,config.height_block);
-
 
 }
