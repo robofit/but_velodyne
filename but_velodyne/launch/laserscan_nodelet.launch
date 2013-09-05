@@ -6,7 +6,7 @@
   <arg name="min_z" default="0.1" />
   <arg name="max_z" default="100.0" />
   <arg name="angular_res" default="0.1" />
-  <arg name="min_range" default="1.0" />
+  <arg name="min_range" default="1.2" />
   
   <node pkg="nodelet" type="nodelet" name="laserscan_nodelet"
         args="load but_velodyne/LaserScanNodelet $(arg manager_name)" output="screen">

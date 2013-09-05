@@ -152,7 +152,7 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     {
 //        ROS_INFO_STREAM("Point: " << it->x << ", " << it->y << ", " << it->z);
 
-        // Check the point
+        // Check the point height
         if( params_.min_z != params_.max_z )
         {
             if( it->z < params_.min_z || it->z > params_.max_z )
@@ -166,6 +166,10 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //        float ang = cv::fastAtan2(it->y, it->x); // precision ~0.3 degrees
 
 //        ROS_INFO_STREAM("Polar coords: " << mag << ", " << ang);
+
+        // Check the point distance
+        if( params_.min_range > 0.0 && mag < params_.min_range )
+            continue;
 
         // Find the corresponding bin
         int n = (ang + 180.0f) * inv_angular_res;
@@ -192,14 +196,7 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     scan_out->angle_min = -float(CV_PI);
     scan_out->angle_max = float(CV_PI);
     scan_out->angle_increment = angular_res / rad_to_deg;
-    if( params_.min_range < 0.0 )
-    {
-        scan_out->range_min = range_min;
-    }
-    else
-    {
-        scan_out->range_min = float(params_.min_range);
-    }
+    scan_out->range_min = range_min;
     scan_out->range_max = range_max;
     scan_out->scan_time = 0.1;      // TODO: get the value from Velodyne, fixed to 10Hz for now
     scan_out->time_increment = scan_out->scan_time / float(num_of_bins);
