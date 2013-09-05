@@ -4,10 +4,10 @@
   <node pkg="but_velodyne" type="laser_scan" name="but_velodyne_laserscan_node" output="screen">
     <remap from="points_in" to="/velodyne_points" />
     <remap from="scan_out" to="/velodyne/scan" />
-    <!--param name="min_z" value="-100.0" /-->
-    <param name="min_z" value="0.0" />
+    <param name="min_z" value="0.1" />
     <param name="max_z" value="100.0" />
     <param name="angular_res" value="0.1" />
+    <param name="min_range" value="1.0" />
     <!--param name="frame_id" value="/velodyne" /-->
   </node>
 </launch>

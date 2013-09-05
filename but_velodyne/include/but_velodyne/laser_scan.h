@@ -74,20 +74,24 @@ public:
         //! Angular resolution [degrees]
         double angular_res;
 
+        //! Minimal range that will propagated to the message.
+        //! - Negative value means that the minimum will be calculated from the data.
+        double min_range;
+
         //! Default constructor
         Params()
             : frame_id("")
             , min_z(getDefaultMinZ())
             , max_z(getDefaultMaxZ())
             , angular_res(getDefaultAngularRes())
+            , min_range(getDefaultMinRange())
         {}
 
-        //! Returns default value of the min_z and max_z parameters.
+        //! Default parameter values.
         static double getDefaultMinZ() { return 0.0; }
         static double getDefaultMaxZ() { return 0.0; }
-
-        //! Returns default value of the angular_res parameter.
         static double getDefaultAngularRes() { return 0.1; }
+        static double getDefaultMinRange() { return -1.0; }
     };
 
 public:
