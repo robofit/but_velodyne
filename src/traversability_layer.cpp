@@ -148,7 +148,7 @@ void TraversabilityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int mi
 
       unsigned char old_cost = master_array[index];
 
-      if (old_cost == NO_INFORMATION || old_cost < costmap_[index]) {
+      if (old_cost == NO_INFORMATION || old_cost == FREE_SPACE) {
 
           //upd++;
           master_grid.setCost(i, j, costmap_[index]);
