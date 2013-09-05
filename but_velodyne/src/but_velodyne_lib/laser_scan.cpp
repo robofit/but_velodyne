@@ -47,6 +47,7 @@ LaserScan::LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh)
     private_nh_.param( MIN_Z_PARAM, params_.min_z, params_.min_z );
     private_nh_.param( MAX_Z_PARAM, params_.max_z, params_.max_z );
     private_nh_.param( ANGULAR_RES_PARAM, params_.angular_res, params_.angular_res );
+    private_nh_.param( MIN_RANGE_PARAM, params_.min_range, params_.min_range );
 
     // If a tf_prefix param is specified, it will be added to the beginning of the frame ID
 //    std::string tf_prefix = tf::getPrefixParam( private_nh_ );
@@ -59,6 +60,7 @@ LaserScan::LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ROS_INFO_STREAM( MIN_Z_PARAM << " parameter: " << params_.min_z );
     ROS_INFO_STREAM( MAX_Z_PARAM << " parameter: " << params_.max_z );
     ROS_INFO_STREAM( ANGULAR_RES_PARAM << " parameter: " << params_.angular_res );
+    ROS_INFO_STREAM( MIN_RANGE_PARAM << " parameter: " << params_.min_range );
 
     // Advertise output laser scan
     scan_pub_ = nh_.advertise<sensor_msgs::LaserScan>( OUTPUT_LASER_SCAN_TOPIC, 10 );
@@ -190,7 +192,14 @@ void LaserScan::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     scan_out->angle_min = -float(CV_PI);
     scan_out->angle_max = float(CV_PI);
     scan_out->angle_increment = angular_res / rad_to_deg;
-    scan_out->range_min = range_min;
+    if( params_.min_range < 0.0 )
+    {
+        scan_out->range_min = range_min;
+    }
+    else
+    {
+        scan_out->range_min = float(params_.min_range);
+    }
     scan_out->range_max = range_max;
     scan_out->scan_time = 0.1;      // TODO: get the value from Velodyne, fixed to 10Hz for now
     scan_out->time_increment = scan_out->scan_time / float(num_of_bins);

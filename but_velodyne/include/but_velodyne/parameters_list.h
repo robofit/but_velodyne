@@ -40,6 +40,7 @@ namespace but_velodyne
     const std::string MIN_Z_PARAM       = "min_z";
     const std::string MAX_Z_PARAM       = "max_z";
     const std::string ANGULAR_RES_PARAM = "angular_res";
+    const std::string MIN_RANGE_PARAM   = "min_range";
 
     /**
      * ground map - parameters

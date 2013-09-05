@@ -3,9 +3,10 @@
   
   <arg name="manager_name" default="velodyne_nodelet_manager"/>
   <arg name="calibration" default="" />
-  <arg name="min_z" default="0.1"/>
-  <arg name="max_z" default="100.0"/>
-  <arg name="angular_res" default="0.1"/>
+  <arg name="min_z" default="0.1" />
+  <arg name="max_z" default="100.0" />
+  <arg name="angular_res" default="0.1" />
+  <arg name="min_range" default="1.0" />
   
   <node pkg="nodelet" type="nodelet" name="laserscan_nodelet"
         args="load but_velodyne/LaserScanNodelet $(arg manager_name)" output="screen">
@@ -14,6 +15,7 @@
     <param name="min_z" value="$(arg min_z)"/>
     <param name="max_z" value="$(arg max_z)"/>
     <param name="angular_res" value="$(arg angular_res)"/>
+    <param name="min_range" value="$(arg min_range)" />
     <!--param name="frame_id" value="/velodyne" /-->
   </node>
 </launch>

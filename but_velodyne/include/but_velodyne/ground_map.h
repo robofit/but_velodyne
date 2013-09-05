@@ -104,10 +104,10 @@ public:
         // Returns default values of particular parameters.
         static double getDefaultMapRes() { return 0.05; }
         static int getDefaultMapSize() { return 128; }
-        static double getDefaultAngularRes() { return 0.5; }
+        static double getDefaultAngularRes() { return 2.0; }
         static double getDefaultRadialRes() { return 0.3; }
         static double getDefaultMaxRadius() { return 3.0; }
-        static double getDefaultMaxRoadIrregularity() { return 0.02; }
+        static double getDefaultMaxRoadIrregularity() { return 0.03; }
     };
 
 public:
@@ -130,19 +130,35 @@ private:
         //! Minimum and maximum height (i.e. z-coordinate).
         double min, max;
 
-        //! Sum of all sample's heights.
-        double avg;
+        //! Average height and variance.
+        double avg, var;
+
+        //! Average distance and variance.
+        double dst_avg, dst_var;
+
+        //! Helper values.
+        double sum, sum_sqr, dst_sum, dst_sum_sqr;
+
+        //! Index of the ring.
+        int ring;
 
         //! Number of samples accumulated in the bin.
-        unsigned n;
+        unsigned n, dst_n;
 
         //! Region index
         unsigned idx;
 
         //! Default constructor.
-        PolarMapBin() : min(0.0), max(0.0), avg(0.0), n(0), idx(NOT_SET) {}
+        PolarMapBin()
+            : min(0.0), max(0.0), avg(0.0), var(0.0)
+            , dst_avg(0.0), dst_var(0.0)
+            , sum(0.0), sum_sqr(0.0), dst_sum(0.0), dst_sum_sqr(0.0)
+            , ring(-1), n(0), dst_n(0)
+            , idx(NOT_SET)
+        {}
     };
 
+    //! Seed used in region growing
     struct PolarMapSeed
     {
         //! Position in the map
