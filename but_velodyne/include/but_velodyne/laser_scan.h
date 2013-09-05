@@ -74,8 +74,8 @@ public:
         //! Angular resolution [degrees]
         double angular_res;
 
-        //! Minimal range that will propagated to the message.
-        //! - Negative value means that the minimum will be calculated from the data.
+        //! Minimal range used to remove points close to the robot.
+        //! - Negative value means that the minimum will be obtained from the data.
         double min_range;
 
         //! Default constructor
