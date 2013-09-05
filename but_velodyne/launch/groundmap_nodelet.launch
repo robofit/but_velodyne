@@ -9,5 +9,6 @@
     <remap from="points_in" to="/velodyne_points"/>
     <remap from="map_out" to="/velodyne/map2d"/>
     <!--param name="frame_id" value="/velodyne" /-->
+    <param name="frame_id" value="/odom" />
   </node>
 </launch>

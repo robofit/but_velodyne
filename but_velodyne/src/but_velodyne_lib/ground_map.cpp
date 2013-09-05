@@ -38,7 +38,8 @@ namespace but_velodyne
 static const unsigned MIN_NUM_OF_SAMPLES    = 3;
 static const double HEIGHT_DIFF_THRESHOLD   = 0.05;
 //static const double HEIGHT_VAR_THRESHOLD  = 0.0025;
-static const double HEIGHT_VAR_THRESHOLD  = 0.0009;
+//static const double HEIGHT_VAR_THRESHOLD  = 0.0009;
+//static const double DISTANCE_VAR_THRESHOLD  = 0.000625;
 static const double DISTANCE_VAR_THRESHOLD  = 0.0009;
 
 /******************************************************************************
@@ -53,18 +54,19 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     private_nh_.param( MAP2D_RES_PARAM, params_.map2d_res, params_.map2d_res );
     private_nh_.param( MAP2D_WIDTH_PARAM, params_.map2d_width, params_.map2d_width );
     private_nh_.param( MAP2D_HEIGHT_PARAM, params_.map2d_height, params_.map2d_height );
+    private_nh_.param( MIN_RANGE_PARAM, params_.min_range, params_.min_range );
+    private_nh_.param( MAX_RANGE_PARAM, params_.max_range, params_.max_range );
     private_nh_.param( ANGULAR_RES_PARAM, params_.angular_res, params_.angular_res );
     private_nh_.param( RADIAL_RES_PARAM, params_.radial_res, params_.radial_res );
-    private_nh_.param( MAX_RADIUS_PARAM, params_.max_radius, params_.max_radius );
     private_nh_.param( MAX_ROAD_IRREGULARITY_PARAM, params_.max_road_irregularity, params_.max_road_irregularity );
 
     // Check if all the parameters are valid
     params_.map2d_res = (params_.map2d_res > 0.001) ? params_.map2d_res : 0.001;
     params_.map2d_height = (params_.map2d_height >= 0) ? params_.map2d_height : 0;
     params_.map2d_width = (params_.map2d_width >= 0) ? params_.map2d_width : 0;
+    params_.max_range = (params_.max_range > 0.0) ? params_.max_range : 0.0;
     params_.angular_res = (params_.angular_res > 0.01) ? params_.angular_res : 0.01;
     params_.radial_res = (params_.radial_res > 0.01) ? params_.radial_res : 0.01;
-    params_.max_radius = (params_.max_radius > 0.0) ? params_.max_radius : 0.0;
     params_.max_road_irregularity = (params_.max_road_irregularity > 0.0) ? params_.max_road_irregularity : 0.0;
 
     // If a tf_prefix param is specified, it will be added to the beginning of the frame ID
@@ -78,9 +80,10 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ROS_INFO_STREAM( MAP2D_RES_PARAM << " parameter: " << params_.map2d_res );
     ROS_INFO_STREAM( MAP2D_WIDTH_PARAM << " parameter: " << params_.map2d_width );
     ROS_INFO_STREAM( MAP2D_HEIGHT_PARAM << " parameter: " << params_.map2d_height );
+    ROS_INFO_STREAM( MIN_RANGE_PARAM << " parameter: " << params_.min_range );
+    ROS_INFO_STREAM( MAX_RANGE_PARAM << " parameter: " << params_.max_range );
     ROS_INFO_STREAM( ANGULAR_RES_PARAM << " parameter: " << params_.angular_res );
     ROS_INFO_STREAM( RADIAL_RES_PARAM << " parameter: " << params_.radial_res );
-    ROS_INFO_STREAM( MAX_RADIUS_PARAM << " parameter: " << params_.max_radius );
     ROS_INFO_STREAM( MAX_ROAD_IRREGULARITY_PARAM << " parameter: " << params_.max_road_irregularity );
 
     // Advertise output occupancy grid
@@ -123,18 +126,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     map_out->header.stamp = cloud->header.stamp;
 
     // Point cloud origin
-    float center_x = 0.0f, center_y = 0.0f;
-/*    VPointCloud::iterator itEnd = pcl_in_.end();
-    for( VPointCloud::iterator it = pcl_in_.begin(); it != itEnd; ++it )
-    {
-        center_x += it->x;
-        center_y += it->y;
-    }
-    if( pcl_in_.size() > 0 )
-    {
-        center_x /= pcl_in_.size();
-        center_y /= pcl_in_.size();
-    }*/
+    float center_x = 0.0f, center_y = 0.0f, center_z = 0.0f;
 
     // Target TF frame ID
     if( params_.frame_id.empty() )
@@ -152,22 +144,33 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             tf::StampedTransform to_target_frame_tf;
             try
             {
-                ROS_INFO_STREAM_ONCE( "Transforming point cloud from " << cloud->header.frame_id
-                                << " to " << map_out->header.frame_id
-                                );
+                // Map origin
+                geometry_msgs::PointStamped center;
+                center.header = pcl_in_.header;
+                center.point.x = center.point.y = center.point.z = 0.0;
+
+                ROS_INFO_STREAM_ONCE( "Transforming point cloud from " << pcl_in_.header.frame_id
+                                      << " to " << map_out->header.frame_id
+                                      );
 
                 // Transform the point cloud
                 pcl_ros::transformPointCloud( map_out->header.frame_id, pcl_in_, pcl_in_, listener_ );
 
-                // Transform the origin
-                tf::Vector3 old_center(0.0f, 0.0f, 0.0f);
-                tf::Vector3 new_center = to_target_frame_tf * old_center;
-                center_x = new_center.x();
-                center_y = new_center.y();
+//                ROS_INFO_STREAM_ONCE( "Transforming center from " << center.header.frame_id
+//                                      << " to " << map_out->header.frame_id
+//                                      );
+
+                // Transform the map origin
+                listener_.transformPoint( map_out->header.frame_id, center, center );
+                center_x = center.point.x;
+                center_y = center.point.y;
+                center_z = center.point.z;
+
+//                ROS_INFO_STREAM( "New map center: " << center_x << ", " << center_y << ", " << center_z );
             }
             catch( tf::TransformException ex )
             {
-                ROS_INFO_STREAM_ONCE( "Cannot transform the point cloud!" );
+                ROS_WARN_STREAM( "Cannot transform the point cloud!" );
                 return;
             }
         }
@@ -181,8 +184,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     float inv_angular_res = 1.0f / angular_res;
 
     // Calculate the number of sampling bins along the polar axis
-    int num_of_radial_bins = int(params_.max_radius / params_.radial_res);
-    float radial_res = float(params_.max_radius / num_of_radial_bins);
+    int num_of_radial_bins = int(params_.max_range / params_.radial_res);
+    float radial_res = float(params_.max_range / num_of_radial_bins);
     float inv_radial_res = 1.0f / radial_res;
 
     // Create and initialize the map sampling bins
@@ -200,6 +203,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
         float x = it->x - center_x;
         float y = it->y - center_y;
+        float z = it->z - center_z;
 
         // Conversion to the polar coordinates
         float mag = std::sqrt(x * x + y * y);
@@ -210,7 +214,9 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //        ROS_INFO_STREAM("Polar coords: " << mag << ", " << ang);
 
         // Check the distance
-        if( mag > params_.max_radius )
+        if( mag > params_.max_range )
+            continue;
+        if( params_.min_range > 0.0 && mag < params_.min_range )
             continue;
 
         // Find the corresponding map bin
@@ -229,26 +235,26 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         // Accumulate the value
         PolarMapBin &bin = polar_map_[rn * num_of_angular_bins + an];
         bin.n += 1;
-        bin.sum += it->z;
-        bin.sum_sqr += it->z * it->z;
+        bin.sum += z;
+        bin.sum_sqr += z * z;
         if( bin.n > 1 )
         {
-            bin.min = (it->z < bin.min) ? it->z : bin.min;
-            bin.max = (it->z > bin.max) ? it->z : bin.max;
+            bin.min = (z < bin.min) ? z : bin.min;
+            bin.max = (z > bin.max) ? z : bin.max;
         }
         else
         {
-            bin.max = bin.min = it->z;
+            bin.max = bin.min = z;
         }
 
-        if( bin.dst_n == 0 )
+        if( bin.dst_ring == -1 )
         {
             bin.dst_n += 1;
             bin.dst_sum += mag;
             bin.dst_sum_sqr += mag * mag;
-            bin.ring = int(it->ring);
+            bin.dst_ring = int(it->ring);
         }
-        else if( bin.ring == int(it->ring) )
+        else if( bin.dst_ring == int(it->ring) )
         {
             bin.dst_n += 1;
             bin.dst_sum += mag;
@@ -490,7 +496,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     //        float ang = cv::fastAtan2(y, x); // precision ~0.3 degrees
 
             // Check the distance
-            if( mag > params_.max_radius )
+            if( mag > params_.max_range )
                 continue;
 
             // Find the corresponding polar map bin
@@ -530,12 +536,9 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     map_out->info.width = uint32_t(params_.map2d_width);
     map_out->info.height = uint32_t(params_.map2d_height);
     map_out->info.resolution = float(params_.map2d_res);
-
-    // TODO: Calculate the proper map origin including posible transformation to the /odom frame!!!
-//    map_out->info.origin = ;
-    map_out->info.origin.position.x = -float(params_.map2d_width / 2) * map_res;
-    map_out->info.origin.position.y = -float(params_.map2d_height / 2) * map_res;
-    map_out->info.origin.position.z = ground_height;
+    map_out->info.origin.position.x = -float(params_.map2d_width / 2) * map_res + center_x;
+    map_out->info.origin.position.y = -float(params_.map2d_height / 2) * map_res + center_y;
+    map_out->info.origin.position.z = ground_height + center_z;
     map_out->info.origin.orientation.w = 1;
     map_out->info.origin.orientation.x = 0;
     map_out->info.origin.orientation.y = 0;

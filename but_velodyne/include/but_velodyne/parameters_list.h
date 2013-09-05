@@ -49,9 +49,10 @@ namespace but_velodyne
     const std::string MAP2D_RES_PARAM = "map2d_res";
     const std::string MAP2D_WIDTH_PARAM = "map2d_width";
     const std::string MAP2D_HEIGHT_PARAM = "map2d_height";
+    //const std::string MIN_RANGE_PARAM = "min_range";
+    const std::string MAX_RANGE_PARAM = "max_range";
     //const std::string ANGULAR_RES_PARAM = "angular_res";
     const std::string RADIAL_RES_PARAM = "radial_res";
-    const std::string MAX_RADIUS_PARAM = "max_radius";
     const std::string MAX_ROAD_IRREGULARITY_PARAM = "max_road_irregularity";
 }
 
