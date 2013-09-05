@@ -22,8 +22,8 @@ detectors_ns: /detectors
 
 detectors:
 
-  -
-    name: sample_grass
+  #-
+  #  name: sample_grass
     # some more values...
     
   - 
