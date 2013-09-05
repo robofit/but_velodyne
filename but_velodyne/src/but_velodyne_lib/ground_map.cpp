@@ -32,6 +32,14 @@
 #include <cmath>
 //#include <opencv2/core/core.hpp>
 
+#include <pcl/ModelCoefficients.h>
+#include <pcl/point_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+
+#include <costmap_2d/cost_values.h>
+
 namespace but_velodyne
 {
 
@@ -303,6 +311,80 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
+    static const float deg_to_rad = float(CV_PI) / 180.0f;
+
+    // Estimate the ground plane using PCL and RANSAC
+    pcl::PointCloud<pcl::PointXYZ> ground_cloud;
+
+    // Fill in the cloud data
+    ground_cloud.width = 1;
+    ground_cloud.height = 1;
+    for( int rn = 0; rn < num_of_radial_bins_; ++rn )
+    {
+        for( int an = 0; an < num_of_angular_bins_; ++an )
+        {
+            PolarMapBin &bin = getPolarMapBin(an, rn);
+
+            if( bin.idx != PolarMapBin::UNKNOWN )
+            {
+                double angle = an * angular_res * deg_to_rad;
+                double x = rn * std::cos(angle);
+                double y = rn * std::sin(angle);
+
+//                ROS_INFO_STREAM( "Sim coords: " << x << ", " << y );
+
+                ground_cloud.width++;
+                ground_cloud.points.push_back( pcl::PointXYZ(x, y, bin.min) );
+            }
+        }
+    }
+
+    pcl::ModelCoefficients::Ptr coefficients( new pcl::ModelCoefficients );
+    pcl::PointIndices::Ptr inliers( new pcl::PointIndices );
+
+    // Create the segmentation object
+    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    seg.setOptimizeCoefficients( true );
+    seg.setModelType( pcl::SACMODEL_PLANE );
+    seg.setMethodType( pcl::SAC_RANSAC );
+    seg.setDistanceThreshold( 0.01 );
+    seg.setInputCloud( ground_cloud.makeShared() );
+    seg.segment( *inliers, *coefficients );
+
+//    ROS_INFO_STREAM( "Num. of ground inliers = " << inliers->indices.size() );
+
+    if( inliers->indices.size() == 0 )
+    {
+        ROS_WARN_STREAM( "Could not estimate a planar model for the ground!" );
+        return;
+    }
+
+    // Ground tilt correction
+    for( int rn = 0; rn < num_of_radial_bins_; ++rn )
+    {
+        for( int an = 0; an < num_of_angular_bins_; ++an )
+        {
+            PolarMapBin &bin = getPolarMapBin(an, rn);
+
+            if( bin.idx != PolarMapBin::UNKNOWN )
+            {
+                double angle = an * angular_res * deg_to_rad;
+                double x = rn * std::cos(angle);
+                double y = rn * std::sin(angle);
+
+                // Calculate the ground height
+                double z = (-coefficients->values[0] * x - coefficients->values[1] * y - coefficients->values[3]) / coefficients->values[2];
+
+//                ROS_INFO_STREAM( "Ground tilt correction = " << z );
+
+                // Correct the point height
+                bin.avg -= z;
+                bin.max -= z;
+                bin.min -= z;
+            }
+        }
+    }
+
     // Find all OCCUPIED bins
     for( tPolarMap::iterator mit = polar_map_.begin(); mit != mitEnd; ++mit )
     {
@@ -325,6 +407,11 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
+    // Estimate ground height in the center of the polar map
+    double ground_height = -coefficients->values[3] / coefficients->values[2];
+    int min_rn = 0;
+
+/*  // GROUND ESTIMATION VER1
     typedef std::vector<double> tDblVec;
     tDblVec heights;
     heights.reserve(num_of_angular_bins_);
@@ -357,21 +444,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     // Assume that the median of minimum height in the closest bins
     // is the ground height
     std::sort(heights.begin(), heights.end());
-    double ground_height = heights[heights.size() / 2];
-
-    // Ground tilt correction
-/*    for( int an = 0; an < (num_of_angular_bins_ / 2 + 1); ++an )
-    {
-        for( int rn = 0; rn < num_of_radial_bins_; ++rn )
-        {
-            PolarMapBin &b1 = getPolarMapBin(an, rn);
-            PolarMapBin &b2 = getPolarMapBin((an + num_of_angular_bins_ / 2) % num_of_angular_bins_, rn);
-
-            if( b1.idx != PolarMapBin::UNKNOWN && b2.idx != PolarMapBin::UNKNOWN )
-            {
-            }
-        }
-    }*/
+    double ground_height = heights[heights.size() / 2];*/
 
 //    ROS_INFO_STREAM( "Estimated ground height = " << ground_height );
 
@@ -389,7 +462,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             // Does the bin correspond to the ground height?
             if( bin.idx == PolarMapBin::NOT_SET )
             {
-                double diff = std::fabs(bin.avg - ground_height);
+//                double diff = std::fabs(bin.avg - ground_height);
+                double diff = std::fabs(bin.avg);
 //                double diff = std::fabs(bin.min - ground_height);
                 if( diff < params_.max_road_irregularity )
                 {
@@ -510,15 +584,18 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //                case PolarMapBin::NOT_SET:
                 case PolarMapBin::UNKNOWN:
                     map_out->data[j * params_.map2d_width + i] = -1;
+//                    map_out->data[j * params_.map2d_width + i] = costmap_2d::NO_INFORMATION;
                     break;
 
                 case PolarMapBin::FREE:
                     map_out->data[j * params_.map2d_width + i] = 0;
+//                    map_out->data[j * params_.map2d_width + i] = costmap_2d::FREE_SPACE;
                     break;
 
                 case PolarMapBin::NOT_SET:
                 case PolarMapBin::OCCUPIED:
                     map_out->data[j * params_.map2d_width + i] = 100;
+//                    map_out->data[j * params_.map2d_width + i] = costmap_2d::LETHAL_OBSTACLE;
                     break;
             }
         }
