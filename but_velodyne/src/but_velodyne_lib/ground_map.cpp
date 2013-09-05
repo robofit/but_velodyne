@@ -30,17 +30,12 @@
 #include <but_velodyne/topics_list.h>
 
 #include <cmath>
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 
 namespace but_velodyne
 {
 
 static const unsigned MIN_NUM_OF_SAMPLES    = 3;
-static const double HEIGHT_DIFF_THRESHOLD   = 0.05;
-//static const double HEIGHT_VAR_THRESHOLD  = 0.0025;
-//static const double HEIGHT_VAR_THRESHOLD  = 0.0009;
-//static const double DISTANCE_VAR_THRESHOLD  = 0.000625;
-static const double DISTANCE_VAR_THRESHOLD  = 0.0009;
 
 /******************************************************************************
  */
@@ -48,17 +43,24 @@ static const double DISTANCE_VAR_THRESHOLD  = 0.0009;
 GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     : nh_(nh)
     , private_nh_(private_nh)
+    , num_of_angular_bins_(0)
+    , num_of_radial_bins_(0)
+    , inv_angular_res_(0.0f)
+    , inv_radial_res_(0.0f)
 {
     // Load parameters
     private_nh_.param( FRAME_ID_PARAM, params_.frame_id, params_.frame_id );
     private_nh_.param( MAP2D_RES_PARAM, params_.map2d_res, params_.map2d_res );
     private_nh_.param( MAP2D_WIDTH_PARAM, params_.map2d_width, params_.map2d_width );
     private_nh_.param( MAP2D_HEIGHT_PARAM, params_.map2d_height, params_.map2d_height );
+
     private_nh_.param( MIN_RANGE_PARAM, params_.min_range, params_.min_range );
     private_nh_.param( MAX_RANGE_PARAM, params_.max_range, params_.max_range );
     private_nh_.param( ANGULAR_RES_PARAM, params_.angular_res, params_.angular_res );
     private_nh_.param( RADIAL_RES_PARAM, params_.radial_res, params_.radial_res );
+
     private_nh_.param( MAX_ROAD_IRREGULARITY_PARAM, params_.max_road_irregularity, params_.max_road_irregularity );
+    private_nh_.param( MAX_HEIGHT_DIFF_PARAM, params_.max_height_diff, params_.max_height_diff );
 
     // Check if all the parameters are valid
     params_.map2d_res = (params_.map2d_res > 0.001) ? params_.map2d_res : 0.001;
@@ -68,6 +70,7 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     params_.angular_res = (params_.angular_res > 0.01) ? params_.angular_res : 0.01;
     params_.radial_res = (params_.radial_res > 0.01) ? params_.radial_res : 0.01;
     params_.max_road_irregularity = (params_.max_road_irregularity > 0.0) ? params_.max_road_irregularity : 0.0;
+    params_.max_height_diff = (params_.max_height_diff > 0.0) ? params_.max_height_diff : 0.0;
 
     // If a tf_prefix param is specified, it will be added to the beginning of the frame ID
 //    std::string tf_prefix = tf::getPrefixParam( private_nh_ );
@@ -85,6 +88,7 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ROS_INFO_STREAM( ANGULAR_RES_PARAM << " parameter: " << params_.angular_res );
     ROS_INFO_STREAM( RADIAL_RES_PARAM << " parameter: " << params_.radial_res );
     ROS_INFO_STREAM( MAX_ROAD_IRREGULARITY_PARAM << " parameter: " << params_.max_road_irregularity );
+    ROS_INFO_STREAM( MAX_HEIGHT_DIFF_PARAM << " parameter: " << params_.max_height_diff );
 
     // Advertise output occupancy grid
     map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>( OUTPUT_GROUND_MAP_TOPIC, 10 );
@@ -176,20 +180,18 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
-    float rad_to_deg = 180.0f / float(CV_PI);
-
     // Calculate the number of angular sampling bins
-    int num_of_angular_bins = int(360 / params_.angular_res);
-    float angular_res = 360.0f / num_of_angular_bins;
-    float inv_angular_res = 1.0f / angular_res;
+    num_of_angular_bins_ = int(360 / params_.angular_res);
+    float angular_res = 360.0f / num_of_angular_bins_;
+    inv_angular_res_ = 1.0f / angular_res;
 
     // Calculate the number of sampling bins along the polar axis
-    int num_of_radial_bins = int(params_.max_range / params_.radial_res);
-    float radial_res = float(params_.max_range / num_of_radial_bins);
-    float inv_radial_res = 1.0f / radial_res;
+    num_of_radial_bins_ = int(params_.max_range / params_.radial_res);
+    float radial_res = float(params_.max_range / num_of_radial_bins_);
+    inv_radial_res_ = 1.0f / radial_res;
 
     // Create and initialize the map sampling bins
-    polar_map_.resize(num_of_angular_bins * num_of_radial_bins);
+    polar_map_.resize(num_of_angular_bins_ * num_of_radial_bins_);
     for( size_t i = 0; i < polar_map_.size(); ++i )
     {
         polar_map_[i] = PolarMapBin();
@@ -206,10 +208,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         float z = it->z - center_z;
 
         // Conversion to the polar coordinates
-        float mag = std::sqrt(x * x + y * y);
-        float ang = std::atan2(y, x) * rad_to_deg;
-//        float mag = cv::sqrt(x * x + y * y);
-//        float ang = cv::fastAtan2(y, x); // precision ~0.3 degrees
+        float ang, mag;
+        toPolarCoords(x, y, ang, mag);
 
 //        ROS_INFO_STREAM("Polar coords: " << mag << ", " << ang);
 
@@ -220,20 +220,13 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             continue;
 
         // Find the corresponding map bin
-        int an = (ang + 180.0f) * inv_angular_res;
-        if( an >= num_of_angular_bins )
-            an = num_of_angular_bins - 1;
-        else if( an < 0 )
-            an = 0;
-
-        int rn = mag * inv_radial_res;
-        if( rn >= num_of_radial_bins )
-            rn = num_of_radial_bins - 1;
+        int an, rn;
+        getPolarMapIndex(ang, mag, an, rn);
 
 //        ROS_INFO_STREAM("Polar bin: " << an << ", " << rn);
 
         // Accumulate the value
-        PolarMapBin &bin = polar_map_[rn * num_of_angular_bins + an];
+        PolarMapBin &bin = getPolarMapBin(an, rn);
         bin.n += 1;
         bin.sum += z;
         bin.sum_sqr += z * z;
@@ -262,7 +255,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
-    // Prepare the map for region growing "from its center"
+    // Compute stats and mark all UNKNOWN bins
     tPolarMap::iterator mitEnd = polar_map_.end();
     for( tPolarMap::iterator mit = polar_map_.begin(); mit != mitEnd; ++mit )
     {
@@ -273,7 +266,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             continue;
         }
 
-        // Calculate the average height in the bin
+        // Calculate the average height in the bin, ...
         double inv_n = 1.0 / mit->n;
         mit->avg = mit->sum * inv_n;
         mit->var = (mit->sum_sqr - mit->sum * mit->sum * inv_n) * inv_n;
@@ -281,34 +274,20 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         inv_n = 1.0 / mit->dst_n;
         mit->dst_avg = mit->dst_sum * inv_n;
         mit->dst_var = (mit->dst_sum_sqr - mit->dst_sum * mit->dst_sum * inv_n) * inv_n;
-
-        // Mark all the map bins where the difference between minimal
-        // and maximal height is significant as occupied
-        if( std::fabs(mit->max - mit->min) > HEIGHT_DIFF_THRESHOLD )
-        {
-            mit->idx = PolarMapBin::OCCUPIED;
-        }
-
-        // Variance in distance from the center
-//        if( mit->var > HEIGHT_VAR_THRESHOLD )
-        if( mit->dst_var > DISTANCE_VAR_THRESHOLD )
-        {
-            mit->idx = PolarMapBin::OCCUPIED;
-        }
     }
 
     // Interpolate empty cells if possible
-    for( int rn = 1; rn < (num_of_radial_bins - 1); ++rn )
+    for( int rn = 1; rn < (num_of_radial_bins_ - 1); ++rn )
     {
-        for( int an = 0; an < num_of_angular_bins; ++an )
+        for( int an = 0; an < num_of_angular_bins_; ++an )
         {
-            PolarMapBin &bin = polar_map_[rn * num_of_angular_bins + an];
+            PolarMapBin &bin = getPolarMapBin(an, rn);
 
             if( bin.idx == PolarMapBin::UNKNOWN )
             {
                 // Get bin's neighbours
-                PolarMapBin &n1 = polar_map_[(rn + 1) * num_of_angular_bins + an];
-                PolarMapBin &n2 = polar_map_[(rn - 1) * num_of_angular_bins + an];
+                PolarMapBin &n1 = getPolarMapBin(an, rn + 1);
+                PolarMapBin &n2 = getPolarMapBin(an, rn - 1);
 
                 // Interpolate values if possible
                 if( n1.idx != PolarMapBin::UNKNOWN && n2.idx != PolarMapBin::UNKNOWN )
@@ -319,33 +298,46 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
                     bin.avg = 0.5 * (n1.avg + n2.avg);
                     bin.var = (n1.var > n2.var) ? n1.var : n2.var;
                     bin.idx = PolarMapBin::NOT_SET;
-
-                    if( std::fabs(bin.max - bin.min) > HEIGHT_DIFF_THRESHOLD )
-                    {
-                        bin.idx = PolarMapBin::OCCUPIED;
-                    }
-//                    if( bin.var > HEIGHT_VAR_THRESHOLD )
-                    if( bin.dst_var > DISTANCE_VAR_THRESHOLD )
-                    {
-                        bin.idx = PolarMapBin::OCCUPIED;
-                    }
                 }
             }
         }
     }
 
+    // Find all OCCUPIED bins
+    for( tPolarMap::iterator mit = polar_map_.begin(); mit != mitEnd; ++mit )
+    {
+        if( mit->idx == PolarMapBin::UNKNOWN )
+        {
+            continue;
+        }
+
+        // Mark all the map bins where the difference between minimal
+        // and maximal height is significant as occupied
+        if( std::fabs(mit->max - mit->min) > params_.max_height_diff )
+        {
+            mit->idx = PolarMapBin::OCCUPIED;
+        }
+
+        // Variance in distance from the center
+        if( mit->dst_var > params_.max_road_irregularity * params_.max_road_irregularity )
+        {
+            mit->idx = PolarMapBin::OCCUPIED;
+        }
+    }
+
     typedef std::vector<double> tDblVec;
     tDblVec heights;
-    heights.reserve(num_of_angular_bins);
+    heights.reserve(num_of_angular_bins_);
 
     // For each angle in polar coordinates find the closest
-    // bin to the center that has some known height
-    int min_rn = num_of_radial_bins - 1;
-    for( int an = 0; an < num_of_angular_bins; ++an )
+    // bin to the center that has a known height
+    int min_rn = num_of_radial_bins_ - 1;
+    for( int an = 0; an < num_of_angular_bins_; ++an )
     {
-        for( int rn = 0; rn < num_of_radial_bins; ++rn )
+        for( int rn = 0; rn < num_of_radial_bins_; ++rn )
         {
-            PolarMapBin &bin = polar_map_[rn * num_of_angular_bins + an];
+            PolarMapBin &bin = getPolarMapBin(an, rn);
+
             if( bin.idx == PolarMapBin::NOT_SET )
             {
                 heights.push_back(bin.min);
@@ -367,6 +359,20 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     std::sort(heights.begin(), heights.end());
     double ground_height = heights[heights.size() / 2];
 
+    // Ground tilt correction
+/*    for( int an = 0; an < (num_of_angular_bins_ / 2 + 1); ++an )
+    {
+        for( int rn = 0; rn < num_of_radial_bins_; ++rn )
+        {
+            PolarMapBin &b1 = getPolarMapBin(an, rn);
+            PolarMapBin &b2 = getPolarMapBin((an + num_of_angular_bins_ / 2) % num_of_angular_bins_, rn);
+
+            if( b1.idx != PolarMapBin::UNKNOWN && b2.idx != PolarMapBin::UNKNOWN )
+            {
+            }
+        }
+    }*/
+
 //    ROS_INFO_STREAM( "Estimated ground height = " << ground_height );
 
     unsigned ground_bins = 0;
@@ -374,11 +380,11 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     tSeeds Seeds;
 
     // Traverse the map and add all ground bins as seeds
-    for( int rn = min_rn; rn < num_of_radial_bins; ++rn )
+    for( int rn = min_rn; rn < num_of_radial_bins_; ++rn )
     {
-        for( int an = 0; an < num_of_angular_bins; ++an )
+        for( int an = 0; an < num_of_angular_bins_; ++an )
         {
-            PolarMapBin &bin = polar_map_[rn * num_of_angular_bins + an];
+            PolarMapBin &bin = getPolarMapBin(an, rn);
 
             // Does the bin correspond to the ground height?
             if( bin.idx == PolarMapBin::NOT_SET )
@@ -405,21 +411,19 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         Seeds.pop_front();
 
         // Get the corresponding bin
-        PolarMapBin &bin = polar_map_[s.dist * num_of_angular_bins + s.ang];
+        PolarMapBin &bin = getPolarMapBin(s.ang, s.dist);
 
         // Let's try to grow the ground
         if( bin.idx == PolarMapBin::FREE )
         {
             // 1st neighbour
-            if( s.dist < (num_of_radial_bins - 1) )
+            if( s.dist < (num_of_radial_bins_ - 1) )
             {
-                PolarMapBin &n1 = polar_map_[(s.dist + 1) * num_of_angular_bins + s.ang];
+                PolarMapBin &n1 = getPolarMapBin(s.ang, s.dist + 1);
                 if( n1.idx == PolarMapBin::NOT_SET )
                 {
                     double diff = std::fabs(bin.avg - n1.avg);
-//                    double diff2 = std::fabs(bin.dst_avg - n1.dst_avg);
-                    if( diff < params_.max_road_irregularity
-                        /*&& diff2 < params_.max_road_irregularity*/ )
+                    if( diff < params_.max_road_irregularity )
                     {
                         n1.idx = PolarMapBin::FREE;
                         Seeds.push_back(PolarMapSeed(s.ang, s.dist + 1));
@@ -429,9 +433,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             }
 
             // 2nd neighbour
-            int an2 = s.ang + 1;
-            if( an2 >= num_of_angular_bins ) an2 = 0;
-            PolarMapBin &n2 = polar_map_[s.dist * num_of_angular_bins + an2];
+            int an2 = (s.ang + 1) % num_of_angular_bins_;
+            PolarMapBin &n2 = getPolarMapBin(an2, s.dist);
             if( n2.idx == PolarMapBin::NOT_SET )
             {
                 double diff = std::fabs(bin.avg - n2.avg);
@@ -446,9 +449,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             }
 
             // 3rd neighbour
-            int an3 = s.ang - 1;
-            if( an3 < 0 ) an3 = num_of_angular_bins - 1;
-            PolarMapBin &n3 = polar_map_[s.dist * num_of_angular_bins + an3];
+            int an3 = (s.ang + num_of_angular_bins_ - 1) % num_of_angular_bins_;
+            PolarMapBin &n3 = getPolarMapBin(an3, s.dist);
             if( n3.idx == PolarMapBin::NOT_SET )
             {
                 double diff = std::fabs(bin.avg - n3.avg);
@@ -490,28 +492,19 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         for( int i = 0; i < params_.map2d_width; ++i, x += map_res )
         {
             // Conversion to the polar coordinates
-            float mag = std::sqrt(x * x + y * y);
-            float ang = std::atan2(y, x) * rad_to_deg;
-    //        float mag = cv::sqrt(x * x + y * y);
-    //        float ang = cv::fastAtan2(y, x); // precision ~0.3 degrees
+            float ang, mag;
+            toPolarCoords(x, y, ang, mag);
 
             // Check the distance
             if( mag > params_.max_range )
                 continue;
 
             // Find the corresponding polar map bin
-            int an = (ang + 180.0f) * inv_angular_res;
-            if( an >= num_of_angular_bins )
-                an = num_of_angular_bins - 1;
-            else if( an < 0 )
-                an = 0;
-
-            int rn = mag * inv_radial_res;
-            if( rn >= num_of_radial_bins )
-                rn = num_of_radial_bins - 1;
+            int an, rn;
+            getPolarMapIndex(ang, mag, an, rn);
 
             // Fill in the 2D occupancy grid
-            PolarMapBin &bin = polar_map_[rn * num_of_angular_bins + an];
+            PolarMapBin &bin = getPolarMapBin(an, rn);
             switch( bin.idx )
             {
 //                case PolarMapBin::NOT_SET:

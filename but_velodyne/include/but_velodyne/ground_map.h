@@ -35,6 +35,8 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/OccupancyGrid.h>
 
+#include <opencv2/core/core.hpp>
+
 #include <velodyne_pointcloud/point_types.h>
 
 // Include template implementations to transform a custom point cloud
@@ -93,6 +95,9 @@ public:
         //! Road irregularity threshold [m]
         double max_road_irregularity;
 
+        //! Min-max height difference threshold [m]
+        double max_height_diff;
+
         //! Default constructor
         Params()
             : frame_id("")
@@ -104,16 +109,20 @@ public:
             , angular_res(getDefaultAngularRes())
             , radial_res(getDefaultRadialRes())
             , max_road_irregularity(getDefaultMaxRoadIrregularity())
+            , max_height_diff(getDefaultMaxHeightDiff())
         {}
 
         // Returns default values of particular parameters.
         static double getDefaultMapRes() { return 0.05; }
         static int getDefaultMapSize() { return 128; }
+
         static double getDefaultMinRange() { return 1.2; }
         static double getDefaultMaxRange() { return 3.0; }
         static double getDefaultAngularRes() { return 5.0; }
         static double getDefaultRadialRes() { return 0.3; }
+
         static double getDefaultMaxRoadIrregularity() { return 0.03; }
+        static double getDefaultMaxHeightDiff() { return 0.05; }
     };
 
 public:
@@ -175,6 +184,31 @@ private:
     };
 
 private:
+    //! Conversion to polar coordinates.
+    void toPolarCoords(float x, float y, float& ang, float &mag)
+    {
+        static const float rad_to_deg = 180.0f / float(CV_PI);
+
+        mag = std::sqrt(x * x + y * y);
+        ang = std::atan2(y, x) * rad_to_deg;
+//        mag = cv::sqrt(x * x + y * y);
+//        ang = cv::fastAtan2(y, x); // precision ~0.3 degrees
+    }
+
+    //! Returns subscripted bin from the polar map.
+    PolarMapBin& getPolarMapBin(int a, int d)
+    {
+        return polar_map_[d * num_of_angular_bins_ + a];
+    }
+
+    //! Returns index of bin in the polar map by converting given polar coordinates [deg, m]
+    void getPolarMapIndex(float ang, float mag, int& a, int& d)
+    {
+        a = int((ang + 180.001f) * inv_angular_res_) % num_of_angular_bins_;
+        d = int(mag * inv_radial_res_) % num_of_radial_bins_;
+    }
+
+private:
     //! Node handle
     ros::NodeHandle nh_, private_nh_;
 
@@ -196,6 +230,10 @@ private:
 
     //! Map to avoid reallocation on every message
     tPolarMap polar_map_;
+
+    //! Current size of the polar map.
+    int num_of_angular_bins_, num_of_radial_bins_;
+    float inv_angular_res_, inv_radial_res_;
 };
 
 
