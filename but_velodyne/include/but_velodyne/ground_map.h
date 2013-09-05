@@ -77,14 +77,18 @@ public:
 
         // Parameters of internal spatial sampling of points in polar coordinates.
 
+        //! Minimal distance used to filter points close to the robot [m]
+        //! - Negative value means that no filtering is performed.
+        double min_range;
+
+        //! The maximum radius/distance from the center [m]
+        double max_range;
+
         //! Angular resolution [degrees]
         double angular_res;
 
         //! Radial resolution [m/cell]
         double radial_res;
-
-        //! The maximum radius/distance from the center [m]
-        double max_radius;
 
         //! Road irregularity threshold [m]
         double max_road_irregularity;
@@ -95,18 +99,20 @@ public:
             , map2d_res(getDefaultMapRes())
             , map2d_width(getDefaultMapSize())
             , map2d_height(getDefaultMapSize())
+            , min_range(getDefaultMinRange())
+            , max_range(getDefaultMaxRange())
             , angular_res(getDefaultAngularRes())
             , radial_res(getDefaultRadialRes())
-            , max_radius(getDefaultMaxRadius())
             , max_road_irregularity(getDefaultMaxRoadIrregularity())
         {}
 
         // Returns default values of particular parameters.
         static double getDefaultMapRes() { return 0.05; }
         static int getDefaultMapSize() { return 128; }
-        static double getDefaultAngularRes() { return 2.0; }
+        static double getDefaultMinRange() { return 1.2; }
+        static double getDefaultMaxRange() { return 3.0; }
+        static double getDefaultAngularRes() { return 5.0; }
         static double getDefaultRadialRes() { return 0.3; }
-        static double getDefaultMaxRadius() { return 3.0; }
         static double getDefaultMaxRoadIrregularity() { return 0.03; }
     };
 
@@ -136,11 +142,11 @@ private:
         //! Average distance and variance.
         double dst_avg, dst_var;
 
+        //! Index of the first accumulated ring.
+        int dst_ring;
+
         //! Helper values.
         double sum, sum_sqr, dst_sum, dst_sum_sqr;
-
-        //! Index of the ring.
-        int ring;
 
         //! Number of samples accumulated in the bin.
         unsigned n, dst_n;
@@ -151,9 +157,9 @@ private:
         //! Default constructor.
         PolarMapBin()
             : min(0.0), max(0.0), avg(0.0), var(0.0)
-            , dst_avg(0.0), dst_var(0.0)
+            , dst_avg(0.0), dst_var(0.0), dst_ring(-1)
             , sum(0.0), sum_sqr(0.0), dst_sum(0.0), dst_sum_sqr(0.0)
-            , ring(-1), n(0), dst_n(0)
+            , n(0), dst_n(0)
             , idx(NOT_SET)
         {}
     };
