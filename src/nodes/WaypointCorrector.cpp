@@ -25,7 +25,8 @@ namespace rt_road_detection
 		//read parameters
 		ros::param::param<string>("~map_frame",map_frame_,"odom");
 		ros::param::param<string>("~robot_frame",robot_frame_,"base_link");
-		ros::param::param<string>("~map_topic",map_topic_,"/det2costmap/occ_map");
+		//ros::param::param<string>("~map_topic",map_topic_,"/det2costmap/occ_map");
+		ros::param::param<string>("~map_topic",map_topic_,"/move_base/local_costmap/costmap");
 
 		ros::param::param<double>("~path_min_width",path_min_width_,1.5);
 		ros::param::param<double>("~path_max_width",path_max_width_,10.0);
