@@ -11,7 +11,6 @@
   <depend package="costmap_2d"/>
   <depend package="nav_msgs"/>
   <depend package="tf"/>
-
   
   <export>
     <costmap_2d plugin="${prefix}/costmap_plugins.xml"/>

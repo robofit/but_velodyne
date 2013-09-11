@@ -21,7 +21,5 @@ include_directories( include/rt_traversability_layer )
 rosbuild_add_library(traversability_layer src/traversability_layer.cpp)
 target_link_libraries( traversability_layer costmap_2d )
 
-
-
 # Parse check all the launch/*.launch files
 # rosbuild_add_roslaunch_check(launch)

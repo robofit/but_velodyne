@@ -95,12 +95,14 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
           unsigned int index = getIndex(mx, my);
           //costmap_[index] = LETHAL_OBSTACLE;
 
-          char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
+          unsigned char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
 
+          // translate occupancy grid values to internal representation
+          if (val < 50) costmap_[index] = FREE_SPACE;
+          else if (val >= 50 && val < 255) costmap_[index] = LETHAL_OBSTACLE;
+          else costmap_[index] = NO_INFORMATION;
 
-          if (val < 0) costmap_[index] = NO_INFORMATION;
-          else if (val < 50) costmap_[index] = FREE_SPACE;
-          else costmap_[index] = LETHAL_OBSTACLE;
+          //costmap_[index] = val;
 
           *min_x = std::min(px, *min_x);
           *min_y = std::min(py, *min_y);
@@ -148,7 +150,7 @@ void TraversabilityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int mi
 
       unsigned char old_cost = master_array[index];
 
-      if (old_cost == NO_INFORMATION || old_cost == FREE_SPACE) {
+      if (old_cost == NO_INFORMATION || old_cost < costmap_[index]) {
 
           //upd++;
           master_grid.setCost(i, j, costmap_[index]);
