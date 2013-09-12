@@ -233,7 +233,7 @@ private:
     }
 
     //! Returns subscripted bin of the polar histogram.
-    PolarMapBin& getPolarHistBin(int a, int ring)
+    PolarHistBin& getPolarHistBin(int a, int ring)
     {
         return polar_hist_[ring * num_of_angular_hist_bins_ + a];
     }
@@ -241,7 +241,7 @@ private:
     //! Returns index of bin in the polar map by converting given polar coordinates [deg, m]
     void getPolarHistIndex(float ang, int ring, int& a, int& r)
     {
-        a = int((ang + 180.001f) * inv_angular__hist_res_) % num_of_angular_hist_bins_;
+        a = int((ang + 180.001f) * inv_angular_hist_res_) % num_of_angular_hist_bins_;
         r = int(ring - min_ring_index_);
     }
 
