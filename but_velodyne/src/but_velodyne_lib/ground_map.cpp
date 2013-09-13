@@ -192,7 +192,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
-    // POLAR MAP
+    // POLAR MAP init
 
     // Calculate the number of angular sampling bins
     num_of_angular_bins_ = int(360 / params_.angular_res);
@@ -219,7 +219,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     inv_angular_hist_res_ = 1.0f / angular_hist_res;
 
     // Create and initialize the histogram bins
-    polar_hist_.resize( num_of_angular_hist_bins_ * (max_ring_index_ - min_ring_index_ + 1) );
+    int num_of_rings = max_ring_index_ - min_ring_index_ + 1;
+    polar_hist_.resize( num_of_angular_hist_bins_ * num_of_rings );
     for( size_t i = 0; i < polar_hist_.size(); ++i )
     {
         polar_hist_[i] = PolarHistBin();
@@ -245,10 +246,13 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
         // Find the corresponding map bin
         int ah, rh;
-        if( it->ring >= max_ring_index_ )
+        if( it->ring > max_ring_index_ )
         {
             max_ring_index_ = it->ring;
-            polar_hist_.resize( num_of_angular_hist_bins_ * (max_ring_index_ - min_ring_index_ + 1), PolarHistBin() );
+            num_of_rings = max_ring_index_ - min_ring_index_ + 1;
+            polar_hist_.resize( num_of_angular_hist_bins_ * num_of_rings, PolarHistBin() );
+
+            ROS_INFO_STREAM("Polar hist. resized: " << num_of_rings );
         }
         getPolarHistIndex(ang, it->ring, ah, rh);
 
@@ -257,18 +261,21 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         // Accumulate the value
         PolarHistBin &hbin = getPolarHistBin(ah, rh);
         Eigen::Vector3d p(x, y, z);
+        float rad = std::sqrt(x * x + y * y + z * z);
         hbin.n += 1;
         hbin.sum += p;
         hbin.sum_sqr += Eigen::Vector3d(x * x, y * y, z * z);
-        if( hbin.n == 1 )
-        {
-            hbin.max = hbin.min = p;
-        }
-        else
-        {
-            hbin.min = hbin.min.cwiseMin(p);
-            hbin.max = hbin.max.cwiseMax(p);
-        }
+        hbin.rad_sum += rad;
+        hbin.rad_sum_sqr += rad * rad;
+//        if( hbin.n == 1 )
+//        {
+//            hbin.max = hbin.min = p;
+//        }
+//        else
+//        {
+//            hbin.min = hbin.min.cwiseMin(p);
+//            hbin.max = hbin.max.cwiseMax(p);
+//        }
 
         // POLAR MAP
 
@@ -352,8 +359,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     tPolarHist::iterator hitEnd = polar_hist_.end();
     for( tPolarHist::iterator hit = polar_hist_.begin(); hit != hitEnd; ++hit )
     {
-//        if( hit->n < 1 )
-        if( hit->n < 2 )
+        if( hit->n < 1 )
+//        if( hit->n < MIN_NUM_OF_SAMPLES )
         {
             continue;
         }
@@ -362,9 +369,9 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         double inv_n = 1.0 / hit->n;
         hit->avg = hit->sum * inv_n;
         hit->var = (hit->sum_sqr - (hit->sum.cwiseProduct(hit->sum) * inv_n)) * inv_n;
+        hit->rad_avg = hit->rad_sum * inv_n;
+        hit->rad_var = (hit->rad_sum_sqr - (hit->rad_sum * hit->rad_sum * inv_n)) * inv_n;
     }
-
-    int num_of_rings = max_ring_index_ - min_ring_index_ + 1;
 
     std::vector<double> rcoeffs, roughness_thrs;
     rcoeffs.reserve( num_of_angular_hist_bins_ );
@@ -374,31 +381,28 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     {
         rcoeffs.clear();
 
-/*        Eigen::Vector3d sum = getPolarHistBin(num_of_angular_hist_bins_ - 1, rh).avg;
-        sum += getPolarHistBin(num_of_angular_hist_bins_ - 2, rh).avg;
-        sum += getPolarHistBin(num_of_angular_hist_bins_ - 3, rh).avg;
-        sum += getPolarHistBin(num_of_angular_hist_bins_ - 4, rh).avg;
-        sum *= 0.25;*/
+        double sum = getPolarHistBin(num_of_angular_hist_bins_ - 1, rh).rad_avg;
+        sum += getPolarHistBin(num_of_angular_hist_bins_ - 2, rh).rad_avg;
+        sum += getPolarHistBin(num_of_angular_hist_bins_ - 3, rh).rad_avg;
+        sum += getPolarHistBin(num_of_angular_hist_bins_ - 4, rh).rad_avg;
+        sum *= 0.25;
 
         for( int ah = 0; ah < num_of_angular_hist_bins_; ++ah )
         {
             PolarHistBin &hbin = getPolarHistBin(ah, rh);
 
-            if( hbin.n >= 2 )
+            if( hbin.n >= 1 )
+//            if( hbin.n >= MIN_NUM_OF_SAMPLES )
             {
                 hbin.roughness = hbin.var.sum();
+                hbin.edginess = std::fabs(hbin.rad_avg - sum);
                 rcoeffs.push_back(hbin.roughness);
-
-//                hbin.edginess = std::fabs( hbin.avg.z() - sum.z() );
             }
 
-            // Oldest sample
-            int ah2 = (ah + num_of_angular_hist_bins_ - 4) % num_of_angular_hist_bins_;
-            PolarHistBin &n2 = getPolarHistBin(ah2, rh);
-
             // Update the floating mean
-//            sum -= 0.25 * n2.avg;
-//            sum += 0.25 * hbin.avg;
+            int ah2 = (ah + num_of_angular_hist_bins_ - 4) % num_of_angular_hist_bins_;
+            sum -= 0.25 * getPolarHistBin(ah2, rh).rad_avg;
+            sum += 0.25 * hbin.rad_avg;
         }
 
         // Eval thresholds
@@ -566,12 +570,6 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         {
             PolarHistBin &hbin = getPolarHistBin( ah, rh );
 
-            // Does the bin seem to be occupied?
-            if( hbin.roughness < roughness_thrs[rh] /*&& hbin.edginess < 0.05*/ )
-            {
-                continue;
-            }
-
             // Get the average bin position and calculate his polar coordinates
             float ang, mag;
             toPolarCoords( float(hbin.avg.x()), float(hbin.avg.y()), ang, mag );
@@ -583,6 +581,14 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
                 continue;
             if( params_.min_range > 0.0 && mag < params_.min_range )
                 continue;
+
+//            ROS_INFO_STREAM( "Edginess: " << hbin.edginess );
+
+            // Does the bin seem to be occupied?
+            if( hbin.roughness < roughness_thrs[rh] && hbin.edginess < params_.max_road_irregularity )
+            {
+                continue;
+            }
 
             // Find the corresponding map bin
             int an, rn;

@@ -9,6 +9,14 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 set(ROS_BUILD_TYPE RelWithDebInfo)
 
+find_package( Eigen REQUIRED )
+include_directories( ${EIGEN_INCLUDE_DIRS} )
+add_definitions( ${EIGEN_DEFINITIONS} )
+
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+#target_link_libraries( my_awesome_library ${OpenCV_LIBRARIES} )
+
 rosbuild_init()
 
 #set the default path for built executables to the "bin" directory
@@ -43,11 +51,13 @@ target_link_libraries( laser_scan butvelo )
 # Ground map nodelet
 rosbuild_add_library( butvelo_groundmap_nodelet src/ground_map_nodelet.cpp )
 target_link_libraries( butvelo_groundmap_nodelet butvelo )
+target_link_libraries( butvelo_groundmap_nodelet ${OpenCV_LIBRARIES} )
 
 # Ground map node
 rosbuild_add_executable( ground_map src/ground_map_node.cpp )
 #rosbuild_add_openmp_flags( ground_map )
 target_link_libraries( ground_map butvelo )
+target_link_libraries( ground_map ${OpenCV_LIBRARIES} )
 
 
 # Parse check all the launch/*.launch files

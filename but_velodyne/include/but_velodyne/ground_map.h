@@ -172,13 +172,15 @@ private:
     struct PolarHistBin
     {
         //! Bounding box of all points.
-        Eigen::Vector3d min, max;
+//        Eigen::Vector3d min, max;
 
         //! Average position.
         Eigen::Vector3d avg, var;
+        double rad_avg, rad_var;
 
         //! Helper values.
         Eigen::Vector3d sum, sum_sqr;
+        double rad_sum, rad_sum_sqr;
 
         //! Number of samples accumulated in the bin.
         unsigned n;
@@ -188,8 +190,9 @@ private:
 
         //! Default constructor.
         PolarHistBin()
-            : min(0, 0, 0), max(0, 0, 0), avg(0, 0, 0), var(0, 0, 0)
-            , sum(0, 0, 0), sum_sqr(0, 0, 0)
+//            : min(0, 0, 0), max(0, 0, 0)
+            : avg(0, 0, 0), var(0, 0, 0), rad_avg(0), rad_var(0)
+            , sum(0, 0, 0), sum_sqr(0, 0, 0), rad_sum(0), rad_sum_sqr(0)
             , n(0)
             , edginess(0), roughness(0)
         {}
@@ -212,11 +215,19 @@ private:
     void toPolarCoords(float x, float y, float& ang, float &mag)
     {
         static const float rad_to_deg = 180.0f / float(CV_PI);
-
         mag = std::sqrt(x * x + y * y);
         ang = std::atan2(y, x) * rad_to_deg;
 //        mag = cv::sqrt(x * x + y * y);
 //        ang = cv::fastAtan2(y, x); // precision ~0.3 degrees
+    }
+
+    //! Conversion to spherical coordinates.
+    void toSphericalCoords(float x, float y, float z, float& rad, float& phi, float& theta)
+    {
+        static const float rad_to_deg = 180.0f / float(CV_PI);
+        rad = std::sqrt(x * x + y * y + z * z);
+        phi = std::atan2(y, x) * rad_to_deg;
+        theta = std::acos(z / rad) * rad_to_deg;
     }
 
     //! Returns subscripted bin of the polar map.
