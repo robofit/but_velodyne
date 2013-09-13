@@ -116,10 +116,10 @@ public:
         static double getDefaultMapRes() { return 0.05; }
         static int getDefaultMapSize() { return 128; }
 
-        static double getDefaultMinRange() { return 1.2; }
+        static double getDefaultMinRange() { return 1.0; }
         static double getDefaultMaxRange() { return 3.0; }
         static double getDefaultAngularRes() { return 5.0; }
-        static double getDefaultRadialRes() { return 0.3; }
+        static double getDefaultRadialRes() { return 0.25; }
 
         static double getDefaultMaxRoadIrregularity() { return 0.03; }
         static double getDefaultMaxHeightDiff() { return 0.05; }
@@ -148,17 +148,11 @@ private:
         //! Average height and variance.
         double avg, var;
 
-        //! Average distance and variance.
-        double dst_avg, dst_var;
-
-        //! Index of the first accumulated ring.
-        int dst_ring;
-
         //! Helper values.
-        double sum, sum_sqr, dst_sum, dst_sum_sqr;
+        double sum, sum_sqr;
 
         //! Number of samples accumulated in the bin.
-        unsigned n, dst_n;
+        unsigned n;
 
         //! Region index
         unsigned idx;
@@ -166,11 +160,44 @@ private:
         //! Default constructor.
         PolarMapBin()
             : min(0.0), max(0.0), avg(0.0), var(0.0)
-            , dst_avg(0.0), dst_var(0.0), dst_ring(-1)
-            , sum(0.0), sum_sqr(0.0), dst_sum(0.0), dst_sum_sqr(0.0)
-            , n(0), dst_n(0)
+            , sum(0.0), sum_sqr(0.0)
+            , n(0)
             , idx(NOT_SET)
         {}
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    };
+
+    //! Informations accumulated for each histogram bin.
+    struct PolarHistBin
+    {
+        //! Bounding box of all points.
+//        Eigen::Vector3d min, max;
+
+        //! Average position.
+        Eigen::Vector3d avg, var;
+        double rad_avg, rad_var;
+
+        //! Helper values.
+        Eigen::Vector3d sum, sum_sqr;
+        double rad_sum, rad_sum_sqr;
+
+        //! Number of samples accumulated in the bin.
+        unsigned n;
+
+        //! Stats...
+        double edginess, roughness;
+
+        //! Default constructor.
+        PolarHistBin()
+//            : min(0, 0, 0), max(0, 0, 0)
+            : avg(0, 0, 0), var(0, 0, 0), rad_avg(0), rad_var(0)
+            , sum(0, 0, 0), sum_sqr(0, 0, 0), rad_sum(0), rad_sum_sqr(0)
+            , n(0)
+            , edginess(0), roughness(0)
+        {}
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
     //! Seed used in region growing
@@ -188,14 +215,22 @@ private:
     void toPolarCoords(float x, float y, float& ang, float &mag)
     {
         static const float rad_to_deg = 180.0f / float(CV_PI);
-
         mag = std::sqrt(x * x + y * y);
         ang = std::atan2(y, x) * rad_to_deg;
 //        mag = cv::sqrt(x * x + y * y);
 //        ang = cv::fastAtan2(y, x); // precision ~0.3 degrees
     }
 
-    //! Returns subscripted bin from the polar map.
+    //! Conversion to spherical coordinates.
+    void toSphericalCoords(float x, float y, float z, float& rad, float& phi, float& theta)
+    {
+        static const float rad_to_deg = 180.0f / float(CV_PI);
+        rad = std::sqrt(x * x + y * y + z * z);
+        phi = std::atan2(y, x) * rad_to_deg;
+        theta = std::acos(z / rad) * rad_to_deg;
+    }
+
+    //! Returns subscripted bin of the polar map.
     PolarMapBin& getPolarMapBin(int a, int d)
     {
         return polar_map_[d * num_of_angular_bins_ + a];
@@ -206,6 +241,19 @@ private:
     {
         a = int((ang + 180.001f) * inv_angular_res_) % num_of_angular_bins_;
         d = int(mag * inv_radial_res_) % num_of_radial_bins_;
+    }
+
+    //! Returns subscripted bin of the polar histogram.
+    PolarHistBin& getPolarHistBin(int a, int ring)
+    {
+        return polar_hist_[ring * num_of_angular_hist_bins_ + a];
+    }
+
+    //! Returns index of bin in the polar map by converting given polar coordinates [deg, m]
+    void getPolarHistIndex(float ang, int ring, int& a, int& r)
+    {
+        a = int((ang + 180.001f) * inv_angular_hist_res_) % num_of_angular_hist_bins_;
+        r = int(ring - min_ring_index_);
     }
 
 private:
@@ -234,6 +282,17 @@ private:
     //! Current size of the polar map.
     int num_of_angular_bins_, num_of_radial_bins_;
     float inv_angular_res_, inv_radial_res_;
+
+    //! Internal representation of a polar histogram
+    typedef std::vector<PolarHistBin> tPolarHist;
+
+    //! Polar histogram
+    tPolarHist polar_hist_;
+
+    //! Current size of the polar histogram.
+    int num_of_angular_hist_bins_;
+    float inv_angular_hist_res_;
+    int min_ring_index_, max_ring_index_;
 };
 
 
