@@ -25,7 +25,7 @@ rosbuild_gensrv()
 
 include_directories( include/rt_road_detection )
 
-# Sample hue detector
+# Sample hue detector (ZdenekM)
 rosbuild_add_library(sample_hue_detector_ros src/detectors/sample_hue_detector.cpp src/detectors/sample_hue_detector_ros.cpp)
 
 rosbuild_add_executable(sample_hue_detector_node src/nodes/sample_hue_detector_node.cpp)
@@ -34,12 +34,11 @@ target_link_libraries(sample_hue_detector_node sample_hue_detector_ros)
 #rosbuild_add_library( detector_nodelets src/nodelets/sample_hue_detector_nodelet.cpp)
 #target_link_libraries( detector_nodelets sample_hue_detector_ros)
 
-# LBP detector
+# LBP detector (TomasG)
 rosbuild_add_library(lbp_detector_ros src/detectors/lbp_detector.cpp src/detectors/lbp_detector_ros.cpp src/detectors/lbp/lbp.cpp  )
 
 rosbuild_add_executable(lbp_detector_node src/nodes/lbp_detector_node.cpp)
 target_link_libraries(lbp_detector_node lbp_detector_ros)
-
 
 # LBP training tool
 rosbuild_add_library(lbp_training_ros src/detectors/lbp_detector.cpp src/detectors/lbp_training_ros.cpp src/detectors/lbp/lbp.cpp  )
@@ -48,6 +47,13 @@ rosbuild_add_executable(lbp_training_node src/nodes/lbp_training_node.cpp)
 target_link_libraries(lbp_training_node lbp_training_ros)
 
 
+# HSV Histogram based detector (Vita)
+rosbuild_add_library(hsv_hist_detector_ros src/detectors/hsv_hist_detector.cpp src/detectors/hsv_hist_detector_ros.cpp)
+rosbuild_add_executable(hsv_hist_detector_node src/nodes/hsv_hist_detector_node.cpp)
+target_link_libraries(hsv_hist_detector_node hsv_hist_detector_ros)
+rosbuild_add_executable(hsv_hist_detector_train src/detectors/hsv_hist_detector.cpp src/detectors/hsv_hist_detector_train.cpp)
+
+# projection of detections to 2D occupancy grid (ZdenekM)
 rosbuild_add_library(traversability_costmap src/costmap.cpp)
 rosbuild_add_executable( costmap_node src/nodes/costmap_node.cpp )
 target_link_libraries( costmap_node traversability_costmap )
@@ -55,9 +61,10 @@ target_link_libraries( costmap_node traversability_costmap )
 #rosbuild_add_library(traversability_costmap_nodelet src/nodelets/costmap_nodelet.cpp)
 #target_link_libraries( traversability_costmap_nodelet traversability_costmap )
 
-rosbuild_add_library(road_detection_nodelets src/nodelets/costmap_nodelet.cpp src/nodelets/sample_hue_detector_nodelet.cpp)
-target_link_libraries( road_detection_nodelets sample_hue_detector_ros traversability_costmap)
+rosbuild_add_library(road_detection_nodelets src/nodelets/costmap_nodelet.cpp src/nodelets/sample_hue_detector_nodelet.cpp src/nodelets/hsv_hist_detector_nodelet.cpp)
+target_link_libraries( road_detection_nodelets sample_hue_detector_ros hsv_hist_detector_ros traversability_costmap)
 
+# Soso
 rosbuild_add_executable(wp_corrector_node src/nodes/waypoint_corrector_main.cpp src/nodes/WaypointCorrector.cpp)
 
 # Parse check all the launch/*.launch files

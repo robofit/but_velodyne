@@ -12,6 +12,11 @@
   </description>
   </class>
   
+  <class name="rt_road_detection/HSVHistDetectorNodelet" type="rt_road_detection::HSVHistDetectorNodelet" base_class_type="nodelet::Nodelet">
+  <description>
+  HSV histogram detector plugin.
+  </description>
+  </class>
   
   <class name="rt_road_detection/LBPDetectorNodelet" type="rt_road_detection::LBPDetectorNodelet" base_class_type="nodelet::Nodelet">
   <description>
