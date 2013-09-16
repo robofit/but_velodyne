@@ -55,8 +55,8 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     , num_of_radial_bins_(0)
     , inv_angular_res_(0.0f)
     , inv_radial_res_(0.0f)
-    , num_of_angular_hist_bins_(0)
-    , inv_angular_hist_res_(0.0f)
+    , num_of_angular_rmap_bins_(0)
+    , inv_angular_rmap_res_(0.0f)
     , min_ring_index_(0)
     , max_ring_index_(31)
 {
@@ -73,6 +73,7 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
     private_nh_.param( MAX_ROAD_IRREGULARITY_PARAM, params_.max_road_irregularity, params_.max_road_irregularity );
     private_nh_.param( MAX_HEIGHT_DIFF_PARAM, params_.max_height_diff, params_.max_height_diff );
+    private_nh_.param( NOISE_FILTER_PARAM, params_.noise_filter, params_.noise_filter );
 
     // Check if all the parameters are valid
     params_.map2d_res = (params_.map2d_res > 0.001) ? params_.map2d_res : 0.001;
@@ -101,6 +102,7 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ROS_INFO_STREAM( RADIAL_RES_PARAM << " parameter: " << params_.radial_res );
     ROS_INFO_STREAM( MAX_ROAD_IRREGULARITY_PARAM << " parameter: " << params_.max_road_irregularity );
     ROS_INFO_STREAM( MAX_HEIGHT_DIFF_PARAM << " parameter: " << params_.max_height_diff );
+    ROS_INFO_STREAM( NOISE_FILTER_PARAM << " parameter: " << params_.noise_filter );
 
     // Advertise output occupancy grid
     map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>( OUTPUT_GROUND_MAP_TOPIC, 10 );
@@ -211,22 +213,22 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         polar_map_[i] = PolarMapBin();
     }
 
-    // POLAR HISTOGRAM along particular rings
+    // POLAR RING MAP along particular rings
 
     // Calculate the number of angular sampling bins
-    num_of_angular_hist_bins_ = 360;
-    float angular_hist_res = 360.0f / num_of_angular_hist_bins_;
-    inv_angular_hist_res_ = 1.0f / angular_hist_res;
+    num_of_angular_rmap_bins_ = 360;
+    float angular_rmap_res = 360.0f / num_of_angular_rmap_bins_;
+    inv_angular_rmap_res_ = 1.0f / angular_rmap_res;
 
-    // Create and initialize the histogram bins
+    // Create and initialize the bins
     int num_of_rings = max_ring_index_ - min_ring_index_ + 1;
-    polar_hist_.resize( num_of_angular_hist_bins_ * num_of_rings );
-    for( size_t i = 0; i < polar_hist_.size(); ++i )
+    ring_map_.resize( num_of_angular_rmap_bins_ * num_of_rings );
+    for( size_t i = 0; i < ring_map_.size(); ++i )
     {
-        polar_hist_[i] = PolarHistBin();
+        ring_map_[i] = RingMapBin();
     }
 
-    // Accumulate all input points into the polar map and histogram
+    // Accumulate all input points into the polar maps
     VPointCloud::iterator itEnd = pcl_in_.end();
     for( VPointCloud::iterator it = pcl_in_.begin(); it != itEnd; ++it )
     {
@@ -242,7 +244,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
 //        ROS_INFO_STREAM("Polar coords: " << mag << ", " << ang);
 
-        // POLAR HISTOGRAM
+        // POLAR RING MAP
 
         // Find the corresponding map bin
         int ah, rh;
@@ -250,16 +252,16 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         {
             max_ring_index_ = it->ring;
             num_of_rings = max_ring_index_ - min_ring_index_ + 1;
-            polar_hist_.resize( num_of_angular_hist_bins_ * num_of_rings, PolarHistBin() );
+            ring_map_.resize( num_of_angular_rmap_bins_ * num_of_rings, RingMapBin() );
 
             ROS_INFO_STREAM("Polar hist. resized: " << num_of_rings );
         }
-        getPolarHistIndex(ang, it->ring, ah, rh);
+        getRingMapIndex(ang, it->ring, ah, rh);
 
 //        ROS_INFO_STREAM("Polar hist bin: " << an << ", " << rn);
 
         // Accumulate the value
-        PolarHistBin &hbin = getPolarHistBin(ah, rh);
+        RingMapBin &hbin = getRingMapBin(ah, rh);
         Eigen::Vector3d p(x, y, z);
         float rad = std::sqrt(x * x + y * y + z * z);
         hbin.n += 1;
@@ -353,11 +355,11 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
-    // POLAR HISTOGRAM
+    // POLAR RING MAP
 
     // Compute stats stored in the polar histogram
-    tPolarHist::iterator hitEnd = polar_hist_.end();
-    for( tPolarHist::iterator hit = polar_hist_.begin(); hit != hitEnd; ++hit )
+    tRingMap::iterator hitEnd = ring_map_.end();
+    for( tRingMap::iterator hit = ring_map_.begin(); hit != hitEnd; ++hit )
     {
         if( hit->n < 1 )
 //        if( hit->n < MIN_NUM_OF_SAMPLES )
@@ -373,36 +375,46 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         hit->rad_var = (hit->rad_sum_sqr - (hit->rad_sum * hit->rad_sum * inv_n)) * inv_n;
     }
 
+    // Estimate roughness and edginess by walking along particular rings
     std::vector<double> rcoeffs, roughness_thrs;
-    rcoeffs.reserve( num_of_angular_hist_bins_ );
+    rcoeffs.reserve( num_of_angular_rmap_bins_ );
     roughness_thrs.reserve( num_of_rings );
 
     for( int rh = 0; rh < num_of_rings; ++rh )
     {
         rcoeffs.clear();
 
-        double sum = getPolarHistBin(num_of_angular_hist_bins_ - 1, rh).rad_avg;
-        sum += getPolarHistBin(num_of_angular_hist_bins_ - 2, rh).rad_avg;
-        sum += getPolarHistBin(num_of_angular_hist_bins_ - 3, rh).rad_avg;
-        sum += getPolarHistBin(num_of_angular_hist_bins_ - 4, rh).rad_avg;
-        sum *= 0.25;
+        double sum = getRingMapBin(num_of_angular_rmap_bins_ - 1, rh).rad_avg;
+        sum += getRingMapBin(num_of_angular_rmap_bins_ - 2, rh).rad_avg;
+        sum += getRingMapBin(num_of_angular_rmap_bins_ - 3, rh).rad_avg;
+        sum *= 0.33333;
+//        sum += getRingMapBin(num_of_angular_rmap_bins_ - 4, rh).rad_avg;
+//        sum *= 0.25;
 
-        for( int ah = 0; ah < num_of_angular_hist_bins_; ++ah )
+        for( int ah = 0; ah < num_of_angular_rmap_bins_; ++ah )
         {
-            PolarHistBin &hbin = getPolarHistBin(ah, rh);
+            RingMapBin &hbin = getRingMapBin(ah, rh);
 
             if( hbin.n >= 1 )
 //            if( hbin.n >= MIN_NUM_OF_SAMPLES )
             {
-                hbin.roughness = hbin.var.sum();
-                hbin.edginess = std::fabs(hbin.rad_avg - sum);
+//                hbin.roughness = hbin.var.sum();
+                // Floating average
+                hbin.roughness = 0.4 * hbin.var.sum();
+                hbin.roughness += 0.2 * getRingMapBin((ah + num_of_angular_rmap_bins_ - 1) % num_of_angular_rmap_bins_, rh).var.sum();
+                hbin.roughness += 0.2 * getRingMapBin((ah + 1) % num_of_angular_rmap_bins_, rh).var.sum();
+                hbin.roughness += 0.1 * getRingMapBin((ah + num_of_angular_rmap_bins_ - 2) % num_of_angular_rmap_bins_, rh).var.sum();
+                hbin.roughness += 0.1 * getRingMapBin((ah + 2) % num_of_angular_rmap_bins_, rh).var.sum();
                 rcoeffs.push_back(hbin.roughness);
+
+                hbin.edginess = std::fabs(hbin.rad_avg - sum);
             }
 
             // Update the floating mean
-            int ah2 = (ah + num_of_angular_hist_bins_ - 4) % num_of_angular_hist_bins_;
-            sum -= 0.25 * getPolarHistBin(ah2, rh).rad_avg;
-            sum += 0.25 * hbin.rad_avg;
+//            int ah2 = (ah + num_of_angular_rmap_bins_ - 4) % num_of_angular_rmap_bins_;
+            int ah2 = (ah + num_of_angular_rmap_bins_ - 3) % num_of_angular_rmap_bins_;
+            sum -= 0.33333 /*0.25*/ * getRingMapBin(ah2, rh).rad_avg;
+            sum += 0.33333 /*0.25*/ * hbin.rad_avg;
         }
 
         // Eval thresholds
@@ -566,9 +578,9 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     // and mark them as occupied...
     for( int rh = 0; rh < (max_ring_index_ - min_ring_index_ + 1); ++rh )
     {
-        for( int ah = 0; ah < num_of_angular_hist_bins_; ++ah )
+        for( int ah = 0; ah < num_of_angular_rmap_bins_; ++ah )
         {
-            PolarHistBin &hbin = getPolarHistBin( ah, rh );
+            RingMapBin &hbin = getRingMapBin( ah, rh );
 
             // Get the average bin position and calculate his polar coordinates
             float ang, mag;
@@ -703,6 +715,42 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         return;
     }*/
 
+    // Simple noise filter
+    if( params_.noise_filter )
+    {
+        int num_of_filtered_points = 0;
+        for( int rn = 1; rn < (num_of_radial_bins_ - 1); ++rn )
+        {
+            for( int an = 0; an < num_of_angular_bins_; ++an )
+            {
+                PolarMapBin &bin = getPolarMapBin(an, rn);
+
+                // Does the bin correspond to the ground height?
+                if( bin.idx == PolarMapBin::OCCUPIED )
+                {
+                    int an1 = (an + 1) % num_of_angular_bins_;
+                    int an2 = (an + num_of_angular_bins_ - 1) % num_of_angular_bins_;
+
+                    // All values around must be marked as free
+                    if( getPolarMapBin(an, rn + 1).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an1, rn + 1).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an2, rn + 1).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an, rn - 1).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an1, rn - 1).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an2, rn - 1).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an1, rn).idx == PolarMapBin::FREE
+                        && getPolarMapBin(an2, rn).idx == PolarMapBin::FREE )
+                    {
+                        // Filter the ocupied bin
+                        bin.idx == PolarMapBin::FREE;
+                        ++num_of_filtered_points;
+                    }
+                }
+            }
+        }
+//        ROS_INFO_STREAM( "Num. of filtered bins = " << num_of_filtered_points );
+    }
+
     // Initialize the occupancy grid
     map_out->data.resize(params_.map2d_width * params_.map2d_height);
     for( int j = 0; j < params_.map2d_height; ++j )
@@ -714,10 +762,6 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     }
 
     float map_res = float(params_.map2d_res);
-
-/*    float ta, tm;
-    toPolarCoords(params_.map2d_width * map_res, params_.map2d_width * map_res, ta, tm);
-    float inv_max_mag = max_ring_index_ / tm;*/
 
     // Fill the occupancy grid according to the polar map
     float y = -float(params_.map2d_height / 2) * map_res;
@@ -759,21 +803,6 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //                    map_out->data[j * params_.map2d_width + i] = costmap_2d::LETHAL_OBSTACLE;
                     break;
             }
-
-/*            int an, rn;
-            getPolarHistIndex(ang, int(mag * inv_max_mag), an, rn);
-            PolarHistBin &bin = getPolarHistBin(an, rn);
-
-            map_out->data[j * params_.map2d_width + i] = -1;
-
-            if( bin.roughness > roughness_thr )
-            {
-                map_out->data[j * params_.map2d_width + i] = 0;
-            }
-            if( bin.edginess > edginess_thr )
-            {
-                map_out->data[j * params_.map2d_width + i] = 100;
-            }*/
         }
     }
 
