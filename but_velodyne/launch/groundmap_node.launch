@@ -6,6 +6,7 @@
     <remap from="map2d_out" to="/velodyne/map2d" />
     <param name="max_road_irregularity" value="0.05" />
     <param name="max_height_diff" value="0.1" />
+    <param name="noise_filter" value="1" />
     <!--param name="frame_id" value="/velodyne" /-->
     <param name="frame_id" value="/odom" />
   </node>
