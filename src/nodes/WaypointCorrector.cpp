@@ -1,4 +1,4 @@
-#include "robotour_waypoint_corrector/WaypointCorrector.h"
+#include "rt_road_detection/WaypointCorrector.h"
 
 #define OBSTACLE_THRESH 10
 #define UNKNOWN_THRESH 100
@@ -44,12 +44,12 @@ namespace rt_road_detection
 		wp_service = nh.advertiseService("wp_corrector", &WaypointCorrector::serviceCallback, this);
 	}
 
-	bool WaypointCorrector::serviceCallback(robotour_waypoint_corrector::getCorrectedWaypoint::Request &reqest,
-			robotour_waypoint_corrector::getCorrectedWaypoint::Response &response) {
+	bool WaypointCorrector::serviceCallback(rt_road_detection::getCorrectedWaypoint::Request &reqest,
+			rt_road_detection::getCorrectedWaypoint::Response &response) {
 
 		//extract destiation point
-		float dest_x = reqest.wp_in.x / resolution;
-		float dest_y = reqest.wp_in.y / resolution;
+		float dest_x = originX + reqest.wp_in.x / resolution;
+		float dest_y = originY - reqest.wp_in.y / resolution;
 
 		Point2f res;
 		correctWaypoint(Point2i(dest_x, dest_y), res);
@@ -117,7 +117,7 @@ namespace rt_road_detection
 
 	void WaypointCorrector::mapCallback(const nav_msgs::OccupancyGridConstPtr& msg)
 	{
-		cout << "map map" << endl;
+		//cout << "map map" << endl;
 		got_map = true;
 		//now create Opencv image from map
 		width 		= (*msg).info.width;
