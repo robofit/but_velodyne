@@ -73,7 +73,6 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
 
 	if (rolling_window_) updateOrigin(origin_x - getSizeInMetersX() / 2, origin_y - getSizeInMetersY() / 2);
 
-    //int cnt = 0;
 
     if (map_received_) {
 
@@ -90,19 +89,23 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
 
           if (!worldToMap(px,py,mx,my)) continue;
 
-          //cnt++;
-
           unsigned int index = getIndex(mx, my);
-          //costmap_[index] = LETHAL_OBSTACLE;
 
-          unsigned char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
+          char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
 
-          // translate occupancy grid values to internal representation
-          if (val < 50) costmap_[index] = FREE_SPACE;
-          else if (val >= 50 && val < 255) costmap_[index] = LETHAL_OBSTACLE;
-          else costmap_[index] = NO_INFORMATION;
+          // handle special values
+          if (val==-1) costmap_[index] = NO_INFORMATION;
+          else if (val==99) costmap_[index] = INSCRIBED_INFLATED_OBSTACLE;
+          else if (val==100) costmap_[index] = LETHAL_OBSTACLE;
+          else if (val==0) costmap_[index] = FREE_SPACE;
+          else {
 
-          //costmap_[index] = val;
+        	  // fit range 1 to 98 (inclusive) to 1 to 252 (inclusive)
+        	  costmap_[index] = (unsigned char)( (float)(val - 1) / 97.0 * 251.0 ) + 1;
+
+          }
+
+          //std::cout << "val " << (int)val << ", cm: " << (int)costmap_[index] << std::endl;
 
           *min_x = std::min(px, *min_x);
           *min_y = std::min(py, *min_y);
@@ -110,8 +113,6 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
           *max_y = std::max(py, *max_y);
 
         }
-
-        //std::cout << "updating bounds "  << cnt << std::endl;
 
         current_ = true;
 
@@ -152,14 +153,13 @@ void TraversabilityLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int mi
 
       if (old_cost == NO_INFORMATION || old_cost < costmap_[index]) {
 
-          //upd++;
+    	  //std::cout << "old cost " << old_cost << ", new cost: " << costmap_[index] << std::endl;
           master_grid.setCost(i, j, costmap_[index]);
 
       }
 
   }
 
-  //cout << "updating costs " << upd << endl;
 
 
 }
