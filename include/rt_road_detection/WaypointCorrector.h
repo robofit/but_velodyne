@@ -5,9 +5,9 @@
 #include <opencv2/opencv.hpp>
 #include <nav_msgs/OccupancyGrid.h>
 #include <sensor_msgs/Image.h>
-#include "robotour_waypoint_corrector/getCorrectedWaypoint.h"
+#include "rt_road_detection/getCorrectedWaypoint.h"
 
-#define CV_VISUALIZE 1
+//#define CV_VISUALIZE 1
 
 namespace rt_road_detection
 {
@@ -43,8 +43,8 @@ class WaypointCorrector
 		std::vector<std::pair<cv::Point3f, cv::Point2f> > getSegments(float radius);
 		std::vector<std::pair<cv::Point3f, cv::Point2f> > processSegments(std::vector<std::pair<cv::Point3f, cv::Point2f> > &segments, float min_width, float max_width, float angle_tolerance);
 		bool correctWaypoint(cv::Point2i wp, cv::Point2f &result);
-		bool serviceCallback(robotour_waypoint_corrector::getCorrectedWaypoint::Request &reqest,
-				robotour_waypoint_corrector::getCorrectedWaypoint::Response &response);
+		bool serviceCallback(rt_road_detection::getCorrectedWaypoint::Request &reqest,
+				rt_road_detection::getCorrectedWaypoint::Response &response);
 		void getRoboPos();
 		void mapCallback(const nav_msgs::OccupancyGridConstPtr& msg);
 
