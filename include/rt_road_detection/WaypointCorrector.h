@@ -5,9 +5,9 @@
 #include <opencv2/opencv.hpp>
 #include <nav_msgs/OccupancyGrid.h>
 #include <sensor_msgs/Image.h>
-#include "rt_road_detection/getCorrectedWaypoint.h"
+#include "robotour_waypoint_corrector/getCorrectedWaypoint.h"
 
-//#define CV_VISUALIZE 1
+#define CV_VISUALIZE 1
 
 namespace rt_road_detection
 {
@@ -19,13 +19,14 @@ class WaypointCorrector
 		void init();
 
 		std::string map_frame_, robot_frame_, map_topic_;
-		double path_min_width_, path_max_width_;
+		double path_min_width_, path_max_width_, obstacle_bloat_;
 
 		ros::NodeHandle nh; // NodeHandle is the main access point for communication with ROS system
 		float _x, _y, _t;	//robot coordinates in meters
 		float robo_x, robo_y, robo_t, norm_t;		//robot coordinates in pixels
 		//origin point of robot
 		cv::Point3f robot_origin;
+		cv::Point2f robot_heading;
 		cv::Point robot_origin2d;
 		bool origin_set, got_map;
 		//
@@ -42,8 +43,8 @@ class WaypointCorrector
 		std::vector<std::pair<cv::Point3f, cv::Point2f> > getSegments(float radius);
 		std::vector<std::pair<cv::Point3f, cv::Point2f> > processSegments(std::vector<std::pair<cv::Point3f, cv::Point2f> > &segments, float min_width, float max_width, float angle_tolerance);
 		bool correctWaypoint(cv::Point2i wp, cv::Point2f &result);
-		bool serviceCallback(rt_road_detection::getCorrectedWaypoint::Request &reqest,
-				rt_road_detection::getCorrectedWaypoint::Response &response);
+		bool serviceCallback(robotour_waypoint_corrector::getCorrectedWaypoint::Request &reqest,
+				robotour_waypoint_corrector::getCorrectedWaypoint::Response &response);
 		void getRoboPos();
 		void mapCallback(const nav_msgs::OccupancyGridConstPtr& msg);
 
