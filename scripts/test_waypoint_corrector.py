@@ -74,6 +74,11 @@ def main():
   pose.pose.orientation.z = 0
   pose.pose.orientation.w = 1
   
+  
+  tfl.waitForTransform(pose.header.frame_id,"odom",pose.header.stamp, rospy.Duration(5))
+  
+  pose = tfl.transformPose("odom", pose)
+  
   pose_marker_orig = Marker()
   pose_marker_orig.header.frame_id = pose.header.frame_id
   pose_marker_orig.header.stamp = pose.header.stamp
@@ -84,15 +89,10 @@ def main():
   pose_marker_orig.lifetime = rospy.Duration(240)
   pose_marker_orig.pose = pose.pose
   pose_marker_orig.id = 0
+  pose_marker_orig.pose.position.z = 0.2
+  pose_marker_orig.ns = "wp"
   
-  markerArray.markers.append(pose_marker_orig)
-  
-  publisher.publish(markerArray)
-  
-  
-  tfl.waitForTransform(pose.header.frame_id,"odom",pose.header.stamp, rospy.Duration(5))
-  
-  pose = tfl.transformPose("odom", pose)
+  #publisher.publish(markerArray)
   
   req = getCorrectedWaypointRequest()
   
@@ -113,18 +113,20 @@ def main():
   pose_marker_corr.scale = Vector3(x=0.5, y=0.1, z=0.1)
   pose_marker_corr.color = ColorRGBA(r=0., g=0., b=1., a=0.8)
   pose_marker_corr.lifetime = rospy.Duration(240)
-  pose_marker_corr.pose = pose.pose
-  pose_marker_corr.id = 0
+  pose_marker_corr.pose.orientation = pose.pose.orientation
+  pose_marker_corr.id = 1
+  pose_marker_corr.ns = "wp"
   
   pose_marker_corr.pose.position.x = resp.wp_out.x
   pose_marker_corr.pose.position.y = resp.wp_out.y
+  pose_marker_corr.pose.position.z = 0.2
   
-  
+  markerArray.markers.append(pose_marker_orig)
   markerArray.markers.append(pose_marker_corr)
   
   publisher.publish(markerArray)
   
-  rospy.sleep(2)
+  #rospy.sleep(2)
   
   if not sim:
   

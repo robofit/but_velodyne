@@ -672,29 +672,27 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv
 
 	uint32_t data_len = occ_grid_.rows * occ_grid_.cols;
 
-	grid->data.resize(data_len, 255);
+	grid->data.resize(data_len, -1);
 
-	for (int32_t u = 0; u < occ_grid_.rows; u++) {
+	float th = 0.01;
+
+	for (int32_t u = 0; u < occ_grid_.rows; u++)
 		  for (int32_t v = 0; v < occ_grid_.cols; v++) {
 
 
-			if (occ(u,v) != 0.5) { // keep def. val for 0.5
+			  if (occ(u,v) > 0.5-th && occ(u,v) < 0.5+th ) continue;
 
-				  uint8_t new_val = (uint8_t)floor(occ(u,v)*100.0);
+			  if (occ(u,v) < 0.5) grid->data[(v*occ_grid_.rows)] = 0;
+			  else {
 
-				  /*if (new_val < 30) new_val = 0;
-				  if (new_val > 60) new_val = 100;*/
-
-				  // scale values to range <0,1> instead of <prob_min,prob_max>
-				  //new_val = (new_val - prob_min_) / (prob_max_ - prob_min_);
+				  int8_t new_val = (int8_t)floor(occ(u,v)*100.0);
 
 				  grid->data[(v*occ_grid_.rows) + u] = new_val;
 
-			  }
+			  } // else
 
-		  }
 
-	}
+	} // for for
 	
 	if (img != NULL) {
 	
