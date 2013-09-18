@@ -410,7 +410,7 @@ void HSVHistDetector::init( double hit, double miss, int hbins, int sbins, int w
 	prob_hit_ = hit;
 	prob_miss_ = miss;
 
-	cout << "HSVHist Detector init: P hit [" << hit << "], P miss [" << miss << "], window size [" << wnd_size << "], window step [" << wnd_step << "]" << endl;
+	cout << "HSVHist Detector init: P hit [" << prob_hit_ << "], P miss [" << prob_miss_ << "], window size [" << wnd_size_ << "], window step [" << wnd_step_ << "]" << endl;
 
 	hsvftr_.init(hbins,sbins);
 }
@@ -474,8 +474,6 @@ bool HSVHistDetector::predict( const cv::Mat& data, cv::Mat& result )
 bool HSVHistDetector::eval( const cv::Mat& data, const cv::Mat& labels, float * precision )
 {
 	Mat result;
-
-	cout << "data rows " << data.rows << " cols " << data.cols << endl;
 
 	if( !predict(data,result) || result.rows != labels.rows )
 		return false;
@@ -554,10 +552,11 @@ bool HSVHistDetector::read( const std::string& filename )
 		fs["hbins"] >> hbins;
 		fs["sbins"] >> sbins;
 
-		fs["wnd_size"] >> wnd_size_;
-		fs["wnd_step"] >> wnd_step_;
+		int wnd_size, wnd_step;
+		fs["wnd_size"] >> wnd_size;
+		fs["wnd_step"] >> wnd_step;
 
-		init( prob_hit_, prob_miss_, hbins, sbins, wnd_size_, wnd_step_ );
+		init( prob_hit_, prob_miss_, hbins, sbins, wnd_size, wnd_step );
 
 		FileNode fn = fs["SVM_MODEL"];
 		svm_.read( *fs, *fn );
