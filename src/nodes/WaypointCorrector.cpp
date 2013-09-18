@@ -27,9 +27,8 @@ namespace rt_road_detection
 		ros::param::param<string>("~robot_frame",robot_frame_,"base_link");
 		ros::param::param<string>("~map_topic",map_topic_,"/move_base/local_costmap/costmap");
 
-		ros::param::param<double>("~path_min_width",path_min_width_,1.5);
-		ros::param::param<double>("~path_max_width",path_max_width_,10.0);
 		ros::param::param<double>("~obstacle_bloat",obstacle_bloat_,1.0);
+		ros::param::param<int>("~algorithm_type",algorithm_type_,1);
 
 		//initialize other variables
 		origin_set = false;
@@ -52,7 +51,7 @@ namespace rt_road_detection
 		float dest_y = originY - reqest.wp_in.y / resolution;
 
 		Point2f res;
-		if (!correctWaypoint(Point2i(dest_x, dest_y), res)) ROS_WARN("Error on correcting waypoint.");
+		correctWaypoint(Point2i(dest_x, dest_y), res);
 
 		response.wp_out.x = res.x;
 		response.wp_out.y = res.y;
@@ -119,8 +118,6 @@ namespace rt_road_detection
 
 	void WaypointCorrector::mapCallback(const nav_msgs::OccupancyGridConstPtr& msg)
 	{
-	
-	    ROS_INFO_ONCE("Received map.");
 		got_map = true;
 		//now create Opencv image from map
 		width 		= (*msg).info.width;
@@ -212,36 +209,8 @@ namespace rt_road_detection
 					break;
 			}
 
-			Point2f res(wp.x, wp.y);
-			//check if we really need to correct this point
-			float dist1 = sqrt((pt1.x-wp.x)*(pt1.x-wp.x) + (pt1.y-wp.y)*(pt1.y-wp.y));
-			float dist2 = sqrt((pt2.x-wp.x)*(pt2.x-wp.x) + (pt2.y-wp.y)*(pt2.y-wp.y));
-			if(dist1*resolution < obstacle_bloat_) {
-				//correct from pt1
-				if(dist2*resolution < obstacle_bloat_*3 || dist2*resolution < obstacle_bloat_) {
-					//ok
-					res.x = (pt1.x + pt2.x) / 2;
-					res.y = (pt1.y + pt2.y) / 2;
-				} else {
-					//try to move it towards right bloat,5 m
-					res.x = pt1.x - ((obstacle_bloat_)/resolution)*line1.x;
-					res.y = pt1.y - ((obstacle_bloat_)/resolution)*line1.y;
-				}
-			} else if(dist2*resolution < obstacle_bloat_) {
-				//correct from pt1
-				if(dist1*resolution < obstacle_bloat_*3 || dist1*resolution < obstacle_bloat_) {
-					//ok
-					res.x = (pt1.x + pt2.x) / 2;
-					res.y = (pt1.y + pt2.y) / 2;
-				} else {
-					//try to move it towards right bloat,5 m
-					res.x = pt2.x + ((obstacle_bloat_)/resolution)*line1.x;
-					res.y = pt2.y + ((obstacle_bloat_)/resolution)*line1.y;
-				}
-			}
-
 			//when we have it, check the middlepoint if it is valid
-			//Point2f res((pt1.x + pt2.x) / 2, (pt1.y + pt2.y) / 2);
+			Point2f res((pt1.x + pt2.x) / 2, (pt1.y + pt2.y) / 2);
 #ifdef CV_VISUALIZE
 			line(draw, pt1, pt2, Scalar(200), 1, 8, 0);
 			circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
@@ -266,12 +235,7 @@ namespace rt_road_detection
 
 		// CASE 2. - Point is out of path
 		else {
-			//lets do this other way...
-			//find vector perpendicular to roboline
-			Point2f line1(wp.y - robo_y, -(wp.x - robo_x));
-			line1.x = line1.x / sqrt(line1.x*line1.x + line1.y*line1.y);
-			line1.y = line1.y / sqrt(line1.x*line1.x + line1.y*line1.y);
-
+			//cout << "case 2: "<< wp.x << " " << wp.y << " " << resolution << endl;
 			float radius = sqrt( pow(robo_x - wp.x, 2) + pow(robo_y - wp.y, 2) );
 			vector<pair<Point3f, Point2f> > segments = getSegments(radius);
 
