@@ -20,6 +20,7 @@ class WaypointCorrector
 
 		std::string map_frame_, robot_frame_, map_topic_;
 		double path_min_width_, path_max_width_, obstacle_bloat_;
+		int algorithm_type_;
 
 		ros::NodeHandle nh; // NodeHandle is the main access point for communication with ROS system
 		float _x, _y, _t;	//robot coordinates in meters
