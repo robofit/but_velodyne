@@ -93,17 +93,17 @@ void HSVHistDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 	cv::Mat hsv;
 
-	if (rgb->encoding == "rgb8") cv::cvtColor( hsv, hsv, CV_RGB2HSV ); // Hue in range 0-360
-	else if ((rgb->encoding == "bgr8")) cv::cvtColor( hsv, hsv, CV_BGR2HSV );
+	if (rgb->encoding == "rgb8") { std::cout << "CV_RGB2HSV"; cv::cvtColor( rgb->image, hsv, CV_RGB2HSV ); } // Hue in range 0-360
+	else if ((rgb->encoding == "bgr8")) { std::cout << "CV_BGR2HSV"; cv::cvtColor( rgb->image, hsv, CV_BGR2HSV ); }
 	else {
 
 	  ROS_WARN_THROTTLE(1,"Strange encoding!");
 	  return;
 	}
 
-	cv::Mat_<float> bin_mask(hsv);
+	cv::Mat_<float> bin_mask(hsv.size());
 
-	det_->detect(hsv,wnd_size_, wnd_step_, bin_mask);
+	det_->detect(hsv, bin_mask);
 
 	out_msg->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
 	//out->encoding = sensor_msgs::image_encodings::MONO8;

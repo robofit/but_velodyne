@@ -50,7 +50,8 @@ int main( int argc, char** argv )
 	char cfg_id_str[64];
 	sprintf( cfg_id_str, "%d_%d_%d_%s", hbin, sbin, wnd_size, (kernel_type==CvSVM::LINEAR?"lin":"rbf") );
 
-	cout << "HSV Detector Training, config: " << cfg_id_str << endl;
+	cout << "HSV Detector Training" << endl;
+	cout << "Configuration ID [" << cfg_id_str << "]" << endl;
 	cout << "Dataset Path: " << datasetDir << endl;
 
 
@@ -69,7 +70,7 @@ int main( int argc, char** argv )
 
 
 	//////////////////////////////////////////////////////////////
-	HSVHistDetector hsvDetector( hbin, sbin, wnd_size, wnd_step );
+	HSVHistDetector hsvDetector( 0.7, 0.3, hbin, sbin, wnd_size, wnd_step );
 
 	//////////////////////////////////////////////////////////////
 	HSVHistTrainData hsvHistTrainData( hsvDetector.featureExtractor() );
@@ -121,7 +122,7 @@ int main( int argc, char** argv )
 			if( annData.getImg( datasetDir+"images/", no, img ) )
 			{
 				cvtColor( img, hsv, CV_BGR2HSV );
-				hsvDetector.detect( hsv, wnd_size, wnd_step, prob );
+				hsvDetector.detect( hsv, prob );
 
 				Mat mask;
 				prob.convertTo( mask, CV_8UC1 );

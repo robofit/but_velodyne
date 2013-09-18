@@ -52,6 +52,7 @@ void HSVHistFeature::init( int hbins, int sbins )
 	hbins_ = hbins;
 	sbins_ = sbins;
 	histSize_[0] = hbins_; histSize_[1] = sbins_;
+	cout << "HSVHist Feature Extractor init: Hue bins [" << hbins << "] Saturation bins [" << sbins << "]" << endl;
 }
 
 int HSVHistFeature::length() const
@@ -305,9 +306,7 @@ bool HSVHistTrainData::extract( int wnd_size, int wnd_step, const std::string& D
 		// extract features
 		Mat tmp;
 		Mat hsv_roi = hsv(roi->roi_);
-		cout << "*1*";
 		featureExtractor_.extract( hsv_roi, wnd_size, wnd_step, tmp );
-		cout << "*2*";
 
 		if( !tmp.empty() )
 		{
@@ -395,12 +394,8 @@ bool HSVHistTrainData::write( const std::string& filename )
 
 HSVHistDetector::HSVHistDetector( double hit, double miss, int hbins, int sbins, int wnd_size, int wnd_step)
 {
+	init( hit, miss, hbins, sbins, wnd_size, wnd_step );
 	hsvftr_.init(hbins,sbins);
-	wnd_size_ = wnd_size;
-	wnd_step_ = wnd_step;
-	prob_hit_ = hit;
-	prob_miss_ = miss;
-
 }
 
 HSVHistDetector::~HSVHistDetector()
@@ -408,20 +403,35 @@ HSVHistDetector::~HSVHistDetector()
 }
 
 
+void HSVHistDetector::init( double hit, double miss, int hbins, int sbins, int wnd_size, int wnd_step)
+{
+	wnd_size_ = wnd_size;
+	wnd_step_ = wnd_step;
+	prob_hit_ = hit;
+	prob_miss_ = miss;
+
+	cout << "HSVHist Detector init: P hit [" << hit << "], P miss [" << miss << "], window size [" << wnd_size << "], window step [" << wnd_step << "]" << endl;
+
+	hsvftr_.init(hbins,sbins);
+}
+
+
+
 // extract more HSV image features using flowing window
-bool HSVHistDetector::detect( cv::Mat& hsv, int wnd_size, int wnd_step, cv::Mat& probability )
+//bool HSVHistDetector::detect( cv::Mat& hsv, int wnd_size, int wnd_step, cv::Mat& probability )
+bool HSVHistDetector::detect( cv::Mat& hsv, cv::Mat& probability )
 {
 	if( hsv.empty())
 		return false;
 
 	Mat fvec;
-	hsvftr_.extract( hsv, wnd_size, wnd_step, fvec );
+	hsvftr_.extract( hsv, wnd_size_, wnd_step_, fvec );
 
 	if( fvec.empty() )
 		return false;
 
-	int rows = cvFloor((hsv.rows-wnd_size)/wnd_step);
-	int cols = cvFloor((hsv.cols-wnd_size)/wnd_step);
+	int rows = cvFloor((hsv.rows-wnd_size_)/wnd_step_);
+	int cols = cvFloor((hsv.cols-wnd_size_)/wnd_step_);
 	Mat res( rows, cols, CV_32FC1 );
 
 	for( int i = 0; i < fvec.rows; ++i )
@@ -432,9 +442,9 @@ bool HSVHistDetector::detect( cv::Mat& hsv, int wnd_size, int wnd_step, cv::Mat&
 	}
 
 	probability = Mat( hsv.size(), res.type(), Scalar(0) );
-	int off = cvFloor( wnd_size/2 );
+	int off = cvFloor( wnd_size_/2 );
 	Mat tmp;
-	resize( res, tmp, Size(), wnd_step, wnd_step, CV_INTER_NN );
+	resize( res, tmp, Size(), wnd_step_, wnd_step_, CV_INTER_NN );
 	Mat tmp2 = probability( Rect(off, off, tmp.cols, tmp.rows) );
 	tmp.copyTo( tmp2 );
 
@@ -464,6 +474,9 @@ bool HSVHistDetector::predict( const cv::Mat& data, cv::Mat& result )
 bool HSVHistDetector::eval( const cv::Mat& data, const cv::Mat& labels, float * precision )
 {
 	Mat result;
+
+	cout << "data rows " << data.rows << " cols " << data.cols << endl;
+
 	if( !predict(data,result) || result.rows != labels.rows )
 		return false;
 
@@ -523,6 +536,8 @@ bool HSVHistDetector::train( const cv::Mat& data, const cv::Mat& labels, int ker
 
 bool HSVHistDetector::read( const std::string& filename )
 {
+	cout << "HSVHist Detector loading from " << filename << endl;
+
 	try {
 
 		// store all data
@@ -538,10 +553,11 @@ bool HSVHistDetector::read( const std::string& filename )
 		int hbins, sbins;
 		fs["hbins"] >> hbins;
 		fs["sbins"] >> sbins;
-		hsvftr_.init( hbins, sbins );
 
 		fs["wnd_size"] >> wnd_size_;
 		fs["wnd_step"] >> wnd_step_;
+
+		init( prob_hit_, prob_miss_, hbins, sbins, wnd_size_, wnd_step_ );
 
 		FileNode fn = fs["SVM_MODEL"];
 		svm_.read( *fs, *fn );
@@ -552,7 +568,6 @@ bool HSVHistDetector::read( const std::string& filename )
 		return false;
 	}
 
-	cout << "HSVHist Detector loaded from " << filename << endl;
     cout << "SVM model (#vec:" << svm_.get_support_vector_count()
     		<< ", #var:" << svm_.get_var_count() << ")" << endl;
 
