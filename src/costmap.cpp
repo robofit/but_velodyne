@@ -109,7 +109,7 @@ TraversabilityCostmap::TraversabilityCostmap(ros::NodeHandle priv_nh) {
 	}
 
 
-	sub_info_.subscribe(nh_,"/stereo/left/camera_info",queue_length_);
+	sub_info_.subscribe(nh_,"/cam3d/rgb/camera_info",queue_length_);
 
 	timer_ = nh_.createTimer(ros::Duration(1.0), &TraversabilityCostmap::timer, this);
 
@@ -676,24 +676,43 @@ void TraversabilityCostmap::createOccGridMsg(nav_msgs::OccupancyGridPtr grid, cv
 
 	float th = 0.01;
 
+	int un = 0;
+	int free = 0;
+	int ocp = 0;
+
 	for (int32_t u = 0; u < occ_grid_.rows; u++)
 		  for (int32_t v = 0; v < occ_grid_.cols; v++) {
 
 
-			  if (occ(u,v) > 0.5-th && occ(u,v) < 0.5+th ) continue;
+			  //if (occ(u,v) == 0.5) {
+			  if ( (occ(u,v) >= (0.5-th)) && (occ(u,v) <= (0.5+th)) ) {
 
-			  if (occ(u,v) < 0.5) grid->data[(v*occ_grid_.rows)] = 0;
+				  un++;
+				  continue;
+
+			  }
+
+			  if (occ(u,v) < 0.5) {
+
+				  free++;
+				  grid->data[(v*occ_grid_.rows) + u] = 0;
+
+			  }
 			  else {
 
-				  int8_t new_val = (int8_t)floor(occ(u,v)*100.0);
+				  int8_t new_val = (int8_t)floor( ( (occ(u,v) - 0.5) / 0.5) *100.0); // TODO consider min/max values when scaling ;)
 
 				  grid->data[(v*occ_grid_.rows) + u] = new_val;
+
+				  ocp++;
 
 			  } // else
 
 
 	} // for for
 	
+	//cout << "un " << un << ", free " << free << ", ocp " << ocp << endl;
+
 	if (img != NULL) {
 	
 	  img->header = grid->header;
@@ -728,6 +747,13 @@ void TraversabilityCostmap::timer(const ros::TimerEvent& ev) {
 			return;
 
 		}
+
+	}
+
+	if (!cam_info_received_) {
+
+		ROS_INFO_THROTTLE(1.0,"Waiting for camera info message. Can't publish map.");
+		return;
 
 	}
 

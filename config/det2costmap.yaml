@@ -1,4 +1,4 @@
-proj_dist: 5.0
+proj_dist: 7.0
 
 morph_filter_ks_size: 3
 median_filter_ks_size: 3
@@ -15,7 +15,7 @@ use_scan: true
 map_frame: "odom"
 map_size: 15
 map_res: 0.05
-origin_update_th: 2.0
+origin_update_th: 1.0
 
 
 detectors_ns: /detectors
