@@ -34,8 +34,12 @@ typedef Vec<uchar,1>  Vec1b;
 
 
 
-LBP::LBP(int _type=ROTARY_INVARIANT_LBP):_radius(1),_neighbors(8),type(_type),max_rotary_invariantion_bin(0) 
+LBP::LBP(int _type=ROTARY_INVARIANT_LBP):type(_type),max_rotary_invariantion_bin(0) 
 {
+    _radius=1;
+    _neighbors=8;
+    
+    
     if (type==UNIFORM_LBP) {
       
         initUniformLookup();
@@ -69,7 +73,7 @@ void LBP::initRotaryInvariantLookup()
 {
 	_rotary_invariation_lookup.clear();
 
-	long N = (int) pow( 2., (int) 8 );
+	 unsigned long N = (int) pow( 2., (int) 8 );
 
 	// Rotation Invariant
 	int * tmpMap = new int[N];
@@ -175,19 +179,19 @@ template <typename _Tp> static
 void computeOLBP(InputArray _src, OutputArray _dst, int type, std::vector<int> lookup,std::vector<int> rilookup) {
 
 	
-    // get matrices
-    Mat src = _src.getMat();
-    // allocate memory for result
-	if(src.channels()==1)
-		_dst.create(src.rows-2, src.cols-2, CV_8UC1);
-	if(src.channels()==3)
-		_dst.create(src.rows-2, src.cols-2, CV_8UC3);
+	  // get matrices
+	  Mat src = _src.getMat();
+	  // allocate memory for result
+	      if(src.channels()==1)
+		      _dst.create(src.rows-2, src.cols-2, CV_8UC1);
+	      if(src.channels()==3)
+		      _dst.create(src.rows-2, src.cols-2, CV_8UC3);
 
-    Mat dst = _dst.getMat();
-    // zero the result matrix
-    dst.setTo(0);
-    // calculate patterns
-	union opt a;
+	  Mat dst = _dst.getMat();
+	  // zero the result matrix
+	  dst.setTo(0);
+	  // calculate patterns
+	      union opt a;
 
 
 	//mask for LBP evaluation
@@ -274,17 +278,16 @@ void LBP::compute3CH(InputArray src, OutputArray dst)
 }
 
 
-void LBP::histogram(Mat src, OutputArray _dst,int x,int y,int width,int height)
+void LBP::histogram(Mat src, OutputArray _dst,int x,int y,int width,int height, int offset)
 {
   
 	Mat dst=_dst.getMat();
-	dst.setTo(0);
 	
 
 	for(int i=y; i < y+height;i++) {
 	    for(int j=x;j < (x+width) ;j++) {
 
-	      dst.at<float> (0,src.at<uchar>(i,j)) ++;
+	      dst.at<float> (0,src.at<uchar>(i,j)+offset) ++;
 	    }
 	}
 }

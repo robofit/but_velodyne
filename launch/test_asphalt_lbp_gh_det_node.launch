@@ -18,7 +18,7 @@
    <param name="prob_overexposure" value="0.5"/>
    <param name="flat_surface_in_block" value="0.25"/>
    
-    <param name="hue_channel" value="false" />
+  <param name="hue_channel" value="true" />
    
    <param name="svm_threshold" value="0"/>
    <param name="frame_skip" value="2"/>

@@ -19,6 +19,8 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 	int width_block,width_cell,height_block,height_cell;
 	
 	double prob_max_, prob_min_, flat_surface_in_block,prob_overexposure,svm_threshold;
+	bool hue_channel;
+	
 	
 	string fileName;
 	string svm_file="svm.xml";
@@ -33,6 +35,8 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 	nh_.param("svm_file",fileName,svm_file);
 	nh_.param("svm_threshold",svm_threshold,0.0);
 	nh_.param("frame_skip",frame_skip_,2);
+	
+	nh_.param("hue_channel",hue_channel,false);
 	
 	
 	//probability param
@@ -57,7 +61,7 @@ LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 	
 	ROS_INFO("PARAM: width cell: %d height cell: %d width block: %d height block: %d", width_cell, height_cell, width_block, height_block);
 	
-	det_.reset(new LBPDetector(width_cell,height_cell,width_block,height_block,prob_min_,prob_max_,flat_surface_in_block,prob_overexposure,svm_threshold,fileName));
+	det_.reset(new LBPDetector(width_cell,height_cell,width_block,height_block,prob_min_,prob_max_,flat_surface_in_block,prob_overexposure,svm_threshold,hue_channel,fileName));
 
 	
 	std::string top_rgb_in = "rgb_in";

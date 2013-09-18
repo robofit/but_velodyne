@@ -23,7 +23,6 @@ class LBP
 	//old
 	int _neighbors;
 	int _radius;
-
 	int type;
 	std::vector<int> _uniform_lookup;
 	int max_uniform_bin;
@@ -36,8 +35,10 @@ class LBP
 		void compute(InputArray src, OutputArray dst) ;
 		void compute3CH(InputArray src, OutputArray dst);	
 		void histogramUpdate(InputOutputArray hist,Mat newRow,Mat oldRow);
-		void histogram(Mat src, OutputArray hist,int x,int y,int width,int height);
-		int getBins();	
+		void histogram(Mat src, OutputArray hist,int x,int y,int width,int height,int offset=0);
+		int getBins();
+		
+
 		
 	private:
 		void initUniformLookup();
