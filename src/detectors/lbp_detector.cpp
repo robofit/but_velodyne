@@ -131,17 +131,15 @@ void LBPDetector::read_csv(const string& filename, vector<string>& images, vecto
     
     int x,y;
     
-    char separator2 = ' ';
-    
     while (getline(file, line)) {
       
         stringstream liness(line);
-        getline(liness, path, separator2);
-	getline(liness, classlabel, separator2);
+        getline(liness, path, separator);
+	getline(liness, classlabel, separator);
 	
-	getline(liness, _x, separator2);
-	getline(liness, _y, separator2);
-	getline(liness, _width, separator2);
+	getline(liness, _x, separator);
+	getline(liness, _y, separator);
+	getline(liness, _width, separator);
 	getline(liness, _height);
 
 	
