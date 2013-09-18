@@ -106,11 +106,14 @@ namespace rt_road_detection {
 		HSVHistDetector( double hit, double miss, int hbins = 18, int sbins = 25, int wnd_size = 30, int wnd_step = 5);
 		~HSVHistDetector();
 
+		void init( double hit, double miss, int hbins, int sbins, int wnd_size, int wnd_step);
+
 		inline const HSVHistFeature& featureExtractor() const { return hsvftr_; }
 		inline bool empty() const { return svm_.get_var_count() == 0; }
 
 		// extract more HSV image features using flowing window
-		bool detect( cv::Mat& hsv, int wnd_size, int wnd_step, cv::Mat& probability );
+		//bool detect( cv::Mat& hsv, int wnd_size, int wnd_step, cv::Mat& probability );
+		bool detect( cv::Mat& hsv, cv::Mat& probability );
 
 		bool predict( const cv::Mat& data, cv::Mat& result );
 		bool eval( const cv::Mat& data, const cv::Mat& labels, float * precision );
