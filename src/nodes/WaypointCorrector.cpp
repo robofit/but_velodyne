@@ -51,14 +51,16 @@ namespace rt_road_detection
 		float dest_y = originY - reqest.wp_in.y / resolution;
 
 		Point2f res;
-		correctWaypoint(Point2i(dest_x, dest_y), res);
+		bool found = correctWaypoint(Point2i(dest_x, dest_y), res);
 
-		response.wp_out.x = res.x;
-		response.wp_out.y = res.y;
+		if(found) {
+			response.wp_out.x = res.x;
+			response.wp_out.y = res.y;
 
-		//cout << "robopos: " << _x << " " << _y << endl;
+			return true;
+		}
 
-		return true;
+		return false;
 	}
 
 	void WaypointCorrector::getRoboPos()
@@ -102,6 +104,9 @@ namespace rt_road_detection
 		robo_y 	= originY - _y / resolution;
 		robo_t	= _t;
 		//cout << "rx: " << robo_x << " ry: " << robo_y << endl;
+		//find heading point
+		robot_heading.x = cos(robo_t);
+		robot_heading.y = sin(robo_t);
 
 		//remember first robot position
 		if(!origin_set)
@@ -118,6 +123,7 @@ namespace rt_road_detection
 
 	void WaypointCorrector::mapCallback(const nav_msgs::OccupancyGridConstPtr& msg)
 	{
+		//cout << "map map" << endl;
 		got_map = true;
 		//now create Opencv image from map
 		width 		= (*msg).info.width;
@@ -165,124 +171,247 @@ namespace rt_road_detection
 
 	bool WaypointCorrector::correctWaypoint(Point2i wp, Point2f &result) {
 #ifdef CV_VISUALIZE
-		//drawing purposes
-		Mat draw = cv_map.clone();
-		//draw what we got
-		circle(draw, Point(robo_x, robo_y), 2, Scalar(150), 3);
+	//drawing purposes
+	Mat draw = cv_map.clone();
+	//draw what we got
+	circle(draw, Point(robo_x, robo_y), 2, Scalar(150), 3);
+	//heading
+	circle(draw, Point(robo_x + robot_heading.x*5, robo_y + robot_heading.y*5), 1, Scalar(150), 2);
+	line(draw, Point(robo_x, robo_y), Point(robo_x + robot_heading.x*5, robo_y + robot_heading.y*5), Scalar(200), 1, 8, 0);
 #endif
 
-		// CASE 1. - Point is on path - find middle of the road
-		if( cv_map.at<unsigned char>(wp.y, wp.x) == 255 ) {
-			//cout << "case 1: " << wp.x << " " << wp.y << endl;
-			//find vector perpendicular to roboline
-			Point2f line1(wp.y - robo_y, -(wp.x - robo_x));
-			line1.x = line1.x / sqrt(line1.x*line1.x + line1.y*line1.y);
-			line1.y = line1.y / sqrt(line1.x*line1.x + line1.y*line1.y);
+	// CASE 1. - Point is on path - find middle of the road
+	if( cv_map.at<unsigned char>(wp.y, wp.x) == 255 ) {
+		//find vector perpendicular to roboline
+		Point2f line1(wp.y - robo_y, -(wp.x - robo_x));
+		float line_size = sqrt(line1.x*line1.x + line1.y*line1.y);
+		line1.x = line1.x / line_size;
+		line1.y = line1.y / line_size;
 
-			//now in both directions, find corner points
-			bool got1 = false, got2 = false;
-			Point2f pt1, pt2;
-			for(unsigned int i = 0; i < height; i ++) {
-				if(!got1) {
-					pt1.x = wp.x + i*line1.x;
-					pt1.y = wp.y + i*line1.y;
-				}
-				if(!got2) {
-					pt2.x = wp.x - i*line1.x;
-					pt2.y = wp.y - i*line1.y;
-				}
-				if(!got1 && pt1.x >= 0 && pt1.x < width && pt1.y >= 0 && pt1.y < height ) {
-					if(cv_map.at<unsigned char>(pt1.y, pt1.x) != 255)
-						got1 = true;
-				} else {
+		//now in both directions, find corner points
+		bool got1 = false, got2 = false;
+		Point2f pt1, pt2;
+		for(unsigned int i = 0; i < (unsigned int)height; i ++) {
+			if(!got1) {
+				pt1.x = wp.x + i*line1.x;
+				pt1.y = wp.y + i*line1.y;
+			}
+			if(!got2) {
+				pt2.x = wp.x - i*line1.x;
+				pt2.y = wp.y - i*line1.y;
+			}
+			if(!got1 && pt1.x >= 0 && pt1.x < width && pt1.y >= 0 && pt1.y < height ) {
+				if(cv_map.at<unsigned char>(pt1.y, pt1.x) != 255)
 					got1 = true;
-				}
+			} else {
+				got1 = true;
+			}
 
-				if(!got2 && pt2.x >= 0 && pt2.x < width && pt2.y >= 0 && pt2.y < height ) {
-					if(cv_map.at<unsigned char>(pt2.y, pt2.x) != 255)
-						got2 = true;
-				} else {
+			if(!got2 && pt2.x >= 0 && pt2.x < width && pt2.y >= 0 && pt2.y < height ) {
+				if(cv_map.at<unsigned char>(pt2.y, pt2.x) != 255)
 					got2 = true;
-				}
-				//end sooner if possible
-				if(got1 && got2)
-					break;
+			} else {
+				got2 = true;
 			}
-
-			//when we have it, check the middlepoint if it is valid
-			Point2f res((pt1.x + pt2.x) / 2, (pt1.y + pt2.y) / 2);
-#ifdef CV_VISUALIZE
-			line(draw, pt1, pt2, Scalar(200), 1, 8, 0);
-			circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
-			imshow( "win3", draw );
-			waitKey(10);
-#endif
-
-			if(cv_map.at<unsigned char>(res.y, res.x) == 255) {
-#ifdef CV_VISUALIZE
-				circle(draw, res, 4, Scalar(150), 3);
-				//draw
-				imshow( "win3", draw );
-				waitKey(10);
-#endif
-				result.x = -originX * resolution + res.x * resolution;
-				result.y = -(res.y - originY)*resolution;
-
-				return true;
-			}
-			return false;
+			//end sooner if possible
+			if(got1 && got2)
+				break;
 		}
 
-		// CASE 2. - Point is out of path
-		else {
-			//cout << "case 2: "<< wp.x << " " << wp.y << " " << resolution << endl;
-			float radius = sqrt( pow(robo_x - wp.x, 2) + pow(robo_y - wp.y, 2) );
-			vector<pair<Point3f, Point2f> > segments = getSegments(radius);
-
-			//get the valid segment that is closest to waypoint
-			float min_width = path_min_width_;
-			float max_width = path_max_width_;
-			float angle_tolerance = CV_PI / 2;
-			vector<pair<Point3f, Point2f> > valid_segments = processSegments(segments, min_width, max_width, angle_tolerance);
-
-			//now take the closest waypoint to waypoint
-			float score = 10000;
-			Point2f waypoint, correct_waypoint;
-			for(unsigned int i = 0; i < valid_segments.size(); ++i) {
-				waypoint.x = (valid_segments.at(i).first.x + valid_segments.at(i).second.x)/2;
-				waypoint.y = (valid_segments.at(i).first.y + valid_segments.at(i).second.y)/2;
-
-				//cout << "p1: " << waypoint.x << " " << waypoint.y << " |p2: " << wp.x << " " << wp.y << endl;
-
-				float dist = sqrt( pow((wp.x - waypoint.x ), 2) +
-									pow((wp.y - waypoint.y ), 2));
-				if(dist < score) {
-					correct_waypoint.x = waypoint.x;
-					correct_waypoint.y = waypoint.y;
-					score = dist;
-				}
+		Point2f res(wp.x, wp.y);
+		//check if we really need to correct this point
+		float dist1 = sqrt((pt1.x-wp.x)*(pt1.x-wp.x) + (pt1.y-wp.y)*(pt1.y-wp.y));
+		float dist2 = sqrt((pt2.x-wp.x)*(pt2.x-wp.x) + (pt2.y-wp.y)*(pt2.y-wp.y));
+		if(dist1*resolution < obstacle_bloat_) {
+			//correct from pt1
+			if(dist2*resolution < obstacle_bloat_*3 || dist2*resolution < obstacle_bloat_) {
+				//ok
+				res.x = (pt1.x + pt2.x) / 2;
+				res.y = (pt1.y + pt2.y) / 2;
+			} else {
+				//try to move it towards right bloat,5 m
+				res.x = pt1.x - ((obstacle_bloat_)/resolution)*line1.x;
+				res.y = pt1.y - ((obstacle_bloat_)/resolution)*line1.y;
 			}
-	#ifdef CV_VISUALIZE
-			//ok, we got it and can return it
-			circle(draw, Point(correct_waypoint.x, correct_waypoint.y), 4, Scalar(150), 3);
-			circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
+		} else if(dist2*resolution < obstacle_bloat_) {
+			//correct from pt1
+			if(dist1*resolution < obstacle_bloat_*3 || dist1*resolution < obstacle_bloat_) {
+				//ok
+				res.x = (pt1.x + pt2.x) / 2;
+				res.y = (pt1.y + pt2.y) / 2;
+			} else {
+				//try to move it towards right bloat,5 m
+				res.x = pt2.x + ((obstacle_bloat_)/resolution)*line1.x;
+				res.y = pt2.y + ((obstacle_bloat_)/resolution)*line1.y;
+			}
+		}
 
+		//when we have it, check the middlepoint if it is valid
+		//Point2f res((pt1.x + pt2.x) / 2, (pt1.y + pt2.y) / 2);
+#ifdef CV_VISUALIZE
+		line(draw, pt1, pt2, Scalar(200), 1, 8, 0);
+		circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
+		imshow( "win3", draw );
+		waitKey(10);
+#endif
+
+		if(cv_map.at<unsigned char>(res.y, res.x) == 255) {
+#ifdef CV_VISUALIZE
+			circle(draw, res, 4, Scalar(150), 3);
 			//draw
 			imshow( "win3", draw );
 			waitKey(10);
-	#endif
+#endif
+			result.x = -originX * resolution + res.x * resolution;
+			result.y = -(res.y - originY)*resolution;
 
-			if(score != 10000) {
-				result.x = -originX * resolution + correct_waypoint.x * resolution;
-				result.y = -(correct_waypoint.y - originY)*resolution;
-				/*cout << result.x << " " << result.y << endl;
-				cout << "r: " << _x << " " << _y << endl;*/
-				return true;
-			} else {
-				return false;
+			return true;
+		}
+		return false;
+	}
+
+	// CASE 2. - Point is out of path
+	else {
+		Point2f res(wp.x, wp.y);
+		//lets do this other way...
+		bool solution_found = false;
+		if(algorithm_type_ == 1) {
+			//join robot pose and WP. find first available point of the line that is obstacle_bloat_ away
+			//find vector perpendicular to roboline
+			Point2f line(wp.x - robo_x, wp.y - robo_y);
+			float line_size = sqrt(line.x*line.x + line.y*line.y);
+			line.x = line.x / line_size;
+			line.y = line.y / line_size;
+			//compute distance robot <-> wp
+			float robot2wp = sqrt( (wp.x - robo_x)*(wp.x - robo_x) +(wp.y - robo_y)*(wp.y - robo_y) );
+			//now move from WP towards robot and check for "OK" point
+			bool cycle = true;
+			float dist = 0;
+			Point2f pt1(0, 0);
+			bool got_pt1 = false;
+			while(cycle) {
+				int nx = wp.x - line.x*dist;
+				int ny = wp.y - line.y*dist;
+				//circle(draw, Point(nx, ny), 2, Scalar(150), 2);
+				//check pixel here
+				if(cv_map.at<unsigned char>(ny, nx) == 255) {
+					if(!got_pt1) {
+						got_pt1 = true;
+						pt1.x = nx;
+						pt1.y = ny;
+						//cout << "1: " << pt1.x << " " << pt1.y << endl;
+					} else {
+						//check distance from obstacle
+						float obst_dist = sqrt( (nx - pt1.x)*(nx - pt1.x) + (ny - pt1.y)*(ny - pt1.y) );
+						if(obst_dist > obstacle_bloat_/resolution) {
+							//we got the point
+							//cout << "2: " << nx << " " << ny << endl;
+							res.x = nx;
+							res.y = ny;
+							cycle = false;
+							solution_found = true;
+						}
+					}
+				} else {
+					got_pt1 = false;
+				}
+
+				//check dist wp <-> pt
+				float pt2wp = sqrt( (wp.x - nx)*(wp.x - nx) +(wp.y - ny)*(wp.y - ny) );
+				if(pt2wp > robot2wp) {
+					cycle = false;
+					//perform another approach
+				}
+
+				dist += 1.0;
 			}
 		}
+		if(algorithm_type_ == 2 || !solution_found) {
+			//find vector perpendicular to roboline			//vector perpendicular to wp_vect
+			Point2f seek_vect(wp.y - robo_y, -(wp.x - robo_x));
+			float seek_vect_size = sqrt(seek_vect.x*seek_vect.x + seek_vect.y*seek_vect.y);
+			seek_vect.x = seek_vect.x / seek_vect_size;
+			seek_vect.y = seek_vect.y /seek_vect_size;
+
+			Point2f wp_vect(wp.x - robo_x, wp.y - robo_y);	//vector pointing from robot to WP
+			float wp_vect_size = sqrt(wp_vect.x*wp_vect.x + wp_vect.y*wp_vect.y);
+			wp_vect.x = wp_vect.x / wp_vect_size;
+			wp_vect.y = wp_vect.y / wp_vect_size;
+
+			//decide which way to look for valid point
+			//check cross product of robo_heading and wp_vect
+			if(robot_heading.x * wp_vect.y - robot_heading.y*wp_vect.x > 0) {
+				//invert seek vector
+				seek_vect.x = -seek_vect.x;
+				seek_vect.y = -seek_vect.y;
+			}
+
+			//now search for a solution.
+			//now move from WP towards seek vector and check for "OK" point
+			bool cycle = true;
+			float dist = 0;
+			Point2f pt1(0, 0);
+			bool got_pt1 = false;
+			while(cycle) {
+				int nx = wp.x - seek_vect.x*dist;
+				int ny = wp.y - seek_vect.y*dist;
+				//circle(draw, Point(nx, ny), 2, Scalar(150), 2);
+				//check pixel here
+				if(cv_map.at<unsigned char>(ny, nx) == 255) {
+					if(!got_pt1) {
+						got_pt1 = true;
+						pt1.x = nx;
+						pt1.y = ny;
+						//cout << "1: " << pt1.x << " " << pt1.y << endl;
+					} else {
+						//check distance from obstacle
+						float obst_dist = sqrt( (nx - pt1.x)*(nx - pt1.x) + (ny - pt1.y)*(ny - pt1.y) );
+						if(obst_dist > obstacle_bloat_/resolution) {
+							//we got the point
+							//cout << "2: " << nx << " " << ny << endl;
+							res.x = nx;
+							res.y = ny;
+							cycle = false;
+							solution_found = true;
+						}
+					}
+				} else {
+					got_pt1 = false;
+				}
+
+				//check dist wp <-> pt
+				float pt2wp = sqrt( (wp.x - nx)*(wp.x - nx) +(wp.y - ny)*(wp.y - ny) );
+				if(pt2wp > (obstacle_bloat_*4)/resolution) {
+					cycle = false;
+					//perform another approach
+				}
+
+				dist += 1.0;
+			}
+		}
+
+#ifdef CV_VISUALIZE
+		//ok, we got it and can return it
+		circle(draw, Point(res.x, res.y), 4, Scalar(150), 3);
+		circle(draw, Point(wp.x, wp.y), 2, Scalar(150), 3);
+
+		//draw
+		imshow( "win3", draw );
+		waitKey(10);
+#endif
+
+		if(cv_map.at<unsigned char>(res.y, res.x) == 255 && solution_found) {
+			result.x = -originX * resolution + res.x * resolution;
+			result.y = -(res.y - originY)*resolution;
+			/*cout << result.x << " " << result.y << endl;
+			cout << "r: " << _x << " " << _y << endl;*/
+			return true;
+		} else {
+			return false;
+		}
 	}
+	}
+
 
 	/*	@brief 	Takes map, robot position and destination as imput and tries to fit better destination point
 	 *			to the part of map where road is.

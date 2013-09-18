@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node pkg="robotour_waypoint_corrector" name="wp_corrector" type="wp_corrector" output="screen">
+  <node pkg="rt_road_detection" name="wp_corrector" type="wp_corrector_node" output="screen">
    <param name="map_frame" value="/odom"/> 
    <param name="robot_frame" value="/base_link"/>
    <param name="map_topic" value="/move_base/local_costmap/costmap"/>
