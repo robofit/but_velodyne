@@ -131,16 +131,15 @@ void LBPDetector::read_csv(const string& filename, vector<string>& images, vecto
     
     int x,y;
     
-    char separator2 = ' ';
-    
     while (getline(file, line)) {
+      
         stringstream liness(line);
         getline(liness, path, separator);
-	getline(liness, classlabel, separator2);
+	getline(liness, classlabel, separator);
 	
-	getline(liness, _x, separator2);
-	getline(liness, _y, separator2);
-	getline(liness, _width, separator2);
+	getline(liness, _x, separator);
+	getline(liness, _y, separator);
+	getline(liness, _width, separator);
 	getline(liness, _height);
 
 	
@@ -476,7 +475,8 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 			    /***************** texture classification *********************/
 			    
 			   // this->detect(histogram,&probability);
-			    //compute normalize histogram
+			   
+			    //calculate the normalized histogram
 			    normalize(histogram,histogram3);
 			    
 			    if(type==TWO_CHANNEL)
@@ -485,16 +485,8 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 			      histogram3=histogram3+histogram4;
 			    }
 
-			    probability=svm.predict(histogram3,true);
-			    
-			    //DFVal
-			    if(probability>svm_threshold)
-			    {
-			      probability=prob_max;
-			    }
-			    else
-			      probability=prob_min;
-
+			    //if predict DFval will be higer then threshold, classifier value will be negative
+			    probability=(svm.predict(histogram3,true) > svm_threshold ? prob_max : prob_min);
 			    
 			}
 			
@@ -516,11 +508,9 @@ bool LBPDetector::map(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
 						
 					else
 					{
-					
 					  //compute average of the previous and current value
 					  map.at<float> (j+a,i+b)= (float) ((probability+ (map.at<float> (j+a,i+b)))/2);
-					}
-						
+					}	
 				}
 			}
 
