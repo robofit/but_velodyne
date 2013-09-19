@@ -70,7 +70,7 @@ namespace rt_road_detection {
 		bool exportROIs( const std::string& DataDir, const std::string& PositiveDir, const std::string& NegativeDir );
 
 		inline int  size() const { return (int)irois_.size(); }
-		bool getImg( const std::string& DataDir, int i, cv::Mat& img );
+		std::string getImgFilename( int i );
 		void renderRois( cv::Mat& img, int i );
 
 		std::map<std::string, std::vector<iROI_ptr> > irois_;
@@ -107,6 +107,7 @@ namespace rt_road_detection {
 		~HSVHistDetector();
 
 		void init( double hit, double miss, int hbins, int sbins, int wnd_size, int wnd_step);
+		void setWnd( int wnd_size, int wnd_step );
 
 		inline const HSVHistFeature& featureExtractor() const { return hsvftr_; }
 		inline bool empty() const { return svm_.get_var_count() == 0; }
