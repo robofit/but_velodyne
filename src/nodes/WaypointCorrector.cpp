@@ -452,6 +452,7 @@ namespace rt_road_detection
 		} else {
 			return false;
 		}
+		}
 	}
 
 	/*	@brief 	Takes map, robot position and destination as imput and tries to fit better destination point
