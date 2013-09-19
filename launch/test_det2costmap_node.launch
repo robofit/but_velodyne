@@ -10,6 +10,7 @@
   <!--include file="$(find rt_road_detection)/launch/test_grass_det_node.launch"/-->
   <!--include file="$(find rt_road_detection)/launch/test_asphalt_lbp_det_node.launch"/-->
   <include file="$(find rt_road_detection)/launch/test_asphalt_lbp_gh_det_node.launch"/>
+  <include file="$(find rt_road_detection)/launch/test_hsv_hist_det_node.launch"/>
   <!--include file="$(find rt_road_detection)/launch/test_asphalt_det_node.launch"/-->
   <!--include file="$(find rt_road_detection)/launch/test_office_floor_det_node.launch"/-->
   
