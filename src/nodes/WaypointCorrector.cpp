@@ -156,17 +156,30 @@ namespace rt_road_detection
 
 		//call processing
 		// 1. get segments around the robot
-		destination.x = robo_x + 6 / resolution;
-		destination.y = robo_y;
-		float radius = sqrt( pow(robo_x - destination.x, 2) + pow(robo_y - destination.y, 2) );
+		//destination.x = robo_x + 6 / resolution;
+		//destination.y = robo_y;
+		//float radius = sqrt( pow(robo_x - destination.x, 2) + pow(robo_y - destination.y, 2) );
 
-		vector<pair<Point3f, Point2f> > segments = getSegments(radius);
+		//vector<pair<Point3f, Point2f> > segments = getSegments(radius);
 
 		// 2. process the segments
-		float min_width = path_min_width_;
-		float max_width = path_max_width_;
-		float angle_tolerance = CV_PI / 2;
-		processSegments(segments, min_width, max_width, angle_tolerance);
+		//float min_width = path_min_width_;
+		//float max_width = path_max_width_;
+		//float angle_tolerance = CV_PI / 2;
+		//processSegments(segments, min_width, max_width, angle_tolerance);
+
+#ifdef CV_VISUALIZE
+		//drawing purposes
+		Mat draw = cv_map.clone();
+		//draw what we got
+		circle(draw, Point(robo_x, robo_y), 2, Scalar(150), 3);
+		//heading
+		circle(draw, Point(robo_x + robot_heading.x*5, robo_y + robot_heading.y*5), 1, Scalar(150), 2);
+		line(draw, Point(robo_x, robo_y), Point(robo_x + robot_heading.x*5, robo_y + robot_heading.y*5), Scalar(200), 1, 8, 0);
+
+		imshow( "win1", draw );
+		waitKey(10);
+#endif
 	}
 
 	bool WaypointCorrector::correctWaypoint(Point2i wp, Point2f &result) {
@@ -180,11 +193,21 @@ namespace rt_road_detection
 	line(draw, Point(robo_x, robo_y), Point(robo_x + robot_heading.x*5, robo_y + robot_heading.y*5), Scalar(200), 1, 8, 0);
 #endif
 
+	if(wp.x < 0 || wp.x > width-1 || wp.y < 0 || wp.y > height-1 ) {
+		//we arrived at the end of image
+		cout << "Warning: WP is out of image range" << endl;
+		return false;
+	}
+
 	// CASE 1. - Point is on path - find middle of the road
 	if( cv_map.at<unsigned char>(wp.y, wp.x) == 255 ) {
 		//find vector perpendicular to roboline
 		Point2f line1(wp.y - robo_y, -(wp.x - robo_x));
 		float line_size = sqrt(line1.x*line1.x + line1.y*line1.y);
+		if(fabs(line_size) < 0.001) {
+			cout << "Warning: WP lies on actual robot position" << endl;
+			return false;
+		}
 		line1.x = line1.x / line_size;
 		line1.y = line1.y / line_size;
 
@@ -280,6 +303,10 @@ namespace rt_road_detection
 			//find vector perpendicular to roboline
 			Point2f line(wp.x - robo_x, wp.y - robo_y);
 			float line_size = sqrt(line.x*line.x + line.y*line.y);
+			if(fabs(line_size) < 0.001) {
+				cout << "Warning: WP lies on actual robot position" << endl;
+				return false;
+			}
 			line.x = line.x / line_size;
 			line.y = line.y / line_size;
 			//compute distance robot <-> wp
@@ -294,6 +321,10 @@ namespace rt_road_detection
 				int ny = wp.y - line.y*dist;
 				//circle(draw, Point(nx, ny), 2, Scalar(150), 2);
 				//check pixel here
+				if(nx < 0 || nx > width-1 || ny < 0 || ny > height-1 ) {
+					//we arrived at the end of image
+					return false;
+				}
 				if(cv_map.at<unsigned char>(ny, nx) == 255) {
 					if(!got_pt1) {
 						got_pt1 = true;
@@ -332,11 +363,19 @@ namespace rt_road_detection
 			float seek_vect_size = sqrt(seek_vect.x*seek_vect.x + seek_vect.y*seek_vect.y);
 			seek_vect.x = seek_vect.x / seek_vect_size;
 			seek_vect.y = seek_vect.y /seek_vect_size;
+			if(fabs(seek_vect_size) < 0.001) {
+				cout << "Warning: WP lies on actual robot position" << endl;
+				return false;
+			}
 
 			Point2f wp_vect(wp.x - robo_x, wp.y - robo_y);	//vector pointing from robot to WP
 			float wp_vect_size = sqrt(wp_vect.x*wp_vect.x + wp_vect.y*wp_vect.y);
 			wp_vect.x = wp_vect.x / wp_vect_size;
 			wp_vect.y = wp_vect.y / wp_vect_size;
+			if(fabs(wp_vect_size) < 0.001) {
+				cout << "Warning: WP lies on actual robot position" << endl;
+				return false;
+			}
 
 			//decide which way to look for valid point
 			//check cross product of robo_heading and wp_vect
@@ -357,6 +396,10 @@ namespace rt_road_detection
 				int ny = wp.y - seek_vect.y*dist;
 				//circle(draw, Point(nx, ny), 2, Scalar(150), 2);
 				//check pixel here
+				if(nx < 0 || nx > width-1 || ny < 0 || ny > height-1 ) {
+					//we arrived at the end of image
+					return false;
+				}
 				if(cv_map.at<unsigned char>(ny, nx) == 255) {
 					if(!got_pt1) {
 						got_pt1 = true;
