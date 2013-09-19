@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="manager_name" default="stereo_nodelet_manager"/>
+  <arg name="manager_name" default="cam3d_nodelet_manager"/>
 
   <group ns="detectors">
 

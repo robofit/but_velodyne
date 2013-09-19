@@ -1,16 +1,20 @@
 <?xml version="1.0"?>
 <launch>
 
+  <arg name="manager_name" default="cam3d_nodelet_manager"/>
+
   <!-- FOR TESTING ONLY !!! -->
 
-  <include file="$(find rt_road_detection)/launch/test_grass_det_nodelet.launch"/>
-  <include file="$(find rt_road_detection)/launch/test_asphalt_det_nodelet.launch"/>
+  <include file="$(find rt_road_detection)/launch/test_asphalt_lbp_gh_det_node.launch">
+    <arg name="manager_name" value="$(arg manager_name)"/>
+  </include>
   
-  <!-- convert costmap also to node/nodelet versions! -->
-  <node pkg="rt_road_detection" name="det2costmap" type="costmap_node" output="screen">
-    
+  <include file="$(find rt_road_detection)/launch/test_hsv_hist_det_node.launch">
+    <arg name="manager_name" value="$(arg manager_name)"/>
+  </include>
+  
+  <node pkg="nodelet" type="nodelet" name="CostmapNodelet" args="load rt_road_detection/CostmapNodelet /$(arg manager_name)" output="screen">
     <rosparam file="$(find rt_road_detection)/config/det2costmap.yaml" command="load" />
-    
   </node>
 
 </launch>
