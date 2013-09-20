@@ -74,6 +74,7 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     private_nh_.param( MAX_ROAD_IRREGULARITY_PARAM, params_.max_road_irregularity, params_.max_road_irregularity );
     private_nh_.param( MAX_HEIGHT_DIFF_PARAM, params_.max_height_diff, params_.max_height_diff );
     private_nh_.param( NOISE_FILTER_PARAM, params_.noise_filter, params_.noise_filter );
+    private_nh_.param( REF_COEFF_PARAM, params_.ref_coeff, params_.ref_coeff );
 
     // Check if all the parameters are valid
     params_.map2d_res = (params_.map2d_res > 0.001) ? params_.map2d_res : 0.001;
@@ -103,6 +104,7 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ROS_INFO_STREAM( MAX_ROAD_IRREGULARITY_PARAM << " parameter: " << params_.max_road_irregularity );
     ROS_INFO_STREAM( MAX_HEIGHT_DIFF_PARAM << " parameter: " << params_.max_height_diff );
     ROS_INFO_STREAM( NOISE_FILTER_PARAM << " parameter: " << params_.noise_filter );
+    ROS_INFO_STREAM( REF_COEFF_PARAM << " parameter: " << params_.ref_coeff );
 
     // Advertise output occupancy grid
     map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>( OUTPUT_GROUND_MAP_TOPIC, 10 );
@@ -298,6 +300,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         bin.n += 1;
         bin.sum += z;
         bin.sum_sqr += z * z;
+        bin.ref += it->intensity;
         if( bin.n == 1 )
         {
             bin.max = bin.min = z;
@@ -326,6 +329,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         double inv_n = 1.0 / mit->n;
         mit->avg = mit->sum * inv_n;
         mit->var = (mit->sum_sqr - mit->sum * mit->sum * inv_n) * inv_n;
+        mit->ref = mit->ref * inv_n;
     }
 
     // Interpolate empty cells if possible
@@ -348,6 +352,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
                     bin.min = 0.5 * (n1.min + n2.min);
                     bin.max = 0.5 * (n1.max + n2.max);
                     bin.avg = 0.5 * (n1.avg + n2.avg);
+                    bin.ref = 0.5 * (n1.ref + n2.ref);
                     bin.var = (n1.var > n2.var) ? n1.var : n2.var;
                     bin.idx = PolarMapBin::NOT_SET;
                 }
@@ -612,6 +617,73 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         }
     }
 
+    // REFLECTIVITY
+
+    if( params_.ref_coeff > 0.0 )
+    {
+        // Traverse the map and find average ground reflectivity
+        double ref_sum = 0.0, ref_sum_sqr = 0.0;
+        unsigned ref_n = 0;
+        for( int rn = min_rn; rn < num_of_radial_bins_; ++rn )
+        {
+            for( int an = 0; an < num_of_angular_bins_; ++an )
+            {
+                PolarMapBin &bin = getPolarMapBin(an, rn);
+
+                // Does the bin correspond to the ground height?
+                if( bin.idx == PolarMapBin::NOT_SET )
+                {
+                    if( std::fabs(bin.avg) < 0.25 * params_.max_road_irregularity )
+                    {
+                        ref_sum += bin.ref;
+                        ref_sum_sqr += bin.ref * bin.ref;
+                        ++ref_n;
+                    }
+                }
+            }
+        }
+
+        if( ref_n > MIN_NUM_OF_SAMPLES )
+        {
+            double inv_n = 1.0 / ref_n;
+            double ref_avg = ref_sum * inv_n;
+            double ref_var = (ref_sum_sqr - (ref_sum * ref_sum * inv_n)) * inv_n;
+
+            // Choose minimum and maximum ground reflectivity
+            double ref_std = std::sqrt(ref_var);
+            double ref_min = ref_avg - params_.ref_coeff * ref_std;
+            double ref_max = ref_avg + params_.ref_coeff * ref_std;
+
+    //        ROS_INFO_STREAM( "Ground reflectivity: avg = " << ref_avg << ", std = " << ref_std );
+
+            // Mark non-ground bins according to their reflectivity
+    //        for( int rn = 1; rn < (num_of_radial_bins_ - 1); ++rn )
+            for( int rn = 6; rn < (num_of_radial_bins_ - 1); ++rn )
+            {
+                for( int an = 0; an < num_of_angular_bins_; ++an )
+                {
+                    PolarMapBin &bin = getPolarMapBin(an, rn);
+
+                    if( bin.idx == PolarMapBin::UNKNOWN )
+                    {
+                        continue;
+                    }
+
+                    double ref = 0.5 * bin.ref;
+                    ref += 0.25 * getPolarMapBin(an, rn + 1).ref;
+                    ref += 0.25 * getPolarMapBin(an, rn - 1).ref;
+
+                    // Mark all the map bins where the difference between minimal
+                    // and maximal height is significant as occupied
+                    if( ref < ref_min || ref > ref_max )
+                    {
+                        bin.idx = PolarMapBin::OCCUPIED;
+                    }
+                }
+            }
+        }
+    }
+
     // POLAR MAP ground region growing
 
     unsigned ground_bins = 0;
@@ -731,18 +803,23 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
                     int an1 = (an + 1) % num_of_angular_bins_;
                     int an2 = (an + num_of_angular_bins_ - 1) % num_of_angular_bins_;
 
-                    // All values around must be marked as free
-                    if( getPolarMapBin(an, rn + 1).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an1, rn + 1).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an2, rn + 1).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an, rn - 1).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an1, rn - 1).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an2, rn - 1).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an1, rn).idx == PolarMapBin::FREE
-                        && getPolarMapBin(an2, rn).idx == PolarMapBin::FREE )
+                    // Num of free bins around
+                    int n = 0;
+                    n += (getPolarMapBin(an, rn + 1).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an1, rn + 1).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an2, rn + 1).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an, rn - 1).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an1, rn - 1).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an2, rn - 1).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an1, rn).idx == PolarMapBin::FREE) ? 1 : 0;
+                    n += (getPolarMapBin(an2, rn).idx == PolarMapBin::FREE) ? 1 : 0;
+
+                    // "All" values around must be marked as free
+                    if( n >= 7 )
+//                    if( n >= 8 )
                     {
-                        // Filter the ocupied bin
-                        bin.idx == PolarMapBin::FREE;
+                        // Filter the occupied bin
+                        bin.idx = PolarMapBin::FREE;
                         ++num_of_filtered_points;
                     }
                 }
