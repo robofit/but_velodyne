@@ -56,6 +56,7 @@ namespace but_velodyne
     const std::string MAX_ROAD_IRREGULARITY_PARAM = "max_road_irregularity";
     const std::string MAX_HEIGHT_DIFF_PARAM = "max_height_diff";
     const std::string NOISE_FILTER_PARAM = "noise_filter";
+    const std::string REF_COEFF_PARAM = "ref_coeff";
 }
 
 #endif // BUT_VELODYNE_PARAMETERS_LIST_H

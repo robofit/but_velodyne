@@ -101,6 +101,9 @@ public:
         //! Enables simple noise filtering.
         bool noise_filter;
 
+        //! Reflectance coeff (zero means "do not care")
+        double ref_coeff;
+
         //! Default constructor
         Params()
             : frame_id("")
@@ -114,14 +117,18 @@ public:
             , max_road_irregularity(getDefaultMaxRoadIrregularity())
             , max_height_diff(getDefaultMaxHeightDiff())
             , noise_filter(true)
+            , ref_coeff(2.0)
         {}
 
         // Returns default values of particular parameters.
         static double getDefaultMapRes() { return 0.05; }
-        static int getDefaultMapSize() { return 128; }
+//        static int getDefaultMapSize() { return 128; }
+        static int getDefaultMapSize() { return 160; }
 
-        static double getDefaultMinRange() { return 1.0; }
-        static double getDefaultMaxRange() { return 3.0; }
+//        static double getDefaultMinRange() { return 1.0; }
+        static double getDefaultMinRange() { return 1.2; }
+//        static double getDefaultMaxRange() { return 3.0; }
+        static double getDefaultMaxRange() { return 4.0; }
         static double getDefaultAngularRes() { return 5.0; }
         static double getDefaultRadialRes() { return 0.25; }
 
@@ -152,8 +159,11 @@ private:
         //! Average height and variance.
         double avg, var;
 
+        //! Average reflectivity.
+        double ref;
+
         //! Helper values.
-        double sum, sum_sqr;
+        double sum, sum_sqr, sum_ref;
 
         //! Number of samples accumulated in the bin.
         unsigned n;
@@ -164,7 +174,7 @@ private:
         //! Default constructor.
         PolarMapBin()
             : min(0.0), max(0.0), avg(0.0), var(0.0)
-            , sum(0.0), sum_sqr(0.0)
+            , sum(0.0), sum_sqr(0.0), sum_ref(0.0)
             , n(0)
             , idx(NOT_SET)
         {}
