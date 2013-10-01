@@ -20,6 +20,9 @@ using namespace rt_road_detection;
 using namespace std;
 using namespace cv;
 
+/*
+ * ./hsv_hist_detector_train 17 17 45 15 /home/beranv/data/ hsv_17_17_45_rbf.yaml annotations.csv "rbf train eval browse"
+ */
 
 int main( int argc, char** argv )
 {
@@ -28,42 +31,52 @@ int main( int argc, char** argv )
 	int wnd_size = 45;
 	int wnd_step = 15;
 	int kernel_type = CvSVM::LINEAR;
+	string datasetDir     = "/home/beranv/data/";
+	string model_filename = "modelHsvHist_17_17_45_15_rbf.yaml";
+	string annot_filename = "annotations.csv";
 	string cmds = "rbf train eval"; 		// rbf, train, eval, export_rois, browse
 
-	string datasetDir = "/home/beranv/data/fit-park-unibrain-no-ir/";
-	//string datasetDir = "/home/beranv/data/fit-park-iphone/";
-	//string datasetDir = "/home/beranv/data/lodz-park/";
+	cout << "HSV Detector Training" << endl;
 
-
-	if( argc >= 6 ) {
+	if( argc >= 8 ) {
 		hbin = atoi( argv[1] );
 		sbin = atoi( argv[2] );
 		wnd_size = atoi( argv[3] );
 		wnd_step = atoi( argv[4] );
 		datasetDir = string( argv[5] );
-		if( argc >= 7 ) cmds = string( argv[6] );
+		model_filename = string( argv[6] );
+		annot_filename = string( argv[7] );
+		if( argc >= 9 ) cmds = string( argv[8] );
+	} else {
+		cerr << "params: hbins sbins wnd_size wnd_step model_name datasetDir [commands]" << endl;
+		return -1;
 	}
 
 	if( cmds.find("rbf") != string::npos )
 		kernel_type = CvSVM::RBF;
 
-	char cfg_id_str[64];
-	sprintf( cfg_id_str, "%d_%d_%d_%s", hbin, sbin, wnd_size, (kernel_type==CvSVM::LINEAR?"lin":"rbf") );
 
-	cout << "HSV Detector Training" << endl;
-	cout << "Configuration ID [" << cfg_id_str << "]" << endl;
-	cout << "Dataset Path: " << datasetDir << endl;
+	cout << "Parameters:" << endl;
+	cout << "\tHue Bins:        " << hbin << endl;
+	cout << "\tSaturation Bins: " << sbin << endl;
+	cout << "\tKernel Type:     " << (kernel_type == CvSVM::RBF ? "RBF" : "LINEAR") << endl;
+	cout << "\tWindow Size:     " << wnd_size << endl;
+	cout << "\tWindow Step:     " << wnd_step << endl;
+	cout << "\tDataset Path:    " << datasetDir << endl;
+	cout << "\tModel Filename:  " << model_filename << endl;
+	cout << "\tAnnot. Filename: " << annot_filename << endl;
+	cout << "\tConfig Commands: " << cmds << endl;
 
 
 	//////////////////////////////////////////////////////////////
 	AnnotMeta annData;
-	annData.loadCSV( datasetDir+"annotations.csv", ';' );
+	annData.loadCSV( datasetDir+annot_filename, ';' );
 
 	// export ROIs if needed
 	if( cmds.find("export_rois") != string::npos )
 	{
 		annData.exportROIs(
-			datasetDir+"images/",
+			datasetDir,
 			datasetDir+"positives/",
 			datasetDir+"negatives/" );
 	}
@@ -78,21 +91,21 @@ int main( int argc, char** argv )
 		cmds.find("eval")  != string::npos )
 	{
 		// get training data
-		hsvHistTrainData.extract( wnd_size, wnd_step, datasetDir+"images/", annData );
+		hsvHistTrainData.extract( wnd_size, wnd_step, datasetDir, annData );
 	}
 
 
 	//////////////////////////////////////////////////////////////
 	// Model type
-	string fn_model = datasetDir+"models/hsvDetModel_"+cfg_id_str+".yaml";
-
 	if( cmds.find("train") != string::npos )
 	{
-		hsvDetector.train( hsvHistTrainData.features(), hsvHistTrainData.labels() );
-		hsvDetector.write( fn_model );
+		hsvDetector.train( hsvHistTrainData.features(), hsvHistTrainData.labels(), kernel_type );
+		hsvDetector.write( datasetDir+model_filename );
 	}
-	else
-		hsvDetector.read( fn_model );
+	else {
+		hsvDetector.read( datasetDir+model_filename );
+		hsvDetector.setWnd( wnd_size, wnd_step );				// overwrite params stored during training
+	}
 
 	if( hsvDetector.empty() )
 	{
@@ -106,7 +119,7 @@ int main( int argc, char** argv )
 	{
 		float prob = 0;
 		hsvDetector.eval( hsvHistTrainData.features(), hsvHistTrainData.labels(), &prob );
-		cout << "Evaluation result: " << cfg_id_str << ": " << prob << endl;
+		cout << "Evaluation result \t " << model_filename << "\t " << prob << endl;
 	}
 
 
@@ -118,9 +131,17 @@ int main( int argc, char** argv )
 		while(1) {
 			Mat img, hsv;
 			Mat prob;
+			string fn;
 
-			if( annData.getImg( datasetDir+"images/", no, img ) )
-			{
+			try {
+
+				fn = annData.getImgFilename( no );
+				if( fn.empty() ) throw 1;
+
+				cout << "Load image: " << fn << endl;
+				img = imread( datasetDir+fn );
+				if( img.empty() ) throw 2;
+
 				cvtColor( img, hsv, CV_BGR2HSV );
 				hsvDetector.detect( hsv, prob );
 
@@ -132,13 +153,24 @@ int main( int argc, char** argv )
 
 				imshow( "Input image", img );
 			}
+			catch( int e )
+			{
+				switch (e) {
+				case 1: cerr << "Empty image filename." << endl; break;
+				case 2: cerr << "Image reading failed." << endl; break;
+				}
+			}
 
 			char key = waitKey(0);
 			if( key == 'q' || key == 27 )
 				break;
 			switch (key) {
-			case '.' : no = MIN(no+1, annData.size() ); break;
-			case ',' : no = MAX(no-1, 0); break;
+				case 'z' : no = 0; break;									// go to first image
+				case 'n' : no = MAX(0,annData.size()-1); break;				// go to last image
+				case 'x' : no = MAX(no-10, 0); break;						// -10
+				case 'b' : no = MIN(no+10, annData.size() ); break;			// +10
+				case 'c' : no = MAX(no-1, 0); break;						// -1
+				case 'v' : no = MIN(no+1, annData.size() ); break;			// +1
 			}
 		}
 	}

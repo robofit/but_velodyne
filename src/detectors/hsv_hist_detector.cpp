@@ -232,7 +232,7 @@ bool AnnotMeta::exportROIs( const std::string& DataDir, const std::string& Posit
 }
 
 
-bool AnnotMeta::getImg( const std::string& DataDir, int i, cv::Mat& img )
+string AnnotMeta::getImgFilename( int i )
 {
 	if( i < 0 || i >= (int)irois_.size() )
 		return false;
@@ -240,10 +240,9 @@ bool AnnotMeta::getImg( const std::string& DataDir, int i, cv::Mat& img )
 	std::map<std::string, std::vector<iROI_ptr> >::iterator it = irois_.begin();
 	for( int k = 0; k < i; ++k, ++it ) {}
 
-	img = imread( DataDir+(*it).first );
-
-	return !img.empty();
+	return (*it).first;
 }
+
 
 void AnnotMeta::renderRois( cv::Mat& img, int i )
 {
@@ -416,6 +415,14 @@ void HSVHistDetector::init( double hit, double miss, int hbins, int sbins, int w
 }
 
 
+void HSVHistDetector::setWnd( int wnd_size, int wnd_step )
+{
+	wnd_size_ = wnd_size;
+	wnd_step_ = wnd_step;
+
+	cout << "HSVHist Detector set Window: size [" << wnd_size_ << "], step [" << wnd_step_ << "]" << endl;
+}
+
 
 // extract more HSV image features using flowing window
 //bool HSVHistDetector::detect( cv::Mat& hsv, int wnd_size, int wnd_step, cv::Mat& probability )
@@ -512,6 +519,7 @@ bool HSVHistDetector::train( const cv::Mat& data, const cv::Mat& labels, int ker
     //params.term_crit = cvTermCriteria( CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 1000, FLT_EPSILON );
 
     cout << "SVM training ... ";
+    cout.flush();
 
     //svm_.train( data, labels, Mat(), Mat(), params );
    svm_.train_auto( data, labels, Mat(), Mat(), params,

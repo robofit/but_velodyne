@@ -40,6 +40,8 @@ HSVHistDetectorRos::HSVHistDetectorRos(ros::NodeHandle private_nh) {
 	if (fn_ != "") det_->read(fn_);
 	else ROS_ERROR("Please set filename param for hsv_dist detector!!!");
 
+	det_->setWnd( wnd_size_, wnd_step_);		// overwrite params stored during training
+
 	std::string top_rgb_in = "rgb_in";
 	std::string top_det_out = "det_out";
 
@@ -95,8 +97,8 @@ void HSVHistDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 	cv::Mat hsv;
 
-	if (rgb->encoding == "rgb8") { std::cout << "CV_RGB2HSV"; cv::cvtColor( rgb->image, hsv, CV_RGB2HSV ); } // Hue in range 0-360
-	else if ((rgb->encoding == "bgr8")) { std::cout << "CV_BGR2HSV"; cv::cvtColor( rgb->image, hsv, CV_BGR2HSV ); }
+	if (rgb->encoding == "rgb8") cv::cvtColor( rgb->image, hsv, CV_RGB2HSV );  // Hue in range 0-360
+	else if ((rgb->encoding == "bgr8")) cv::cvtColor( rgb->image, hsv, CV_BGR2HSV );
 	else {
 
 	  ROS_WARN_THROTTLE(1,"Strange encoding!");

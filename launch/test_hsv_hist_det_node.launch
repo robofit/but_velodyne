@@ -11,6 +11,9 @@
    <param name="prob_miss" value="0.55"/>
    <param name="prob_hit" value="0.45"/>
 
+   <param name="wnd_size" value="45"/>
+   <param name="wnd_step" value="20"/>
+
    <param name="frame_skip" value="2"/>
 
   </node>
