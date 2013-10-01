@@ -22,14 +22,14 @@ detectors_ns: /detectors
 
 detectors:
 
-  #-
-  # name: hsv_hist
+  -
+   name: hsv_hist
 
   #-
   #  name: sample_grass
     # some more values...
     
-  - 
-    name: lbp
+  #- 
+  #  name: lbp
 
 

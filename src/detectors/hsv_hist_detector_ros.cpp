@@ -33,6 +33,8 @@ HSVHistDetectorRos::HSVHistDetectorRos(ros::NodeHandle private_nh) {
 
 	skiped_ = 0;
 
+	ROS_INFO("HSV hit %f, miss %f",prob_hit_,prob_miss_);
+
 	det_.reset(new HSVHistDetector(prob_hit_, prob_miss_, hbins_, sbins_, wnd_size_, wnd_step_));
 
 	if (fn_ != "") det_->read(fn_);
