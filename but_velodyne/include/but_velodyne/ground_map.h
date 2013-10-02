@@ -129,6 +129,7 @@ public:
         static double getDefaultMinRange() { return 1.2; }
 //        static double getDefaultMaxRange() { return 3.0; }
         static double getDefaultMaxRange() { return 4.0; }
+//        static double getDefaultAngularRes() { return 3; }
         static double getDefaultAngularRes() { return 5.0; }
         static double getDefaultRadialRes() { return 0.25; }
 
@@ -160,10 +161,12 @@ private:
         double avg, var;
 
         //! Average reflectivity.
-        double ref;
+        double ref_avg, ref_var;
 
         //! Helper values.
-        double sum, sum_sqr, sum_ref;
+        double sum, sum_sqr;
+        double ref_sum, ref_sum_sqr;
+        double min_x, min_y;
 
         //! Number of samples accumulated in the bin.
         unsigned n;
@@ -171,12 +174,27 @@ private:
         //! Region index
         unsigned idx;
 
+        //! Estimated ground tilt/height correction.
+        double tilt;
+
+        //! Estimated ground probability
+        double prob;
+
+        //! Helper value
+        unsigned v;
+
         //! Default constructor.
         PolarMapBin()
-            : min(0.0), max(0.0), avg(0.0), var(0.0)
-            , sum(0.0), sum_sqr(0.0), sum_ref(0.0)
+            : min(0.0), max(0.0)
+            , avg(0.0), var(0.0)
+            , ref_avg(0.0), ref_var(0.0)
+            , sum(0.0), sum_sqr(0.0)
+            , ref_sum(0.0), ref_sum_sqr(0.0)
+            , min_x(0.0), min_y(0.0)
             , n(0)
             , idx(NOT_SET)
+            , tilt(0.0), prob(0.0)
+            , v(0)
         {}
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -185,9 +203,6 @@ private:
     //! Informations accumulated for sampling/map bin.
     struct RingMapBin
     {
-        //! Bounding box of all points.
-//        Eigen::Vector3d min, max;
-
         //! Average position.
         Eigen::Vector3d avg, var;
         double rad_avg, rad_var;
@@ -199,16 +214,17 @@ private:
         //! Number of samples accumulated in the bin.
         unsigned n;
 
-        //! Stats...
-        double edginess, roughness;
+        //! Estimated ground probability
+        double prob;
 
         //! Default constructor.
         RingMapBin()
-//            : min(0, 0, 0), max(0, 0, 0)
-            : avg(0, 0, 0), var(0, 0, 0), rad_avg(0), rad_var(0)
-            , sum(0, 0, 0), sum_sqr(0, 0, 0), rad_sum(0), rad_sum_sqr(0)
+            : avg(0, 0, 0), var(0, 0, 0)
+            , rad_avg(0.0), rad_var(0.0)
+            , sum(0, 0, 0), sum_sqr(0, 0, 0)
+            , rad_sum(0.0), rad_sum_sqr(0.0)
             , n(0)
-            , edginess(0), roughness(0)
+            , prob(0.0)
         {}
 
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -259,6 +275,15 @@ private:
     RingMapBin& getRingMapBin(int a, int r)
     {
         return ring_map_[r * num_of_angular_rmap_bins_ + a];
+    }
+
+    //! Returns value of Gaussian function
+    template <typename T>
+    T gaussVal(T x, T mean, T sigma)
+    {
+        //static const T inv_sqrt_2pi = 0.3989422804014327;
+        T a = (x - mean) / sigma;
+        return /*inv_sqrt_2pi / sigma **/ std::exp(-T(0.5) * a * a);
     }
 
 private:
