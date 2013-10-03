@@ -101,8 +101,8 @@ public:
         //! Enables simple noise filtering.
         bool noise_filter;
 
-        //! Reflectance coeff (zero means "do not care")
-        double ref_coeff;
+        //! Thresholds to identify ground and obstacles
+        double ground_prob, obstacle_prob;
 
         //! Default constructor
         Params()
@@ -117,24 +117,26 @@ public:
             , max_road_irregularity(getDefaultMaxRoadIrregularity())
             , max_height_diff(getDefaultMaxHeightDiff())
             , noise_filter(true)
-            , ref_coeff(2.0)
+            , ground_prob(getDefaultGroundProb())
+            , obstacle_prob(getDefaultObstacleProb())
         {}
 
         // Returns default values of particular parameters.
         static double getDefaultMapRes() { return 0.05; }
 //        static int getDefaultMapSize() { return 128; }
-        static int getDefaultMapSize() { return 160; }
+        static int getDefaultMapSize() { return 256; }
 
 //        static double getDefaultMinRange() { return 1.0; }
         static double getDefaultMinRange() { return 1.2; }
-//        static double getDefaultMaxRange() { return 3.0; }
-        static double getDefaultMaxRange() { return 4.0; }
-//        static double getDefaultAngularRes() { return 3; }
+        static double getDefaultMaxRange() { return 5.0; }
         static double getDefaultAngularRes() { return 5.0; }
         static double getDefaultRadialRes() { return 0.25; }
 
         static double getDefaultMaxRoadIrregularity() { return 0.05; }
         static double getDefaultMaxHeightDiff() { return 0.1; }
+
+        static double getDefaultGroundProb() { return 0.9; }
+        static double getDefaultObstacleProb() { return 0.4; }
     };
 
 public:

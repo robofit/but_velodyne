@@ -9,8 +9,10 @@
     <remap from="points_in" to="/velodyne_points"/>
     <remap from="map_out" to="/velodyne/map2d"/>
     <param name="max_road_irregularity" value="0.04" />
-    <param name="max_height_diff" value="0.12" />
+    <param name="max_height_diff" value="0.1" />
     <param name="noise_filter" value="1" />
+    <param name="ground_prob" value="0.75" />
+    <param name="obstacle_prob" value="0.4" />
     <!--param name="frame_id" value="/velodyne" /-->
     <param name="frame_id" value="/odom" />
   </node>

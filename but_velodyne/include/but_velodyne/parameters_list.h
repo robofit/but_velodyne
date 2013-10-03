@@ -46,17 +46,18 @@ namespace but_velodyne
      * ground map - parameters
      */
     //const std::string FRAME_ID_PARAM    = "frame_id";
-    const std::string MAP2D_RES_PARAM = "map2d_res";
-    const std::string MAP2D_WIDTH_PARAM = "map2d_width";
-    const std::string MAP2D_HEIGHT_PARAM = "map2d_height";
-    //const std::string MIN_RANGE_PARAM = "min_range";
-    const std::string MAX_RANGE_PARAM = "max_range";
-    //const std::string ANGULAR_RES_PARAM = "angular_res";
-    const std::string RADIAL_RES_PARAM = "radial_res";
+    const std::string MAP2D_RES_PARAM       = "map2d_res";
+    const std::string MAP2D_WIDTH_PARAM     = "map2d_width";
+    const std::string MAP2D_HEIGHT_PARAM    = "map2d_height";
+    //const std::string MIN_RANGE_PARAM       = "min_range";
+    const std::string MAX_RANGE_PARAM       = "max_range";
+    //const std::string ANGULAR_RES_PARAM     = "angular_res";
+    const std::string RADIAL_RES_PARAM      = "radial_res";
     const std::string MAX_ROAD_IRREGULARITY_PARAM = "max_road_irregularity";
     const std::string MAX_HEIGHT_DIFF_PARAM = "max_height_diff";
-    const std::string NOISE_FILTER_PARAM = "noise_filter";
-    const std::string REF_COEFF_PARAM = "ref_coeff";
+    const std::string NOISE_FILTER_PARAM    = "noise_filter";
+    const std::string GROUND_PROB_PARAM     = "ground_prob";
+    const std::string OBSTACLE_PROB_PARAM   = "obstacle_prob";
 }
 
 #endif // BUT_VELODYNE_PARAMETERS_LIST_H

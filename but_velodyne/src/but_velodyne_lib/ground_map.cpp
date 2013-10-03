@@ -74,7 +74,9 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     private_nh_.param( MAX_ROAD_IRREGULARITY_PARAM, params_.max_road_irregularity, params_.max_road_irregularity );
     private_nh_.param( MAX_HEIGHT_DIFF_PARAM, params_.max_height_diff, params_.max_height_diff );
     private_nh_.param( NOISE_FILTER_PARAM, params_.noise_filter, params_.noise_filter );
-    private_nh_.param( REF_COEFF_PARAM, params_.ref_coeff, params_.ref_coeff );
+
+    private_nh_.param( GROUND_PROB_PARAM, params_.ground_prob, params_.ground_prob );
+    private_nh_.param( OBSTACLE_PROB_PARAM, params_.obstacle_prob, params_.obstacle_prob );
 
     // Check if all the parameters are valid
     params_.map2d_res = (params_.map2d_res > 0.001) ? params_.map2d_res : 0.001;
@@ -104,7 +106,8 @@ GroundMap::GroundMap(ros::NodeHandle nh, ros::NodeHandle private_nh)
     ROS_INFO_STREAM( MAX_ROAD_IRREGULARITY_PARAM << " parameter: " << params_.max_road_irregularity );
     ROS_INFO_STREAM( MAX_HEIGHT_DIFF_PARAM << " parameter: " << params_.max_height_diff );
     ROS_INFO_STREAM( NOISE_FILTER_PARAM << " parameter: " << params_.noise_filter );
-    ROS_INFO_STREAM( REF_COEFF_PARAM << " parameter: " << params_.ref_coeff );
+    ROS_INFO_STREAM( GROUND_PROB_PARAM << " parameter: " << params_.ground_prob );
+    ROS_INFO_STREAM( OBSTACLE_PROB_PARAM << " parameter: " << params_.obstacle_prob );
 
     // Advertise output occupancy grid
     map_pub_ = nh_.advertise<nav_msgs::OccupancyGrid>( OUTPUT_GROUND_MAP_TOPIC, 10 );
@@ -311,7 +314,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
     ///// POLAR MAP and POLAR RING MAP initialization
 
-    // Clear the map sampling bins
+    // Clear the polar map sampling bins
     for( size_t i = 0; i < polar_map_.size(); ++i )
     {
         polar_map_[i] = PolarMapBin();
@@ -376,6 +379,14 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         hbin.sum_sqr += Eigen::Vector3d(x * x, y * y, z * z);
         hbin.rad_sum += rad;
         hbin.rad_sum_sqr += rad * rad;
+        if( hbin.n == 1 )
+        {
+            hbin.rad_avg = rad;
+        }
+        else
+        {
+            hbin.rad_avg = (rad < hbin.rad_avg) ? rad : hbin.rad_avg;
+        }
 
         // POLAR MAP
 
@@ -447,7 +458,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
                 // Interpolate values if possible
                 if( n1.idx != PolarMapBin::UNKNOWN && n2.idx != PolarMapBin::UNKNOWN )
                 {
-                    bin.n = n1.n + n2.n;
+                    bin.n = (n1.n < n2.n) ? n1.n : n2.n;
                     bin.min = 0.5 * (n1.min + n2.min);
                     bin.max = 0.5 * (n1.max + n2.max);
                     bin.avg = 0.5 * (n1.avg + n2.avg);
@@ -477,12 +488,15 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         double inv_n = 1.0 / hit->n;
         hit->avg = hit->sum * inv_n;
         hit->var = (hit->sum_sqr - (hit->sum.cwiseProduct(hit->sum) * inv_n)) * inv_n;
-        hit->rad_avg = hit->rad_sum * inv_n;
-        hit->rad_var = (hit->rad_sum_sqr - (hit->rad_sum * hit->rad_sum * inv_n)) * inv_n;
+//        hit->rad_avg = hit->rad_sum * inv_n;
+//        hit->rad_var = (hit->rad_sum_sqr - (hit->rad_sum * hit->rad_sum * inv_n)) * inv_n;
     }
 
 
     ///// GROUND MODEL
+
+    static const double COEFF = 0.3;
+//    static const double COEFF = 0.5;
 
     // Estimate ground roughness and reflectivity
     double reflectivity_sum = 0.0, reflectivity_sum_sqr = 0.0;
@@ -497,17 +511,26 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             // Does the bin correspond to the ground height?
             if( bin.idx != PolarMapBin::UNKNOWN )
             {
-                if( std::fabs(bin.avg) < 0.5 * params_.max_road_irregularity )
+                if( std::fabs(bin.avg) < COEFF * params_.max_road_irregularity )
                 {
-                    ground_points += bin.n;
+/*                    ground_points += bin.n;
                     reflectivity_sum += bin.ref_sum;
                     reflectivity_sum_sqr += bin.ref_sum_sqr;
                     roughness_sum += bin.sum;
-                    roughness_sum_sqr += bin.sum_sqr;
+                    roughness_sum_sqr += bin.sum_sqr;*/
+                    ground_points += 1;
+                    reflectivity_sum += bin.ref_avg;
+                    reflectivity_sum_sqr += bin.ref_avg * bin.ref_avg;
+//                    roughness_sum += bin.avg;
+//                    roughness_sum_sqr += bin.avg * bin.avg;
+                    roughness_sum += bin.var;
+                    roughness_sum_sqr += bin.var * bin.var;
                 }
             }
         }
     }
+
+//    ROS_INFO_STREAM( "Num. of ground points = " << ground_points );
 
     if( ground_points == 0 )
     {
@@ -534,10 +557,10 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             if( hbin.n >= 1 && hbin2.n >= 1 )
 //            if( hbin.n >= MIN_NUM_OF_SAMPLES && hbin2.n >= MIN_NUM_OF_SAMPLES )
             {
-                if( std::fabs(hbin.avg.z()) < 0.5 * params_.max_road_irregularity )
+                if( std::fabs(hbin.avg.z()) < COEFF * params_.max_road_irregularity )
                 {
-                    double diff = std::fabs(hbin.rad_avg - hbin2.rad_avg);
                     ground_points += 1;
+                    double diff = std::fabs(hbin.rad_avg - hbin2.rad_avg);
                     edginess_sum += diff;
                     edginess_sum_sqr += diff * diff;
                 }
@@ -569,9 +592,12 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             {
                 // Reflectivity
                 bin.prob = gaussVal<double>(bin.ref_avg, reflectivity_mean, reflectivity_sigma);
+                bin.v += 1;
 
                 // Roughness
-                bin.prob *= gaussVal<double>(bin.avg, roughness_mean, roughness_sigma);
+//                bin.prob *= gaussVal<double>(bin.avg, roughness_mean, roughness_sigma);
+                bin.prob *= gaussVal<double>(bin.var, roughness_mean, roughness_sigma);
+                bin.v += 1;
             }
         }
     }
@@ -582,9 +608,9 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     for( int rh = 0; rh < num_of_rings; ++rh )
     {
         double sum = getRingMapBin(num_of_angular_rmap_bins_ - 1, rh).rad_avg;
-        sum += getRingMapBin(num_of_angular_rmap_bins_ - 2, rh).rad_avg;
-        sum += getRingMapBin(num_of_angular_rmap_bins_ - 3, rh).rad_avg;
-        sum *= 0.33333;
+//        sum += getRingMapBin(num_of_angular_rmap_bins_ - 2, rh).rad_avg;
+//        sum += getRingMapBin(num_of_angular_rmap_bins_ - 3, rh).rad_avg;
+//        sum *= 0.33333;
 
         for( int ah = 0; ah < num_of_angular_rmap_bins_; ++ah )
         {
@@ -594,12 +620,14 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //            if( hbin.n >= MIN_NUM_OF_SAMPLES )
             {
                 hbin.prob = gaussVal<double>(std::fabs(hbin.rad_avg - sum), edginess_mean, edginess_sigma);
+//                hbin.prob = gaussVal<double>(hbin.rad_var, edginess_mean, edginess_sigma);
             }
 
             // Update the floating mean
-            int ah2 = (ah + num_of_angular_rmap_bins_ - 3) % num_of_angular_rmap_bins_;
-            sum -= 0.33333 * getRingMapBin(ah2, rh).rad_avg;
-            sum += 0.33333 * hbin.rad_avg;
+//            int ah2 = (ah + num_of_angular_rmap_bins_ - 3) % num_of_angular_rmap_bins_;
+//            sum -= 0.33333 * getRingMapBin(ah2, rh).rad_avg;
+//            sum += 0.33333 * hbin.rad_avg;
+            sum = hbin.rad_avg;
         }
     }
 
@@ -628,29 +656,29 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
             // Accumulate values
             PolarMapBin &bin = getPolarMapBin(an, rn);
-            if( bin.idx != PolarMapBin::UNKNOWN && bin.v == 0 )
+            if( bin.idx != PolarMapBin::UNKNOWN )
             {
-                bin.prob *= hbin.prob;
-                bin.v += 1;
+//                bin.prob *= hbin.prob;
+//                bin.v += 1;
             }
-        }
-    }
-
-    // Fill not observed values
-    double default_prob = gaussVal<double>(edginess_sigma, edginess_mean, edginess_sigma);
-    for( tPolarMap::iterator mit = polar_map_.begin(); mit != mitEnd; ++mit )
-    {
-        if( mit->idx != PolarMapBin::UNKNOWN && mit->v == 0 )
-        {
-            mit->prob *= default_prob;
-            mit->v += 1;
         }
     }
 
 
     ///// POLAR MAP
 
-    // Find all OCCUPIED bins
+    // Thresholds
+    double ground_thr[11], obstacle_thr[11];
+    ground_thr[0] = obstacle_thr[0] = 1;
+    ground_thr[1] = params_.ground_prob;
+    obstacle_thr[1] = params_.obstacle_prob;
+    for( unsigned i = 2; i <= 10; ++i )
+    {
+        ground_thr[i] = ground_thr[i-1] * params_.ground_prob;
+        obstacle_thr[i] = obstacle_thr[i-1] * params_.obstacle_prob;
+    }
+
+    // Evaluate bins
     for( tPolarMap::iterator mit = polar_map_.begin(); mit != mitEnd; ++mit )
     {
         if( mit->idx == PolarMapBin::UNKNOWN )
@@ -669,7 +697,8 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
         // Mark all map bins where both the minimal and maximal height lie
         // within the road irregularity tolerance as free...
-        if( std::fabs(mit->max) < params_.max_road_irregularity
+        if( std::fabs(mit->max - mit->min) < params_.max_road_irregularity
+            && std::fabs(mit->max) < params_.max_road_irregularity
             && std::fabs(mit->min) < params_.max_road_irregularity )
         {
             mit->idx = PolarMapBin::FREE;
@@ -677,12 +706,21 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 //            ROS_INFO_STREAM( "Ground prob: " << mit->prob );
         }
 
+        // No probability estimated
+        if( mit->v == 0 || mit->v > 10 )
+        {
+            mit->idx = PolarMapBin::UNKNOWN;
+            continue;
+        }
+
+//        ROS_INFO_STREAM( "Prob.: " << mit->prob );
+
         // Decide according to the probabilities...
-        if( mit->prob > 0.9 * 0.9 * 0.9 )
+        if( mit->prob > ground_thr[mit->v] )
         {
             mit->idx = PolarMapBin::FREE;
         }
-        else if( mit->prob < 0.4 * 0.4 * 0.4 )
+        else if( mit->prob < obstacle_thr[mit->v] )
         {
             mit->idx = PolarMapBin::OCCUPIED;
         }
