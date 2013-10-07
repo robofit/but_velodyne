@@ -42,6 +42,24 @@ void TraversabilityLayer::onInitialize()
   
   current_ = true;
 
+  int tmp;
+
+  // TODO add some warning msgs
+  nh.param<int>("inc_step", tmp, 32);
+  if (tmp > LETHAL_OBSTACLE) tmp = LETHAL_OBSTACLE;
+  if (tmp < 1) tmp = 1;
+  costmap_inc_step_ = (unsigned char)tmp;
+
+  nh.param<int>("dec_step", tmp, 8);
+  if (tmp > LETHAL_OBSTACLE) tmp = LETHAL_OBSTACLE;
+  if (tmp < 1) tmp = 1;
+  costmap_dec_step_ = (unsigned char)tmp;
+
+  nh.param<int>("unknown_dec_step", tmp, 1);
+  if (tmp > LETHAL_OBSTACLE) tmp = LETHAL_OBSTACLE;
+  if (tmp < 0) tmp = 0;
+  costmap_unknown_dec_step_ = (unsigned char)tmp;
+
   ros::Rate r(10);
   while (!map_received_ && g_nh.ok())
     {
@@ -63,6 +81,8 @@ void TraversabilityLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new
   // TODO make buffer of maps ???
   map_ptr_ = new_map;
   
+  ROS_ASSERT(map_ptr_->info.width * map_ptr_->info.height == map_ptr_->data.size());
+
   map_received_ = true;
 
 }
@@ -75,7 +95,6 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
 
 
     if (map_received_) {
-
 
         for (unsigned int x=0; x < map_ptr_->info.width; x++)
         for (unsigned int y=0; y < map_ptr_->info.height; y++) {
@@ -94,14 +113,49 @@ void TraversabilityLayer::updateBounds(double origin_x, double origin_y, double 
           char val = map_ptr_->data[(y*map_ptr_->info.width) + x];
 
           // handle special values
-          if (val==-1) costmap_[index] = NO_INFORMATION;
+          /*if (val==-1) costmap_[index] = NO_INFORMATION;
           else if (val==99) costmap_[index] = INSCRIBED_INFLATED_OBSTACLE;
           else if (val==100) costmap_[index] = LETHAL_OBSTACLE;
           else if (val==0) costmap_[index] = FREE_SPACE;
           else {
 
         	  // fit range 1 to 98 (inclusive) to 1 to 252 (inclusive)
-        	  costmap_[index] = (unsigned char)( (float)(val - 1) / 97.0 * 251.0 ) + 1;
+        	  unsigned char new_val = (unsigned char)( (float)(val - 1) / 97.0 * 251.0 ) + 1;
+
+        	  costmap_[index] = new_val;
+
+
+          }*/
+
+          if (val != -1) {
+
+        	  unsigned char new_val = ((unsigned char)val*LETHAL_OBSTACLE)/100;
+
+        	  if ( new_val > costmap_[index]) {
+
+        		  if ( (new_val - costmap_[index]) > costmap_inc_step_) costmap_[index] += costmap_inc_step_;
+        		  else costmap_[index] = new_val;
+
+        		  /*if (costmap_[index] < LETHAL_OBSTACLE - costmap_inc_step_) costmap_[index] += costmap_inc_step_;
+        		  else costmap_[index] = LETHAL_OBSTACLE;*/
+
+        	  }
+
+        	  if ( new_val < costmap_[index]) {
+
+        		  if ( (costmap_[index] - new_val) >  costmap_dec_step_) costmap_[index] -= costmap_dec_step_;
+        		  else costmap_[index] = FREE_SPACE;
+
+        		  /*if (costmap_[index] > costmap_dec_step_) costmap_[index] -= costmap_dec_step_;
+        		  else costmap_[index] = FREE_SPACE;*/
+
+        	  }
+
+
+
+          } else {
+
+        	  if (costmap_[index] > 0 && costmap_[index] < 255) costmap_[index]--;
 
           }
 

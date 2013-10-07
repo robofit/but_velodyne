@@ -67,6 +67,10 @@ protected:
 
   bool rolling_window_;
   
+  unsigned char costmap_inc_step_;
+  unsigned char costmap_dec_step_;
+  unsigned char costmap_unknown_dec_step_;
+
 
 };
 }
