@@ -169,7 +169,7 @@ void GroundMap::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
             {
                 // Map origin
                 geometry_msgs::PointStamped center;
-                center.header = pcl_in_.header;
+                center.header = pcl_conversions::fromPCL(pcl_in_.header);
                 center.point.x = center.point.y = center.point.z = 0.0;
 
                 ROS_INFO_STREAM_ONCE( "Transforming point cloud from " << pcl_in_.header.frame_id

@@ -42,6 +42,9 @@
 // Include template implementations to transform a custom point cloud
 #include <pcl_ros/impl/transforms.hpp>
 
+// ROS - PCL conversions
+#include <pcl_conversions/pcl_conversions.h>
+
 
 // Types of point and cloud to work with
 typedef velodyne_pointcloud::PointXYZIR VPoint;
