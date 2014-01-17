@@ -47,17 +47,20 @@
 #include <boost/circular_buffer.hpp>
 
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/approximate_voxel_grid.h>
 
 
 // Types of point and cloud to work with
 typedef velodyne_pointcloud::PointXYZIR VPoint;
+typedef pcl::PointXYZ TPoint;
 typedef pcl::PointCloud<VPoint> VPointCloud;
-typedef boost::shared_ptr<VPointCloud> VPointCloudPtr;
+typedef pcl::PointCloud<TPoint> TPointCloud;
+typedef TPointCloud::Ptr TPointCloudPtr;
 
-typedef boost::circular_buffer<VPointCloud> CloudBuffer;
+typedef boost::circular_buffer<TPointCloud> CloudBuffer;
 
 // Instantiate template for transforming a VPointCloud
-template bool pcl_ros::transformPointCloud<VPoint>(const std::string &, const VPointCloud &, VPointCloud &, const tf::TransformListener &);
+template bool pcl_ros::transformPointCloud<TPoint>(const std::string &, const TPointCloud &, TPointCloud &, const tf::TransformListener &);
 
 
 namespace but_velodyne
@@ -84,9 +87,6 @@ public:
 private:
     //! Node handle
     ros::NodeHandle nh_, private_nh_;
-
-    //! Point cloud buffer to avoid reallocation on every message.
-    VPointCloud pcl_in_;
 
     // TF, message filters, etc.
     message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
