@@ -34,7 +34,8 @@ rosbuild_add_boost_directories()
 # BUT Velodyne processing library
 rosbuild_add_library( butvelo 
                       src/but_velodyne_lib/laser_scan.cpp
-                      src/but_velodyne_lib/ground_map.cpp )
+                      src/but_velodyne_lib/ground_map.cpp
+                      src/but_velodyne_lib/cloud_assembler.cpp )
 #rosbuild_add_openmp_flags( butvelo )
 
 
@@ -58,6 +59,10 @@ rosbuild_add_executable( ground_map src/ground_map_node.cpp )
 #rosbuild_add_openmp_flags( ground_map )
 target_link_libraries( ground_map butvelo )
 target_link_libraries( ground_map ${OpenCV_LIBRARIES} )
+
+# Cloud assembler node
+rosbuild_add_executable( cloud_assembler src/cloud_assembler_node.cpp )
+target_link_libraries( cloud_assembler butvelo )
 
 
 # Parse check all the launch/*.launch files
