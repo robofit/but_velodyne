@@ -53,16 +53,53 @@ CloudAssembler::CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
 {
 
-	points_sub_filtered_.subscribe( nh_, "/velodyne_points", 10 );
-	tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>( points_sub_filtered_, listener_, "odom", 10 );
+	points_sub_filtered_.subscribe( nh_, "/velodyne_points", 1 );
+	tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>( points_sub_filtered_, listener_, "odom", 1 );
 	tf_filter_->registerCallback( boost::bind(&CloudAssembler::process, this, _1) );
 
 	points_pub_ = nh_.advertise<sensor_msgs::PointCloud2> ("output", 1);
 
 
-	cloud_buff_.reset(new CloudBuffer(5));
+	cloud_buff_.reset(new CloudBuffer(10));
+
+
 
 }
+
+bool CloudAssembler::getRobotPose(ros::Time time, geometry_msgs::PoseStamped& res) {
+
+	geometry_msgs::PoseStamped p;
+
+	geometry_msgs::PoseStamped out;
+
+	p.header.stamp = time;
+	p.header.frame_id = "base_link";
+	p.pose.position.x = 0;
+	p.pose.position.y = 0;
+	p.pose.position.z = 0;
+
+	p.pose.orientation.x = 0;
+	p.pose.orientation.y = 0;
+	p.pose.orientation.z = 0;
+	p.pose.orientation.w = 1;
+
+	if (listener_.waitForTransform("odom",p.header.frame_id,p.header.stamp,ros::Duration(0.25))) {
+
+		listener_.transformPose("odom",p,out);
+
+		res = out;
+		return true;
+
+	} else {
+
+		ROS_WARN("Cant get robot pose.");
+
+	}
+
+	return false;
+
+}
+
 
 /******************************************************************************
  */
@@ -75,6 +112,16 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
         return;
     }
 
+    geometry_msgs::PoseStamped p;
+
+    if (!getRobotPose(cloud->header.stamp,p)) return;
+
+    bool update = false;
+
+    double dist = sqrt(pow(robot_pose_.pose.position.x - p.pose.position.x, 2) + pow(robot_pose_.pose.position.y - p.pose.position.y, 2));
+
+    if (dist > 0.2) update = true;
+
     //! Point cloud buffer to avoid reallocation on every message.
     VPointCloud vpcl;
     TPointCloudPtr tpcl(new TPointCloud());
@@ -82,17 +129,19 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     // Retrieve the input point cloud
     pcl::fromROSMsg( *cloud, vpcl );
 
-    std::cout << "fromROSMsg ok" << std::endl;
+    //std::cout << "fromROSMsg ok" << std::endl;
 
     pcl::copyPointCloud(vpcl, *tpcl);
 
-    std::cout << "copy ok" << std::endl;
+    // TODO limit range of point cloud (10x10 m?)
+
+    //std::cout << "copy ok" << std::endl;
 
     pcl_ros::transformPointCloud( "odom", *tpcl, *tpcl, listener_ );
 
-    std::cout << "tf ok" << std::endl;
+    //std::cout << "tf ok" << std::endl;
 
-    cloud_buff_->push_back(*tpcl);
+    if (update) cloud_buff_->push_back(*tpcl);
 
     TPointCloudPtr pcl_out(new TPointCloud());
 
@@ -107,21 +156,23 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
     }
 
-    std::cout << "merge ok" << std::endl;
+    if (!update) *pcl_out += *tpcl;
+
+    //std::cout << "merge ok" << std::endl;
 
     //pcl::VoxelGrid< TPoint > sor;
     pcl::ApproximateVoxelGrid<TPoint> sor;
     sor.setInputCloud (pcl_out);
     sor.setDownsampleAllData (false);
-    sor.setLeafSize (0.01, 0.01, 0.01);
+    sor.setLeafSize (0.05, 0.05, 0.05);
 
-    std::cout << "before filter" << std::endl;
+    //std::cout << "before filter" << std::endl;
 
     TPointCloudPtr pcl_filt(new TPointCloud());
 
     sor.filter(*pcl_filt);
 
-    std::cout << "filter ok" << std::endl;
+    //std::cout << "filter ok" << std::endl;
 
     sensor_msgs::PointCloud2::Ptr cloud_out(new sensor_msgs::PointCloud2());
 
@@ -129,9 +180,9 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
     pcl::toROSMsg(*pcl_filt, *cloud_out);
 
-    std::cout << "toROSMsg ok" << std::endl;
+    //std::cout << "toROSMsg ok" << std::endl;
 
-    std::cout << "points: " << pcl_out->points.size() << std::endl;
+    //std::cout << "points: " << pcl_out->points.size() << std::endl;
 
     cloud_out->header.stamp = cloud->header.stamp;
     cloud_out->header.frame_id = "odom";

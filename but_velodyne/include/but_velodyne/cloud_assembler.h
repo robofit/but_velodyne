@@ -49,6 +49,8 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/approximate_voxel_grid.h>
 
+#include <geometry_msgs/PoseStamped.h>
+
 
 // Types of point and cloud to work with
 typedef velodyne_pointcloud::PointXYZIR VPoint;
@@ -96,6 +98,10 @@ private:
     tf::TransformListener listener_;
 
     boost::shared_ptr<CloudBuffer> cloud_buff_;
+
+    geometry_msgs::PoseStamped robot_pose_;
+
+    bool getRobotPose(ros::Time time, geometry_msgs::PoseStamped& res);
 
 };
 
