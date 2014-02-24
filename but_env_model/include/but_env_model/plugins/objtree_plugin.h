@@ -34,19 +34,19 @@
 
 #include <but_env_model/server_tools.h>
 #include <but_env_model/objtree/octree.h>
-#include <but_env_model/GetPlane.h>
-#include <but_env_model/GetAlignedBox.h>
-#include <but_env_model/GetBoundingBox.h>
-#include <but_env_model/InsertPlane.h>
-#include <but_env_model/InsertAlignedBox.h>
-#include <but_env_model/InsertBoundingBox.h>
-#include <but_env_model/InsertPlanes.h>
-#include <but_env_model/ShowObject.h>
-#include <but_env_model/RemoveObject.h>
-#include <but_env_model/ShowObjtree.h>
-#include <but_env_model/GetObjectsInBox.h>
-#include <but_env_model/GetObjectsInHalfspace.h>
-#include <but_env_model/GetObjectsInSphere.h>
+#include <but_env_model_msgs/GetPlane.h>
+#include <but_env_model_msgs/GetAlignedBox.h>
+#include <but_env_model_msgs/GetBoundingBox.h>
+#include <but_env_model_msgs/InsertPlane.h>
+#include <but_env_model_msgs/InsertAlignedBox.h>
+#include <but_env_model_msgs/InsertBoundingBox.h>
+#include <but_env_model_msgs/InsertPlanes.h>
+#include <but_env_model_msgs/ShowObject.h>
+#include <but_env_model_msgs/RemoveObject.h>
+#include <but_env_model_msgs/ShowObjtree.h>
+#include <but_env_model_msgs/GetObjectsInBox.h>
+#include <but_env_model_msgs/GetObjectsInHalfspace.h>
+#include <but_env_model_msgs/GetObjectsInSphere.h>
 
 #include <but_interaction_primitives/services_list.h>
 
@@ -87,43 +87,43 @@ protected:
     virtual void publishInternal( const ros::Time & timestamp ){}
 
     /// Insert new plane, update if plane with same id exists
-    bool srvInsertPlane(but_env_model::InsertPlane::Request &req, but_env_model::InsertPlane::Response &res);
+    bool srvInsertPlane(but_env_model_msgs::InsertPlane::Request &req, but_env_model_msgs::InsertPlane::Response &res);
     /// Insert new plane, update if similar plane exists
-    bool srvInsertPlaneByPosition(but_env_model::InsertPlane::Request &req, but_env_model::InsertPlane::Response &res);
+    bool srvInsertPlaneByPosition(but_env_model_msgs::InsertPlane::Request &req, but_env_model_msgs::InsertPlane::Response &res);
     /// Get similar plane id
-    bool srvGetSimilarPlane(but_env_model::InsertPlane::Request &req, but_env_model::InsertPlane::Response &res);
+    bool srvGetSimilarPlane(but_env_model_msgs::InsertPlane::Request &req, but_env_model_msgs::InsertPlane::Response &res);
     /// Insert planes array
-    bool srvInsertPlanes(but_env_model::InsertPlanes::Request &req, but_env_model::InsertPlanes::Response &res);
+    bool srvInsertPlanes(but_env_model_msgs::InsertPlanes::Request &req, but_env_model_msgs::InsertPlanes::Response &res);
     /// Insert new axis aligned box, update if aligned box with same id exists
-    bool srvInsertABox(but_env_model::InsertAlignedBox::Request &req, but_env_model::InsertAlignedBox::Response &res);
+    bool srvInsertABox(but_env_model_msgs::InsertAlignedBox::Request &req, but_env_model_msgs::InsertAlignedBox::Response &res);
     /// Insert new axis aligned box, update if similar aligned box exists
-    bool srvInsertABoxByPosition(but_env_model::InsertAlignedBox::Request &req, but_env_model::InsertAlignedBox::Response &res);
+    bool srvInsertABoxByPosition(but_env_model_msgs::InsertAlignedBox::Request &req, but_env_model_msgs::InsertAlignedBox::Response &res);
     /// Get similar axis aligned box id
-    bool srvGetSimilarABox(but_env_model::InsertAlignedBox::Request &req, but_env_model::InsertAlignedBox::Response &res);
+    bool srvGetSimilarABox(but_env_model_msgs::InsertAlignedBox::Request &req, but_env_model_msgs::InsertAlignedBox::Response &res);
     /// Insert new bounding box, update if bounding box with same id exists
-    bool srvInsertBBox(but_env_model::InsertBoundingBox::Request &req, but_env_model::InsertBoundingBox::Response &res);
+    bool srvInsertBBox(but_env_model_msgs::InsertBoundingBox::Request &req, but_env_model_msgs::InsertBoundingBox::Response &res);
     /// Insert new bounding box, update if similar bounding box exists
-    bool srvInsertBBoxByPosition(but_env_model::InsertBoundingBox::Request &req, but_env_model::InsertBoundingBox::Response &res);
+    bool srvInsertBBoxByPosition(but_env_model_msgs::InsertBoundingBox::Request &req, but_env_model_msgs::InsertBoundingBox::Response &res);
     /// Get similar bounding box id
-    bool srvGetSimilarBBox(but_env_model::InsertBoundingBox::Request &req, but_env_model::InsertBoundingBox::Response &res);
+    bool srvGetSimilarBBox(but_env_model_msgs::InsertBoundingBox::Request &req, but_env_model_msgs::InsertBoundingBox::Response &res);
     /// Show object as interaction primitive
-    bool srvShowObject(but_env_model::ShowObject::Request &req, but_env_model::ShowObject::Response &res);
+    bool srvShowObject(but_env_model_msgs::ShowObject::Request &req, but_env_model_msgs::ShowObject::Response &res);
     /// Remove object by id
-    bool srvRemoveObject(but_env_model::RemoveObject::Request &req, but_env_model::RemoveObject::Response &res);
+    bool srvRemoveObject(but_env_model_msgs::RemoveObject::Request &req, but_env_model_msgs::RemoveObject::Response &res);
     /// Show octree structure
-    bool srvShowObjtree(but_env_model::ShowObjtree::Request &req, but_env_model::ShowObjtree::Response &res);
+    bool srvShowObjtree(but_env_model_msgs::ShowObjtree::Request &req, but_env_model_msgs::ShowObjtree::Response &res);
     /// Get information about plane
-    bool srvGetPlane(but_env_model::GetPlane::Request &req, but_env_model::GetPlane::Response &res);
+    bool srvGetPlane(but_env_model_msgs::GetPlane::Request &req, but_env_model_msgs::GetPlane::Response &res);
     /// Get information about axis aligned box
-    bool srvGetABox(but_env_model::GetAlignedBox::Request &req, but_env_model::GetAlignedBox::Response &res);
+    bool srvGetABox(but_env_model_msgs::GetAlignedBox::Request &req, but_env_model_msgs::GetAlignedBox::Response &res);
     /// Get information about bounding box
-    bool srvGetBBox(but_env_model::GetBoundingBox::Request &req, but_env_model::GetBoundingBox::Response &res);
+    bool srvGetBBox(but_env_model_msgs::GetBoundingBox::Request &req, but_env_model_msgs::GetBoundingBox::Response &res);
     /// Get objects ids from box
-    bool srvGetObjectsInBox(but_env_model::GetObjectsInBox::Request &req, but_env_model::GetObjectsInBox::Response &res);
+    bool srvGetObjectsInBox(but_env_model_msgs::GetObjectsInBox::Request &req, but_env_model_msgs::GetObjectsInBox::Response &res);
     /// Get objects ids from halfspace
-    bool srvGetObjectsInHalfspace(but_env_model::GetObjectsInHalfspace::Request &req, but_env_model::GetObjectsInHalfspace::Response &res);
+    bool srvGetObjectsInHalfspace(but_env_model_msgs::GetObjectsInHalfspace::Request &req, but_env_model_msgs::GetObjectsInHalfspace::Response &res);
     /// Get objects ids from sphere
-    bool srvGetObjectsInSphere(but_env_model::GetObjectsInSphere::Request &req, but_env_model::GetObjectsInSphere::Response &res);
+    bool srvGetObjectsInSphere(but_env_model_msgs::GetObjectsInSphere::Request &req, but_env_model_msgs::GetObjectsInSphere::Response &res);
 
     //Helper methods
     unsigned int insertPlane(const but_env_model_msgs::PlaneDesc &plane, Operation op);

@@ -1,4 +1,0 @@
-int32 my_version
----
-int32 current_version
-moveit_msgs/CollisionMap map

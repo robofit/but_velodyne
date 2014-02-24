@@ -1,5 +1,0 @@
-uint32 object_id
-geometry_msgs/Point32 position
-geometry_msgs/Vector3 scale
---- 
-uint32 object_id

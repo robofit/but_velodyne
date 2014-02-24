@@ -51,6 +51,7 @@
 #include <pcl/point_types.h>
 #include <pcl/ros/conversions.h>
 #include <tf/transform_datatypes.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>

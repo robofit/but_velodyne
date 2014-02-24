@@ -34,7 +34,7 @@
 #include <but_env_model_msgs/RVIZCameraPosition.h>
 #include <but_env_model_msgs/OctomapUpdates.h>
 #include <but_env_model/server_tools.h>
-#include <but_env_model/SetNumIncompleteFrames.h>
+#include <but_env_model_msgs/SetNumIncompleteFrames.h>
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
@@ -85,7 +85,7 @@ protected:
 	bool inSensorCone(const cv::Point2d& uv) const;
 
 	/// Set number of incomplete frames callback
-	bool setNumIncompleteFramesCB( but_env_model::SetNumIncompleteFrames::Request & req, but_env_model::SetNumIncompleteFrames::Response & res );
+	bool setNumIncompleteFramesCB( but_env_model_msgs::SetNumIncompleteFrames::Request & req, but_env_model_msgs::SetNumIncompleteFrames::Response & res );
 
 protected:
 	/// Should camera position and orientation be transformed?

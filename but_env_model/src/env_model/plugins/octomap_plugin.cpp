@@ -261,7 +261,7 @@ void but_env_model::COctoMapPlugin::init(ros::NodeHandle & nh, ros::NodeHandle &
 	m_ocPublisher = nh.advertise<octomap_msgs::Octomap> (
 			m_ocPublisherName, 5, m_latchedTopics);
 
-	m_registration.init( nh );
+	//m_registration.init( nh ); // TODO registration module disabled (due to troubles with compilation)
 
 	PERROR( "OctoMapPlugin initialized..." );
 
@@ -322,7 +322,7 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 	Eigen::Matrix4f registration_transform( Eigen::Matrix4f::Identity() );
 
 	// Registration
-	{
+	/*{
 		if( m_registration.isRegistering() && cloud->size() > 0 && m_bNotFirst )
 		{
 //			pcl::copyPointCloud( *m_data, *m_bufferCloud );
@@ -346,7 +346,7 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 				return;
 			}
 		}
-	}
+	}*/
 
 //	ros::WallTime startTime = ros::WallTime::now();
 
@@ -380,10 +380,10 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 	try {
 		// Transformation - to, from, time, waiting time
 		m_tfListener.waitForTransform(m_mapParameters.frameId,
-				cloud->header.frame_id, cloud->header.stamp, ros::Duration(5));
+				pcl_conversions::fromPCL(cloud->header).frame_id, pcl_conversions::fromPCL(cloud->header).stamp, ros::Duration(5));
 
 		m_tfListener.lookupTransform(m_mapParameters.frameId,
-				cloud->header.frame_id, cloud->header.stamp, cloudToMapTf);
+				pcl_conversions::fromPCL(cloud->header).frame_id, pcl_conversions::fromPCL(cloud->header).stamp, cloudToMapTf);
 
 //		m_tfListener.waitForTransform(m_mapParameters.frameId,
 //						m_sensor_frame_id, cloud->header.stamp, ros::Duration(5));
@@ -398,7 +398,7 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 	}
 
 	// transform clouds to world frame for insertion
-	if (m_mapParameters.frameId != cloud->header.frame_id)
+	if (m_mapParameters.frameId != pcl_conversions::fromPCL(cloud->header).frame_id)
 	{
 		Eigen::Matrix4f c2mTM;
 
@@ -421,8 +421,8 @@ void but_env_model::COctoMapPlugin::insertCloud(tPointCloud::ConstPtr cloud)
 	pc_nonground.header.frame_id = m_mapParameters.frameId;
 
     // 2012/12/14: Majkl (trying to solve problem with missing time stamps in all message headers)
-	m_DataTimeStamp = cloud->header.stamp;
-	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", cloud->header.stamp.toSec());
+	m_DataTimeStamp = pcl_conversions::fromPCL(cloud->header).stamp;
+	ROS_DEBUG("COctoMapPlugin::insertCloud(): Stamp = %f", pcl_conversions::fromPCL(cloud->header).stamp.toSec());
 
 //	insertScan(sensorToMapTf.getOrigin(), pc_ground, pc_nonground);
     insertScan(cloudToMapTf.getOrigin(), pc_ground, pc_nonground);
@@ -714,8 +714,8 @@ long int but_env_model::COctoMapPlugin::doObjectTesting(but_env_model::CTestingO
 #define G2EPOINT( gp ) (Eigen::Vector3f( gp.x, gp.y, gp.z ))
 #define G2EQUAT( gp ) (Eigen::Quaternionf( gp.x, gp.y, gp.z, gp.w ))
 bool but_env_model::COctoMapPlugin::removeCubeCB(
-		but_env_model::RemoveCube::Request & req,
-		but_env_model::RemoveCube::Response & res) {
+		but_env_model_msgs::RemoveCube::Request & req,
+		but_env_model_msgs::RemoveCube::Response & res) {
 
 		PERROR( "Remove cube from octomap: " << req.pose << " --- " << req.size );
 
@@ -763,8 +763,8 @@ bool but_env_model::COctoMapPlugin::removeCubeCB(
 }
 
 bool but_env_model::COctoMapPlugin::addCubeCB(
-		but_env_model::AddCube::Request & req,
-		but_env_model::AddCube::Response & res) {
+		but_env_model_msgs::AddCube::Request & req,
+		but_env_model_msgs::AddCube::Response & res) {
 
 		PERROR( "Add cube to octomap: " << req.pose << " --- \n size: \n"  << req.size );
 
@@ -900,7 +900,7 @@ void but_env_model::COctoMapPlugin::pause( bool bPause, ros::NodeHandle & nh )
 /**
  * Set crawling depth - service callback
  */
-bool but_env_model::COctoMapPlugin::setCrawlingDepthCB( but_env_model::SetCrawlingDepth::Request & req, but_env_model::SetCrawlingDepth::Response & res )
+bool but_env_model::COctoMapPlugin::setCrawlingDepthCB( but_env_model_msgs::SetCrawlingDepth::Request & req, but_env_model_msgs::SetCrawlingDepth::Response & res )
 {
 	boost::mutex::scoped_lock lock(m_lockData);
 	m_crawlDepth = req.depth;
@@ -918,7 +918,7 @@ bool but_env_model::COctoMapPlugin::setCrawlingDepthCB( but_env_model::SetCrawli
 /**
  * Get octomap tree depth - service callback
  */
-bool but_env_model::COctoMapPlugin::getTreeDepthCB( but_env_model::GetTreeDepth::Request & req, but_env_model::GetTreeDepth::Response & res )
+bool but_env_model::COctoMapPlugin::getTreeDepthCB( but_env_model_msgs::GetTreeDepth::Request & req, but_env_model_msgs::GetTreeDepth::Response & res )
 {
 	res.depth = m_data->getTree().getTreeDepth();
 
@@ -928,7 +928,7 @@ bool but_env_model::COctoMapPlugin::getTreeDepthCB( but_env_model::GetTreeDepth:
 /**
  * Load map service callback
  */
-bool but_env_model::COctoMapPlugin::loadOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::loadOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res )
 {
 	// reset data
 	reset(true);
@@ -990,7 +990,7 @@ bool but_env_model::COctoMapPlugin::loadOctreeCB( but_env_model::LoadSaveRequest
 /**
  * Load map service callback
  */
-bool but_env_model::COctoMapPlugin::saveOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::saveOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res )
 {
 	if(req.filename.length() == 0 )
 	{
@@ -1015,7 +1015,7 @@ bool but_env_model::COctoMapPlugin::saveOctreeCB( but_env_model::LoadSaveRequest
 /**
  * Load map service callback
  */
-bool but_env_model::COctoMapPlugin::loadFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::loadFullOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res )
 {
 	// reset data
 	reset(true);
@@ -1099,7 +1099,7 @@ bool but_env_model::COctoMapPlugin::loadFullOctreeCB( but_env_model::LoadSaveReq
 /**
  * Load map service callback
  */
-bool but_env_model::COctoMapPlugin::saveFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res )
+bool but_env_model::COctoMapPlugin::saveFullOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res )
 {
 	if(req.filename.length() == 0 )
 	{
@@ -1125,7 +1125,7 @@ bool but_env_model::COctoMapPlugin::saveFullOctreeCB( but_env_model::LoadSaveReq
 /**
  * Starts/stops octomap crowling - service callback
  */
-bool but_env_model::COctoMapPlugin::agingPauseCB( but_env_model::OctomapAgingPause::Request & req, but_env_model::OctomapAgingPause::Response & res )
+bool but_env_model::COctoMapPlugin::agingPauseCB( but_env_model_msgs::OctomapAgingPause::Request & req, but_env_model_msgs::OctomapAgingPause::Response & res )
 {
     if( req.pause )
     {

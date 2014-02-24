@@ -69,8 +69,8 @@
 #include <but_env_model/plugins/objtree_plugin.h>
 #include <but_env_model/plugins/occupancy_grid_plugin.h>
 
-#include <but_env_model/EnvModelPause.h>
-#include <but_env_model/UseInputColor.h>
+#include <but_env_model_msgs/EnvModelPause.h>
+#include <but_env_model_msgs/UseInputColor.h>
 
 //#define _EXAMPLES_
 #ifdef _EXAMPLES_
@@ -120,13 +120,13 @@ protected:
     }
 
     /// On pause service call
-    bool onPause( EnvModelPause::Request & request, EnvModelPause::Response & response );
+    bool onPause( but_env_model_msgs::EnvModelPause::Request & request, but_env_model_msgs::EnvModelPause::Response & response );
 
     //! Publish all
     void publishPlugins(const ros::Time& rostime);
 
     /// Use/do not use color service callback
-	bool onUseInputColor(but_env_model::UseInputColor::Request & req, but_env_model::UseInputColor::Response & res );
+	bool onUseInputColor(but_env_model_msgs::UseInputColor::Request & req, but_env_model_msgs::UseInputColor::Response & res );
 
 protected:
     //! Is server running now
