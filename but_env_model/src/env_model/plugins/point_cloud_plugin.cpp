@@ -212,7 +212,7 @@ void but_env_model::CPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
 
 	// 2013/01/31 Majkl
 	m_data->header.frame_id = par.frameId;
-	m_data->header.stamp = par.currentTime;
+	m_data->header.stamp = par.currentTime.toNSec(); // TODO check this
 
 	lock.unlock();
 
@@ -382,7 +382,7 @@ void but_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 
 		// transform pointcloud from sensor frame to the preset frame
 		pcl::transformPointCloud< tPclPoint >(*m_data, *m_data, sensorToPcTM);
-		m_data->header = cloud->header;
+		m_data->header = pcl_conversions::toPCL(cloud->header);
 		m_data->header.frame_id = m_frame_id;
 	}
 
@@ -467,7 +467,7 @@ void but_env_model::CPointCloudPlugin::insertCloudCallback( const  tIncommingPoi
 	}*/
 
 	// Modify header
-	m_data->header = cloud->header;
+	m_data->header = pcl_conversions::toPCL(cloud->header);
 	if(m_bTransformPC)
 		m_data->header.frame_id = m_frame_id;
 

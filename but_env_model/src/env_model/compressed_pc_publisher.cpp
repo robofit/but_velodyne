@@ -30,6 +30,7 @@
 #include <pcl/ros/conversions.h>
 #include <pcl_ros/transforms.h>
 #include <pcl/io/io.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 
 /**
@@ -162,7 +163,7 @@ long but_env_model::CCompressedPCPublisher::copyCloud( const tInputCloudMsg & in
 	if( bAdd )
 	{
 		tPointCloudInternal buffer;
-		output.header = input.header;
+		output.header = pcl_conversions::toPCL(input.header);
 
 		if( ! isRGBCloud( input ) )
 		{

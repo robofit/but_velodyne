@@ -207,7 +207,7 @@ protected:
 	tRegistrator m_registration;
 
 	//! Voxel grid filter
-	pcl::VoxelGrid<tCloud> m_gridFilter;
+	//pcl::VoxelGrid<tCloud> m_gridFilter;
 
 	//! Cloud buffer
 	tCloud::Ptr m_resampledCloud;

@@ -207,7 +207,7 @@ void but_env_model::CLimitedPointCloudPlugin::newMapDataCB( SMapWithParameters &
 
 	// 2013/01/31 Majkl
 	m_data->header.frame_id = par.frameId;
-	m_data->header.stamp = par.currentTime;
+	m_data->header.stamp = par.currentTime.toNSec();
 
 	m_DataTimeStamp = par.currentTime;
 

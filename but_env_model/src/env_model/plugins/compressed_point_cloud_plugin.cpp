@@ -264,7 +264,7 @@ void but_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
 
 	// 2013/01/31 Majkl
 	m_data->header.frame_id = par.frameId;
-	m_data->header.stamp = par.currentTime;
+	m_data->header.stamp = par.currentTime.toNSec();
 
 	m_DataTimeStamp = par.currentTime;
 
@@ -338,7 +338,7 @@ void but_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time
     if( shouldPublish() )
     {
     	// Fill header information
-    	m_octomap_updates_msg->header = m_data->header;
+    	m_octomap_updates_msg->header = pcl_conversions::fromPCL(m_data->header);
 
 		// Majkl 2013/1/24: trying to solve empty header of the output
     	m_octomap_updates_msg->header.stamp = m_DataTimeStamp;
@@ -433,7 +433,7 @@ bool but_env_model::CCompressedPointCloudPlugin::shouldPublish()
 /**
  * Set number of incomplete frames callback
  */
-bool but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB( but_env_model::SetNumIncompleteFrames::Request & req, but_env_model::SetNumIncompleteFrames::Response & res )
+bool but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB( but_env_model_msgs::SetNumIncompleteFrames::Request & req, but_env_model_msgs::SetNumIncompleteFrames::Response & res )
 {
 	m_use_every_nth = req.num;
 	PERROR( "New number of incomplete frames set: " << m_use_every_nth );

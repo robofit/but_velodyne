@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>but_env_model_msgs</name>
+  <version>0.0.5</version>
+  <description>Definition of shared ROS environment mapping messages by Robo@FIT group.</description>
+
+  <maintainer email="spanel@fit.vutbr.cz">Michal Spanel</maintainer>
+  
+  <author>Vit Stancl</author>
+
+  <license>LGPL</license>
+  
+  <!--url type="website">http://ros.org/wiki/but_rviz_utils</url>
+  <url type="repository">https://github.com/robofit/but_hmi</url>
+  <url type="bugtracker">https://github.com/robofit/but_hmi/issues</url-->
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>moveit_msgs</run_depend>
+
+</package>
+

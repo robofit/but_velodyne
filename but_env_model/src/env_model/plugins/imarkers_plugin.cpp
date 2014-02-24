@@ -126,8 +126,8 @@ void but_env_model::CIMarkersPlugin::init(ros::NodeHandle & nh, ros::NodeHandle 
  *
  * @param pa Array of planes
  */
-bool but_env_model::CIMarkersPlugin::insertPlaneCallback(but_env_model::AddPlanes::Request & req,
-	but_env_model::AddPlanes::Response & res) {
+bool but_env_model::CIMarkersPlugin::insertPlaneCallback(but_env_model_msgs::AddPlanes::Request & req,
+	but_env_model_msgs::AddPlanes::Response & res) {
 	std::cerr << "Inset plane called" << std::endl;
 	// Get plane array
 	but_env_model_msgs::PlaneArray & planea(req.plane_array);

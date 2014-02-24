@@ -160,7 +160,7 @@ void but_env_model::COcFilterRaycast::filterInternal( tButServerOcTree & tree )
 	tf::StampedTransform trans;
 	try
 	{
-		m_tfListener.lookupTransform(m_sensor_header.frame_id, m_treeFrameId, m_cloudPtr->header.stamp, trans); //m_cloudPtr->header.frame_id
+		m_tfListener.lookupTransform(m_sensor_header.frame_id, m_treeFrameId, pcl_conversions::fromPCL(m_cloudPtr->header).stamp, trans); //m_cloudPtr->header.frame_id
 	}
 	catch (tf::TransformException& ex)
 	{

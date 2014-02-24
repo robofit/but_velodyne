@@ -98,7 +98,7 @@ void CObjTreePlugin::reset()
     m_octree.clear();
 }
 
-bool CObjTreePlugin::srvInsertPlane(but_env_model::InsertPlane::Request &req, but_env_model::InsertPlane::Response &res)
+bool CObjTreePlugin::srvInsertPlane(but_env_model_msgs::InsertPlane::Request &req, but_env_model_msgs::InsertPlane::Response &res)
 {
     res.object_id = insertPlane(req.plane, INSERT);
 
@@ -107,7 +107,7 @@ bool CObjTreePlugin::srvInsertPlane(but_env_model::InsertPlane::Request &req, bu
     return true;
 }
 
-bool CObjTreePlugin::srvInsertABox(but_env_model::InsertAlignedBox::Request &req, but_env_model::InsertAlignedBox::Response &res)
+bool CObjTreePlugin::srvInsertABox(but_env_model_msgs::InsertAlignedBox::Request &req, but_env_model_msgs::InsertAlignedBox::Response &res)
 {
     res.object_id = insertABox(req.object_id, req.position, req.scale, INSERT);
 
@@ -116,7 +116,7 @@ bool CObjTreePlugin::srvInsertABox(but_env_model::InsertAlignedBox::Request &req
     return true;
 }
 
-bool CObjTreePlugin::srvInsertBBox(but_env_model::InsertBoundingBox::Request &req, but_env_model::InsertBoundingBox::Response &res)
+bool CObjTreePlugin::srvInsertBBox(but_env_model_msgs::InsertBoundingBox::Request &req, but_env_model_msgs::InsertBoundingBox::Response &res)
 {
     res.object_id = insertBBox(req.object_id, req.pose, req.scale, INSERT);
 
@@ -125,7 +125,7 @@ bool CObjTreePlugin::srvInsertBBox(but_env_model::InsertBoundingBox::Request &re
     return true;
 }
 
-bool CObjTreePlugin::srvInsertPlaneByPosition(but_env_model::InsertPlane::Request &req, but_env_model::InsertPlane::Response &res)
+bool CObjTreePlugin::srvInsertPlaneByPosition(but_env_model_msgs::InsertPlane::Request &req, but_env_model_msgs::InsertPlane::Response &res)
 {
     if(m_octree.removeObject(req.plane.id))
         removePrimitiveMarker(req.plane.id);
@@ -140,7 +140,7 @@ bool CObjTreePlugin::srvInsertPlaneByPosition(but_env_model::InsertPlane::Reques
     return true;
 }
 
-bool CObjTreePlugin::srvInsertABoxByPosition(but_env_model::InsertAlignedBox::Request &req, but_env_model::InsertAlignedBox::Response &res)
+bool CObjTreePlugin::srvInsertABoxByPosition(but_env_model_msgs::InsertAlignedBox::Request &req, but_env_model_msgs::InsertAlignedBox::Response &res)
 {
     if(m_octree.removeObject(req.object_id))
         removePrimitiveMarker(req.object_id);
@@ -155,7 +155,7 @@ bool CObjTreePlugin::srvInsertABoxByPosition(but_env_model::InsertAlignedBox::Re
     return true;
 }
 
-bool CObjTreePlugin::srvInsertBBoxByPosition(but_env_model::InsertBoundingBox::Request &req, but_env_model::InsertBoundingBox::Response &res)
+bool CObjTreePlugin::srvInsertBBoxByPosition(but_env_model_msgs::InsertBoundingBox::Request &req, but_env_model_msgs::InsertBoundingBox::Response &res)
 {
     if(m_octree.removeObject(req.object_id))
         removePrimitiveMarker(req.object_id);
@@ -170,28 +170,28 @@ bool CObjTreePlugin::srvInsertBBoxByPosition(but_env_model::InsertBoundingBox::R
     return true;
 }
 
-bool CObjTreePlugin::srvGetSimilarPlane(but_env_model::InsertPlane::Request &req, but_env_model::InsertPlane::Response &res)
+bool CObjTreePlugin::srvGetSimilarPlane(but_env_model_msgs::InsertPlane::Request &req, but_env_model_msgs::InsertPlane::Response &res)
 {
     res.object_id = insertPlane(req.plane, GET_SIMILAR);
 
     return true;
 }
 
-bool CObjTreePlugin::srvGetSimilarABox(but_env_model::InsertAlignedBox::Request &req, but_env_model::InsertAlignedBox::Response &res)
+bool CObjTreePlugin::srvGetSimilarABox(but_env_model_msgs::InsertAlignedBox::Request &req, but_env_model_msgs::InsertAlignedBox::Response &res)
 {
     res.object_id = insertABox(req.object_id, req.position, req.scale, GET_SIMILAR);
 
     return true;
 }
 
-bool CObjTreePlugin::srvGetSimilarBBox(but_env_model::InsertBoundingBox::Request &req, but_env_model::InsertBoundingBox::Response &res)
+bool CObjTreePlugin::srvGetSimilarBBox(but_env_model_msgs::InsertBoundingBox::Request &req, but_env_model_msgs::InsertBoundingBox::Response &res)
 {
     res.object_id = insertBBox(req.object_id, req.pose, req.scale, GET_SIMILAR);
 
     return true;
 }
 
-bool CObjTreePlugin::srvInsertPlanes(but_env_model::InsertPlanes::Request &req, but_env_model::InsertPlanes::Response &res)
+bool CObjTreePlugin::srvInsertPlanes(but_env_model_msgs::InsertPlanes::Request &req, but_env_model_msgs::InsertPlanes::Response &res)
 {
     std::vector<but_env_model_msgs::PlaneDesc>::iterator i;
     std::vector<but_env_model_msgs::PlaneDesc> &planes(req.plane_array.planes);
@@ -207,28 +207,28 @@ bool CObjTreePlugin::srvInsertPlanes(but_env_model::InsertPlanes::Request &req, 
     return true;
 }
 
-bool CObjTreePlugin::srvShowObject(but_env_model::ShowObject::Request &req, but_env_model::ShowObject::Response &res)
+bool CObjTreePlugin::srvShowObject(but_env_model_msgs::ShowObject::Request &req, but_env_model_msgs::ShowObject::Response &res)
 {
     showObject(req.object_id);
 
     return true;
 }
 
-bool CObjTreePlugin::srvRemoveObject(but_env_model::RemoveObject::Request &req, but_env_model::RemoveObject::Response &res)
+bool CObjTreePlugin::srvRemoveObject(but_env_model_msgs::RemoveObject::Request &req, but_env_model_msgs::RemoveObject::Response &res)
 {
     removeObject(req.object_id);
 
     return true;
 }
 
-bool CObjTreePlugin::srvShowObjtree(but_env_model::ShowObjtree::Request &req, but_env_model::ShowObjtree::Response &res)
+bool CObjTreePlugin::srvShowObjtree(but_env_model_msgs::ShowObjtree::Request &req, but_env_model_msgs::ShowObjtree::Response &res)
 {
     showObjtree();
 
     return true;
 }
 
-bool CObjTreePlugin::srvGetPlane(but_env_model::GetPlane::Request &req, but_env_model::GetPlane::Response &res)
+bool CObjTreePlugin::srvGetPlane(but_env_model_msgs::GetPlane::Request &req, but_env_model_msgs::GetPlane::Response &res)
 {
     const objtree::Object *object = m_octree.object(req.object_id);
     //Object hasn't been found
@@ -259,7 +259,7 @@ bool CObjTreePlugin::srvGetPlane(but_env_model::GetPlane::Request &req, but_env_
     return true;
 }
 
-bool CObjTreePlugin::srvGetABox(but_env_model::GetAlignedBox::Request &req, but_env_model::GetAlignedBox::Response &res)
+bool CObjTreePlugin::srvGetABox(but_env_model_msgs::GetAlignedBox::Request &req, but_env_model_msgs::GetAlignedBox::Response &res)
 {
     const objtree::Object *object = m_octree.object(req.object_id);
     //Object hasn't been found
@@ -279,7 +279,7 @@ bool CObjTreePlugin::srvGetABox(but_env_model::GetAlignedBox::Request &req, but_
     return true;
 }
 
-bool CObjTreePlugin::srvGetBBox(but_env_model::GetBoundingBox::Request &req, but_env_model::GetBoundingBox::Response &res)
+bool CObjTreePlugin::srvGetBBox(but_env_model_msgs::GetBoundingBox::Request &req, but_env_model_msgs::GetBoundingBox::Response &res)
 {
     const objtree::Object *object = m_octree.object(req.object_id);
     //Object hasn't been found
@@ -304,7 +304,7 @@ bool CObjTreePlugin::srvGetBBox(but_env_model::GetBoundingBox::Request &req, but
     return true;
 }
 
-bool CObjTreePlugin::srvGetObjectsInBox(but_env_model::GetObjectsInBox::Request &req, but_env_model::GetObjectsInBox::Response &res)
+bool CObjTreePlugin::srvGetObjectsInBox(but_env_model_msgs::GetObjectsInBox::Request &req, but_env_model_msgs::GetObjectsInBox::Response &res)
 {
     objtree::FilterBox filter(objtree::Box(req.position.x, req.position.y, req.position.z, req.size.x, req.size.y, req.size.z));
     getObjects(&filter, res.object_ids);
@@ -312,7 +312,7 @@ bool CObjTreePlugin::srvGetObjectsInBox(but_env_model::GetObjectsInBox::Request 
     return true;
 }
 
-bool CObjTreePlugin::srvGetObjectsInHalfspace(but_env_model::GetObjectsInHalfspace::Request &req, but_env_model::GetObjectsInHalfspace::Response &res)
+bool CObjTreePlugin::srvGetObjectsInHalfspace(but_env_model_msgs::GetObjectsInHalfspace::Request &req, but_env_model_msgs::GetObjectsInHalfspace::Response &res)
 {
     objtree::FilterPlane filter(req.position.x, req.position.y, req.position.z, req.normal.x, req.normal.y, req.normal.z);
     getObjects(&filter, res.object_ids);
@@ -320,7 +320,7 @@ bool CObjTreePlugin::srvGetObjectsInHalfspace(but_env_model::GetObjectsInHalfspa
     return true;
 }
 
-bool CObjTreePlugin::srvGetObjectsInSphere(but_env_model::GetObjectsInSphere::Request &req, but_env_model::GetObjectsInSphere::Response &res)
+bool CObjTreePlugin::srvGetObjectsInSphere(but_env_model_msgs::GetObjectsInSphere::Request &req, but_env_model_msgs::GetObjectsInSphere::Response &res)
 {
     objtree::FilterSphere filter(req.position.x, req.position.y, req.position.z, req.radius);
     getObjects(&filter, res.object_ids);

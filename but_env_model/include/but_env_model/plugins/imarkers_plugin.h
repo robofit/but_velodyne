@@ -29,7 +29,7 @@
 #define IMarkersPlugin_H_included
 
 #include <but_env_model/server_tools.h>
-#include <but_env_model/AddPlanes.h>
+#include <but_env_model_msgs/AddPlanes.h>
 #include <but_env_model_msgs/PlaneDesc.h>
 
 #include <but_interaction_primitives/plane.h>
@@ -64,7 +64,7 @@ protected:
      *
      * @param pa Array of planes
      */
-    bool insertPlaneCallback( but_env_model::AddPlanes::Request & req, but_env_model::AddPlanes::Response & res );
+    bool insertPlaneCallback( but_env_model_msgs::AddPlanes::Request & req, but_env_model_msgs::AddPlanes::Response & res );
 
     /**
      * @brief Insert/modify/remove plane

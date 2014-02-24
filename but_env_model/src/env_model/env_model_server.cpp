@@ -224,7 +224,7 @@ void but_env_model::CButServer::reset()
 /**
  * On pause service call
  */
-bool but_env_model::CButServer::onPause( EnvModelPause::Request & request, EnvModelPause::Response & response )
+bool but_env_model::CButServer::onPause( but_env_model_msgs::EnvModelPause::Request & request, but_env_model_msgs::EnvModelPause::Response & response )
 {
 	if( request.pause == 0 )
 	{
@@ -282,7 +282,7 @@ void but_env_model::CButServer::publishPlugins(const ros::Time& rostime)
 /**
  * Use/do not use color service callback
  */
-bool but_env_model::CButServer::onUseInputColor(but_env_model::UseInputColor::Request & req, but_env_model::UseInputColor::Response & res )
+bool but_env_model::CButServer::onUseInputColor(but_env_model_msgs::UseInputColor::Request & req, but_env_model_msgs::UseInputColor::Response & res )
 {
 	// Set value to the pc input plugin
 	m_plugInputPointCloud->setUseInputColor(req.use_color);

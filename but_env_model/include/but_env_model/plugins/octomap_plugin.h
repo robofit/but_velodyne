@@ -40,12 +40,12 @@
 #include <tf/transform_listener.h>
 #include <std_srvs/Empty.h>
 
-#include <but_env_model/RemoveCube.h>
-#include <but_env_model/AddCube.h>
-#include <but_env_model/SetCrawlingDepth.h>
-#include <but_env_model/GetTreeDepth.h>
-#include <but_env_model/LoadSave.h>
-#include <but_env_model/OctomapAgingPause.h>
+#include <but_env_model_msgs/RemoveCube.h>
+#include <but_env_model_msgs/AddCube.h>
+#include <but_env_model_msgs/SetCrawlingDepth.h>
+#include <but_env_model_msgs/GetTreeDepth.h>
+#include <but_env_model_msgs/LoadSave.h>
+#include <but_env_model_msgs/OctomapAgingPause.h>
 
 // Registration
 #include <but_env_model/registration/cpc_to_oc_registration.h>
@@ -138,34 +138,34 @@ protected:
 	// Service callbacks
 
 	/// Remove cube as a service - callback
-	bool removeCubeCB( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
+	bool removeCubeCB( but_env_model_msgs::RemoveCube::Request & req, but_env_model_msgs::RemoveCube::Response & res );
 
 	/// Remove cube as a service - callback
-	bool addCubeCB( but_env_model::AddCube::Request & req, but_env_model::AddCube::Response & res );
+	bool addCubeCB( but_env_model_msgs::AddCube::Request & req, but_env_model_msgs::AddCube::Response & res );
 
 	/// For debugging purpouses - add cubical interactive marker to the scene
 	void addCubeGizmo( const geometry_msgs::Pose & pose, const geometry_msgs::Point & size );
 
 	/// Set crawling depth - service callback
-	bool setCrawlingDepthCB( but_env_model::SetCrawlingDepth::Request & req, but_env_model::SetCrawlingDepth::Response & res );
+	bool setCrawlingDepthCB( but_env_model_msgs::SetCrawlingDepth::Request & req, but_env_model_msgs::SetCrawlingDepth::Response & res );
 
 	/// Get octomap tree depth - service callback
-	bool getTreeDepthCB( but_env_model::GetTreeDepth::Request & req, but_env_model::GetTreeDepth::Response & res );
+	bool getTreeDepthCB( but_env_model_msgs::GetTreeDepth::Request & req, but_env_model_msgs::GetTreeDepth::Response & res );
 
 	/// Load map service callback
-	bool loadOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
+	bool loadOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res );
 
 	/// Save map service callback
-	bool saveOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
+	bool saveOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res );
 
 	/// Load map service callback - full octree
-	bool loadFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
+	bool loadFullOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res );
 
 	/// Save map service callback - full octree
-	bool saveFullOctreeCB( but_env_model::LoadSaveRequest & req, but_env_model::LoadSaveResponse & res );
+	bool saveFullOctreeCB( but_env_model_msgs::LoadSaveRequest & req, but_env_model_msgs::LoadSaveResponse & res );
 
     /// Starts/stops octomap crowling - service callback
-    bool agingPauseCB( but_env_model::OctomapAgingPause::Request & req, but_env_model::OctomapAgingPause::Response & res );
+    bool agingPauseCB( but_env_model_msgs::OctomapAgingPause::Request & req, but_env_model_msgs::OctomapAgingPause::Response & res );
 
 protected:
     /// Should ground plane be filtered?
@@ -245,7 +245,7 @@ protected:
     unsigned char m_crawlDepth;
 
     /// Registration module
-    CPcToOcRegistration m_registration;
+    //CPcToOcRegistration m_registration;
 
     /// First frame is already inserted
     bool m_bNotFirst;

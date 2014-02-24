@@ -317,7 +317,7 @@ bool but_env_model::CCollisionMapPlugin::isNearRobot( const tf::Vector3 & point,
  * @param req request - caller's map version
  * @param res response - current map and current version
  */
-bool but_env_model::CCollisionMapPlugin::getCollisionMapSrvCallback( but_env_model::GetCollisionMap::Request & req, but_env_model::GetCollisionMap::Response & res )
+bool but_env_model::CCollisionMapPlugin::getCollisionMapSrvCallback( but_env_model_msgs::GetCollisionMap::Request & req, but_env_model_msgs::GetCollisionMap::Response & res )
 {
 
 	PERROR( "Get collision map service called" );
@@ -350,7 +350,7 @@ bool but_env_model::CCollisionMapPlugin::shouldPublish(  )
  * @param req request - caller's map timestamp
  * @param res response - true, if new map and current timestamp
  */
-bool but_env_model::CCollisionMapPlugin::isNewCmapSrvCallback( but_env_model::IsNewCollisionMap::Request & req, but_env_model::IsNewCollisionMap::Response & res )
+bool but_env_model::CCollisionMapPlugin::isNewCmapSrvCallback( but_env_model_msgs::IsNewCollisionMap::Request & req, but_env_model_msgs::IsNewCollisionMap::Response & res )
 {
 	PERROR( "Is new cmap service called ");
 
@@ -365,7 +365,7 @@ bool but_env_model::CCollisionMapPlugin::isNewCmapSrvCallback( but_env_model::Is
  * @param req request - bool - lock/unlock
  * @param res response -
  */
-bool but_env_model::CCollisionMapPlugin::lockCmapSrvCallback( but_env_model::LockCollisionMap::Request & req, but_env_model::LockCollisionMap::Response & res )
+bool but_env_model::CCollisionMapPlugin::lockCmapSrvCallback( but_env_model_msgs::LockCollisionMap::Request & req, but_env_model_msgs::LockCollisionMap::Response & res )
 {
 	boost::mutex::scoped_lock lock( m_lockData );
 
@@ -444,7 +444,7 @@ long but_env_model::CCollisionMapPlugin::removeInsideBox( const tBoxPoint & cent
  * @param req Request
  * @param res Response
  */
-bool but_env_model::CCollisionMapPlugin::removeBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res )
+bool but_env_model::CCollisionMapPlugin::removeBoxCallback( but_env_model_msgs::RemoveCube::Request & req, but_env_model_msgs::RemoveCube::Response & res )
 {
 	// Test frame id
 	if (req.frame_id != m_cmapFrameId)
@@ -522,7 +522,7 @@ void but_env_model::CCollisionMapPlugin::addBox( const tBoxPoint & center, const
  * @param req Request
  * @param res Response
  */
-bool but_env_model::CCollisionMapPlugin::addBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res )
+bool but_env_model::CCollisionMapPlugin::addBoxCallback( but_env_model_msgs::RemoveCube::Request & req, but_env_model_msgs::RemoveCube::Response & res )
 {
 	// Test frame id
 	if (req.frame_id != m_cmapFrameId)

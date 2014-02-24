@@ -30,29 +30,29 @@
 #define CMapPubPlugin_H_included
 
 #include <but_env_model/server_tools.h>
-#include <but_env_model/GetCollisionMap.h>
-#include <but_env_model/IsNewCollisionMap.h>
-#include <but_env_model/LockCollisionMap.h>
-#include <but_env_model/RemoveCube.h>
+//#include <but_env_model/GetCollisionMap.h>
+#include <but_env_model_msgs/IsNewCollisionMap.h>
+#include <but_env_model_msgs/LockCollisionMap.h>
+#include <but_env_model_msgs/RemoveCube.h>
 
-#include <moveit_msgs/CollisionMap.h>
+//#include <moveit_msgs/CollisionMap.h>
 #include <tf/transform_listener.h>
 #include <tf/message_filter.h>
 
 namespace but_env_model
 {
 
-class CCollisionMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< moveit_msgs::CollisionMap >
+class CCollisionMapPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>//, public CDataHolderBase< moveit_msgs::CollisionMap >
 {
 protected:
     //! Crawler type
     typedef COctomapCrawlerBase<tButServerOcTree::NodeType> tOctomapCrawler;
 
     //! Boxes vector type
-    typedef moveit_msgs::CollisionMap::_boxes_type tBoxVec;
+    //typedef moveit_msgs::CollisionMap::_boxes_type tBoxVec;
 
     //! Box type
-    typedef moveit_msgs::OrientedBoundingBox tBox;
+    //typedef moveit_msgs::OrientedBoundingBox tBox;
 
     //! Point type
     typedef geometry_msgs::Point32 tBoxPoint;
@@ -88,7 +88,7 @@ protected:
     virtual bool shouldPublish(  );
 
     //! Compare two collision maps and test if they are the same
-    bool sameCMaps( moveit_msgs::CollisionMap * map1, moveit_msgs::CollisionMap * map2 );
+    //bool sameCMaps( moveit_msgs::CollisionMap * map1, moveit_msgs::CollisionMap * map2 );
 
     //! Test collision point if it is in the collision distance from the robot
     bool isNearRobot( const tf::Vector3 & point, double extent );
@@ -99,21 +99,21 @@ protected:
     * @param req request - caller's map version
     * @param res response - current map and current version
     */
-    bool getCollisionMapSrvCallback( but_env_model::GetCollisionMap::Request & req, but_env_model::GetCollisionMap::Response & res );
+    //bool getCollisionMapSrvCallback( but_env_model::GetCollisionMap::Request & req, but_env_model::GetCollisionMap::Response & res );
 
     /**
      * @brief Get true if given timestamp is older then current map time
      * @param req request - caller's map timestamp
      * @param res response - true, if new map and current timestamp
      */
-    bool isNewCmapSrvCallback( but_env_model::IsNewCollisionMap::Request & req, but_env_model::IsNewCollisionMap::Response & res );
+    bool isNewCmapSrvCallback( but_env_model_msgs::IsNewCollisionMap::Request & req, but_env_model_msgs::IsNewCollisionMap::Response & res );
 
     /**
      * @brief Lock collision map - disable its updates from new point cloud data
      * @param req request - bool - lock/unlock
      * @param res response -
      */
-    bool lockCmapSrvCallback( but_env_model::LockCollisionMap::Request & req, but_env_model::LockCollisionMap::Response & res );
+    bool lockCmapSrvCallback( but_env_model_msgs::LockCollisionMap::Request & req, but_env_model_msgs::LockCollisionMap::Response & res );
 
     /**
      * @brief Remove all collision boxes within given box. Box is aligned with axes and uses the same frame id.
@@ -121,28 +121,28 @@ protected:
      * @param size Clearing box sizes
      * @return Number of removed boxes.
      */
-    long removeInsideBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes );
+    //long removeInsideBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes );
 
     /**
      * @brief Remove all boxes from cubical volume - service callback function
      * @param req Request
      * @param res Response
      */
-    bool removeBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
+    bool removeBoxCallback( but_env_model_msgs::RemoveCube::Request & req, but_env_model_msgs::RemoveCube::Response & res );
 
     /**
      * @brief Adds box to the collision map
      * @param center Box center
      * @param size Box size
      */
-    void addBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes );
+    //void addBox( const tBoxPoint & center, const tBoxPoint & size, tBoxVec & boxes );
 
     /**
      * @brief Remove all boxes from cubical volume - service callback function
      * @param req Request
      * @param res Response
      */
-    bool addBoxCallback( but_env_model::RemoveCube::Request & req, but_env_model::RemoveCube::Response & res );
+    bool addBoxCallback( but_env_model_msgs::RemoveCube::Request & req, but_env_model_msgs::RemoveCube::Response & res );
 
     /**
      * @brief retransform map to the new time frame
@@ -170,10 +170,10 @@ protected:
     std::string m_cmapFrameId;
 
     /// Collision map message buffer - used to resolve if collision map has changed.
-    tDataPtr m_dataBuffer;
+    //tDataPtr m_dataBuffer;
 
     /// Empty collision map - used when callers map id is the same as the current map id
-    moveit_msgs::CollisionMap m_dataEmpty;
+    //moveit_msgs::CollisionMap m_dataEmpty;
 
     //! Is publishing enabled?
     bool m_publishCollisionMap;

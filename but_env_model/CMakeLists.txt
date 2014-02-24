@@ -1,51 +1,65 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(but_env_model)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
+find_package(catkin
+  REQUIRED COMPONENTS
+  roscpp
+  cv_bridge
+  image_transport
+  image_geometry
+  camera_calibration_parsers
+  std_msgs
+  nav_msgs
+  visualization_msgs
+  std_srvs
+  interactive_markers
+  actionlib
+  actionlib_msgs
+  shape_msgs
+  moveit_msgs
+  pcl_ros
+  pcl_conversions
+  interactive_markers
+  nodelet
+  but_env_model_msgs
+  but_interaction_primitives
+  message_filters
+)
 
-set(ROS_BUILD_TYPE RelWithDebInfo)
-#set(ROS_BUILD_TYPE Release)
-#set(ROS_BUILD_TYPE Debug)
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(OGRE OGRE)
+link_directories(${OGRE_LIBRARY_DIRS})
+include_directories(include ${OGRE_INCLUDE_DIRS})
 
 find_package( Eigen REQUIRED )
-include_directories( ${EIGEN_INCLUDE_DIRS} )
-add_definitions( ${EIGEN_DEFINITIONS} )
-
-find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-#target_link_libraries( my_awesome_library ${OpenCV_LIBRARIES} )
+include_directories( ${EIGEN_INCLUDE_DIRS})
 
 find_package( octomap REQUIRED )
 include_directories(${OCTOMAP_INCLUDE_DIRS})
-#link_libraries( ${OCTOMAP_LIBRARIES} )
 
-rosbuild_init()
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+find_package(octomap REQUIRED)
+include_directories(${OCTOMAP_INCLUDE_DIRS})
+link_libraries(${OCTOMAP_LIBRARIES})
 
-#uncomment if you have defined messages
-rosbuild_genmsg()
-#uncomment if you have defined services
-rosbuild_gensrv()
+find_package(PCL REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_libraries(${PCL_LIBRARIES})
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+catkin_package(CATKIN_DEPENDS std_msgs std_msgs visualization_msgs actionlib_msgs shape_msgs std_srvs nav_msgs moveit_msgs but_env_model_msgs but_interaction_primitives message_filters pcl_ros)
+include_directories(include ${catkin_INCLUDE_DIRS})
+link_directories(${catkin_LIBRARY_DIRS})
+
+
 
 # BUT env. model server
 set( SERVER_SOURCES src/env_model/env_model_server.cpp
                     src/env_model/server_tools.cpp
                     src/env_model/octonode.cpp
-                    src/env_model/plugins/collision_map_plugin.cpp
+#                    src/env_model/plugins/collision_map_plugin.cpp
                     src/env_model/plugins/octomap_plugin.cpp
                     src/env_model/plugins/point_cloud_plugin.cpp
                     src/env_model/plugins/collision_object_plugin.cpp
@@ -61,7 +75,7 @@ set( SERVER_SOURCES src/env_model/env_model_server.cpp
                     src/env_model/plugins/octomap_plugin_tools/octomap_filter_base.cpp
                     src/env_model/plugins/octomap_plugin_tools/octomap_filter_raycast.cpp
                     src/env_model/plugins/octomap_plugin_tools/octomap_filter_ground.cpp
-                    src/env_model/registration/cpc_to_oc_registration.cpp
+#                    src/env_model/registration/cpc_to_oc_registration.cpp
                     )
                     
 set( CPC_SOURCES src/env_model/compressed_pc_publisher.cpp
@@ -80,25 +94,26 @@ set( OBJTREE_SOURCE_FILES src/env_model/objtree/bbox.cpp
 
 # Objtree library
 set( OBJTREE_LIB_NAME but_objtree )
-rosbuild_add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
+add_library( ${OBJTREE_LIB_NAME} ${OBJTREE_SOURCE_FILES} )
+target_link_libraries(${OBJTREE_LIB_NAME} ${catkin_LIBRARIES} ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES})
 
 # Environment model library
 set( SRS_ENV_MODEL_LIB_NAME but_env_model )
-rosbuild_add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
+add_library( ${SRS_ENV_MODEL_LIB_NAME} ${SERVER_SOURCES} )
+target_link_libraries(${SRS_ENV_MODEL_LIB_NAME} ${catkin_LIBRARIES} ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME} ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES})
 
+#add_dependencies(${SRS_ENV_MODEL_LIB_NAME} message_filters pcl_ros)
 
 # Add environment model server executable
-rosbuild_add_executable( but_env_model_node src/server_node.cpp )
-target_link_libraries( but_env_model_node ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME} )
-target_link_libraries( but_env_model_node octomap_ros ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} )
+add_executable( but_env_model_node src/server_node.cpp )
+target_link_libraries( but_env_model_node ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME})
 
 # Environment model server nodelet
-rosbuild_add_library( but_env_model_nodelet src/server_nodelet.cpp )
-target_link_libraries( but_env_model_nodelet ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME} )
-target_link_libraries( but_env_model_nodelet octomap_ros ${OCTOMAP_LIBRARIES} ${OpenCV_LIBRARIES} )
-
+add_library( but_env_model_nodelet src/server_nodelet.cpp )
+target_link_libraries( but_env_model_nodelet ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME})
 
 # Add compressed pc subscriber-publisher executable
-rosbuild_add_executable( but_cpc_node ${CPC_SOURCES} )
-target_link_libraries( but_cpc_node ${OpenCV_LIBRARIES} ${OCTOMAP_LIBRARIES} )
+add_executable( but_cpc_node ${CPC_SOURCES} )
+target_link_libraries( but_cpc_node ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME})
+
 
