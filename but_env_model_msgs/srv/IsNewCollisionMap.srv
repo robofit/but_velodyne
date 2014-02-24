@@ -1,0 +1,4 @@
+time my_time
+---
+bool is_newer
+time current_time
