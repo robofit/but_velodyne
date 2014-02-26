@@ -48,6 +48,9 @@
 
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/approximate_voxel_grid.h>
+#include <pcl/filters/passthrough.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/registration/icp.h>
 
 #include <geometry_msgs/PoseStamped.h>
 

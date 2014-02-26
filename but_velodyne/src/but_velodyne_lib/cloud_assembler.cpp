@@ -30,7 +30,6 @@
 #include <but_velodyne/topics_list.h>
 
 #include <cmath>
-//#include <opencv2/core/core.hpp>
 
 #include <pcl/ModelCoefficients.h>
 #include <pcl/point_types.h>
@@ -43,9 +42,6 @@
 namespace but_velodyne
 {
 
-
-/******************************************************************************
- */
 
 CloudAssembler::CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh)
     : nh_(nh)
@@ -60,7 +56,7 @@ CloudAssembler::CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh)
 	points_pub_ = nh_.advertise<sensor_msgs::PointCloud2> ("output", 1);
 
 
-	cloud_buff_.reset(new CloudBuffer(10));
+	cloud_buff_.reset(new CloudBuffer(20));
 
 
 
@@ -100,17 +96,9 @@ bool CloudAssembler::getRobotPose(ros::Time time, geometry_msgs::PoseStamped& re
 
 }
 
-
-/******************************************************************************
- */
 void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 {
     ROS_INFO_STREAM_ONCE( "CloudAssembler::process(): Point cloud received" );
-
-    if( points_pub_.getNumSubscribers() == 0 )
-    {
-        return;
-    }
 
     geometry_msgs::PoseStamped p;
 
@@ -120,67 +108,106 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
     double dist = sqrt(pow(robot_pose_.pose.position.x - p.pose.position.x, 2) + pow(robot_pose_.pose.position.y - p.pose.position.y, 2));
 
-    if (dist > 0.2) update = true;
+    if (dist > 0.05) {
 
-    //! Point cloud buffer to avoid reallocation on every message.
+      robot_pose_ = p;
+    
+      if (dist > 1.0) {
+      
+        cloud_buff_->clear();
+      
+      } else update = true;
+    
+    }
+
     VPointCloud vpcl;
     TPointCloudPtr tpcl(new TPointCloud());
 
     // Retrieve the input point cloud
     pcl::fromROSMsg( *cloud, vpcl );
 
-    //std::cout << "fromROSMsg ok" << std::endl;
-
     pcl::copyPointCloud(vpcl, *tpcl);
 
-    // TODO limit range of point cloud (10x10 m?)
+    pcl::PassThrough< TPoint > pass;
 
-    //std::cout << "copy ok" << std::endl;
+    pass.setInputCloud (tpcl);
+    pass.setFilterFieldName ("x");
+    pass.setFilterLimits (-10.0, 10.0);
+    pass.filter(*tpcl);
+
+	pass.setInputCloud (tpcl);
+	pass.setFilterFieldName ("y");
+	pass.setFilterLimits (-10.0, 10.0);
+	pass.filter(*tpcl);
+
+	pass.setInputCloud (tpcl);
+	pass.setFilterFieldName ("z");
+	pass.setFilterLimits (-1.0, 2.0);
+	pass.filter(*tpcl);
+
+	pcl::ApproximateVoxelGrid<TPoint> psor;
+	psor.setInputCloud (tpcl);
+	psor.setDownsampleAllData (false);
+	psor.setLeafSize (0.01, 0.01, 0.01);
+	psor.filter(*tpcl);
+
+    pcl::StatisticalOutlierRemoval< TPoint > foutl;
+    foutl.setInputCloud(tpcl);
+    foutl.setMeanK(50);
+    foutl.setStddevMulThresh(1.0);
+    foutl.filter(*tpcl);
 
     pcl_ros::transformPointCloud( "odom", *tpcl, *tpcl, listener_ );
 
-    //std::cout << "tf ok" << std::endl;
-
-    if (update) cloud_buff_->push_back(*tpcl);
-
+    // get accumulated cloud
     TPointCloudPtr pcl_out(new TPointCloud());
 
-    //pcl::copyPointCloud(pcl_in_, *pcl_out);
-
-    //if (cloud_buff_->size() > 1)
     for (unsigned int i = 0; i < cloud_buff_->size(); i++) {
 
     	*pcl_out += cloud_buff_->at(i);
 
-    	//pcl_out.points.insert(cloud_buff_->at(i).end(), pcl_out.points.begin(), pcl_out.points.end());
+    }
+
+    // registration
+    if (cloud_buff_->size() > 0) {
+
+    	pcl::IterativeClosestPoint< TPoint, TPoint> icp;
+    	icp.setInputCloud(tpcl);
+    	icp.setInputTarget(pcl_out);
+    	pcl::PointCloud<TPoint> aligned;
+    	icp.align(aligned);
+
+    	if (icp.hasConverged()) {
+
+    		*tpcl = aligned;
+    		std::cout << "ICP score: " << icp.getFitnessScore() << std::endl;
+
+    	}
 
     }
 
-    if (!update) *pcl_out += *tpcl;
 
-    //std::cout << "merge ok" << std::endl;
+    if (update) cloud_buff_->push_back(*tpcl);
 
-    //pcl::VoxelGrid< TPoint > sor;
+    if( points_pub_.getNumSubscribers() == 0 )
+    {
+        return;
+    }
+
+    *pcl_out += *tpcl;
+
     pcl::ApproximateVoxelGrid<TPoint> sor;
     sor.setInputCloud (pcl_out);
     sor.setDownsampleAllData (false);
-    sor.setLeafSize (0.05, 0.05, 0.05);
-
-    //std::cout << "before filter" << std::endl;
+    sor.setLeafSize (0.01, 0.01, 0.01);
 
     TPointCloudPtr pcl_filt(new TPointCloud());
 
     sor.filter(*pcl_filt);
 
-    //std::cout << "filter ok" << std::endl;
-
     sensor_msgs::PointCloud2::Ptr cloud_out(new sensor_msgs::PointCloud2());
 
-
-
     pcl::toROSMsg(*pcl_filt, *cloud_out);
-
-    //std::cout << "toROSMsg ok" << std::endl;
 
     //std::cout << "points: " << pcl_out->points.size() << std::endl;
 
