@@ -113,7 +113,15 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
     double dist = sqrt(pow(robot_pose_.pose.position.x - p.pose.position.x, 2) + pow(robot_pose_.pose.position.y - p.pose.position.y, 2));
 
-    if (dist > 0.05) update = true;
+    if (dist > 0.05) {
+    
+      if (dist > 1.0) {
+      
+        cloud_buff_->clear();
+      
+      } else update = true;
+    
+    }
 
     VPointCloud vpcl;
     TPointCloudPtr tpcl(new TPointCloud());
@@ -175,7 +183,7 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     	if (icp.hasConverged()) {
 
     		*tpcl = aligned;
-    		//std::cout <<  icp.getFitnessScore() << std::endl;
+    		std::cout << "ICP score: " << icp.getFitnessScore() << std::endl;
 
     	}
 
