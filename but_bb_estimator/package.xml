@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>but_bb_estimator</name>
+  <version>0.0.1</version>
+  <description>The but_bb_estimator package</description>
+
+  <maintainer email="imaterna@todo.todo">imaterna</maintainer>
+
+
+  <license>LGPL</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>pkg-config</buildtool_depend>
+  
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>message_filters</build_depend>
+  <build_depend>opencv</build_depend>
+  <build_depend>pcl</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>bullet</build_depend>
+  
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>message_filters</run_depend>
+  <run_depend>opencv</run_depend>
+  <run_depend>pcl</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>bullet</run_depend>
+
+
+</package>

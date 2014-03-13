@@ -1,0 +1,21 @@
+
+# REQUEST
+#===============================================================================
+Header header
+
+# pose includes a position and an orientation of the center of the resulting bounding box
+geometry_msgs/Pose pose
+
+# scale includes a size of the bounding box in direction of X, Y and Z coordinates
+# (before rotation given by orientation, which is included in pose)
+geometry_msgs/Vector3 scale
+---
+
+# RESPONSE
+#===============================================================================
+
+# 2D points representing two diagonally opposite corners of the 2D region of interest
+# (the first element of the array = X-coord, the second = Y-coord)
+int16[2] p1
+int16[2] p2
+

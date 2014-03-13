@@ -1,0 +1,14 @@
+
+# REQUEST
+#===============================================================================
+Header header
+
+# input mesh, for which a 2D convex hull should be estimated
+arm_navigation_msgs/Shape mesh
+---
+
+# RESPONSE
+#===============================================================================
+
+geometry_msgs/Polygon convexHull
+
