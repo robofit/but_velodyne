@@ -56,7 +56,7 @@ CloudAssembler::CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh)
 	points_pub_ = nh_.advertise<sensor_msgs::PointCloud2> ("output", 1);
 
 
-	cloud_buff_.reset(new CloudBuffer(10));
+	cloud_buff_.reset(new CloudBuffer(20));
 
 
 
@@ -100,11 +100,6 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 {
     ROS_INFO_STREAM_ONCE( "CloudAssembler::process(): Point cloud received" );
 
-    if( points_pub_.getNumSubscribers() == 0 )
-    {
-        return;
-    }
-
     geometry_msgs::PoseStamped p;
 
     if (!getRobotPose(cloud->header.stamp,p)) return;
@@ -114,6 +109,8 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
     double dist = sqrt(pow(robot_pose_.pose.position.x - p.pose.position.x, 2) + pow(robot_pose_.pose.position.y - p.pose.position.y, 2));
 
     if (dist > 0.05) {
+
+      robot_pose_ = p;
     
       if (dist > 1.0) {
       
@@ -144,14 +141,14 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 	pass.filter(*tpcl);
 
 	pass.setInputCloud (tpcl);
-	pass.setFilterFieldName ("y");
-	pass.setFilterLimits (-0.5, 2.0);
+	pass.setFilterFieldName ("z");
+	pass.setFilterLimits (-1.0, 2.0);
 	pass.filter(*tpcl);
 
 	pcl::ApproximateVoxelGrid<TPoint> psor;
 	psor.setInputCloud (tpcl);
 	psor.setDownsampleAllData (false);
-	psor.setLeafSize (0.05, 0.05, 0.05);
+	psor.setLeafSize (0.01, 0.01, 0.01);
 	psor.filter(*tpcl);
 
     pcl::StatisticalOutlierRemoval< TPoint > foutl;
@@ -192,12 +189,17 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
     if (update) cloud_buff_->push_back(*tpcl);
 
+    if( points_pub_.getNumSubscribers() == 0 )
+    {
+        return;
+    }
+
     *pcl_out += *tpcl;
 
     pcl::ApproximateVoxelGrid<TPoint> sor;
     sor.setInputCloud (pcl_out);
     sor.setDownsampleAllData (false);
-    sor.setLeafSize (0.05, 0.05, 0.05);
+    sor.setLeafSize (0.01, 0.01, 0.01);
 
     TPointCloudPtr pcl_filt(new TPointCloud());
 
