@@ -49,46 +49,46 @@ class Filter;
 class Octree
 {
 public:
-    static const unsigned int DEFAULT_MAX_DEPTH = 4;
+  static const unsigned int DEFAULT_MAX_DEPTH = 4;
 
 private:
-    Node *m_root;
-    Box m_rootSize;
-    unsigned int m_maxId;
-    unsigned int m_maxDepth;    
-    std::map<unsigned int, Object*> m_objects;
+  Node *m_root;
+  Box m_rootSize;
+  unsigned int m_maxId;
+  unsigned int m_maxDepth;
+  std::map<unsigned int, Object*> m_objects;
 
 public:
-    Octree(unsigned int maxDepth = DEFAULT_MAX_DEPTH);
-    Octree(const Box &rootSize, unsigned int maxDepth = DEFAULT_MAX_DEPTH);
-    ~Octree();
+  Octree(unsigned int maxDepth = DEFAULT_MAX_DEPTH);
+  Octree(const Box &rootSize, unsigned int maxDepth = DEFAULT_MAX_DEPTH);
+  ~Octree();
 
-    void clear();
+  void clear();
 
-    unsigned int insert(Object* object);
-    unsigned int insertOnFit(Object* object);
-    unsigned int insertOnInterfere(Object* object, Node *node, Box box, unsigned int depth = 0);
+  unsigned int insert(Object* object);
+  unsigned int insertOnFit(Object* object);
+  unsigned int insertOnInterfere(Object* object, Node *node, Box box, unsigned int depth = 0);
 
-    unsigned int insertUpdate(Object* object);
-    unsigned int insertUpdate2(Object* object);
-    unsigned int insertUpdateOnInterfere(Object* object, Node *node, Box box, bool &inserted, unsigned int depth = 0);
+  unsigned int insertUpdate(Object* object);
+  unsigned int insertUpdate2(Object* object);
+  unsigned int insertUpdateOnInterfere(Object* object, Node *node, Box box, bool &inserted, unsigned int depth = 0);
 
-    Object* getSimilarObject(const Object *object);
-    Object* getSimilarObject(const Object *object, Node *node, Box box, unsigned int depth = 0);
-    bool isPositionFree(float x, float y, float z);
+  Object* getSimilarObject(const Object *object);
+  Object* getSimilarObject(const Object *object, Node *node, Box box, unsigned int depth = 0);
+  bool isPositionFree(float x, float y, float z);
 
-    Node* root() const;
-    unsigned int maxId() const;
-    unsigned int count() const;
+  Node* root() const;
+  unsigned int maxId() const;
+  unsigned int count() const;
 
-    const Object* object(unsigned int id) const;
-    bool removeObject(unsigned int id);
+  const Object* object(unsigned int id) const;
+  bool removeObject(unsigned int id);
 
-    void nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, const Filter *filter);
-    void nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, const Filter *filter, Box dim, Node *node);
-    void objects(std::set<Object*> &objectList, const Filter *filter);
+  void nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, const Filter *filter);
+  void nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, const Filter *filter, Box dim, Node *node);
+  void objects(std::set<Object*> &objectList, const Filter *filter);
 
-    const std::map<unsigned int, Object*>& objectsAll() const;
+  const std::map<unsigned int, Object*>& objectsAll() const;
 };
 
 }

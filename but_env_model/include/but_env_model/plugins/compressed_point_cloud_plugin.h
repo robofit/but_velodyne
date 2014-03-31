@@ -48,132 +48,132 @@ namespace but_env_model
 class CCompressedPointCloudPlugin : public CPointCloudPlugin
 {
 public:
-	/// Constructor
-	CCompressedPointCloudPlugin( const std::string & name );
+  /// Constructor
+  CCompressedPointCloudPlugin(const std::string & name);
 
-	/// Destructor
-	virtual ~CCompressedPointCloudPlugin();
+  /// Destructor
+  virtual ~CCompressedPointCloudPlugin();
 
-	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
-	//! Connect/disconnect plugin to/from all topics
-	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
-
-protected:
-	//! Set used octomap frame id and timestamp
-	virtual void newMapDataCB( SMapWithParameters & par );
-
-	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
-
-	//! Should plugin publish data?
-	virtual bool shouldPublish();
-
-	//! Called when new scan was inserted and now all can be published
-	void publishInternal(const ros::Time & timestamp);
-
-	/// On camera position changed callback
-	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
-
-	// main loop when spinning our own thread
-	// - process callbacks in our callback queue
-	// - process pending goals
-	void spinThread();
-
-	//! Test if point is in camera cone
-	bool inSensorCone(const cv::Point2d& uv) const;
-
-	/// Set number of incomplete frames callback
-	bool setNumIncompleteFramesCB( but_env_model_msgs::SetNumIncompleteFrames::Request & req, but_env_model_msgs::SetNumIncompleteFrames::Response & res );
+  //! Connect/disconnect plugin to/from all topics
+  virtual void pause(bool bPause, ros::NodeHandle & node_handle);
 
 protected:
-	/// Should camera position and orientation be transformed?
-	bool m_bTransformCamera;
+  //! Set used octomap frame id and timestamp
+  virtual void newMapDataCB(SMapWithParameters & par);
 
-	/// Camera frame id
-	std::string m_cameraFrameId;
+  /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+  virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-    // Camera position topic name
-    std::string m_cameraInfoTopic;
+  //! Should plugin publish data?
+  virtual bool shouldPublish();
 
-	/// Subscriber - camera position
-	// message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
-	ros::Subscriber m_camPosSubscriber;
+  //! Called when new scan was inserted and now all can be published
+  void publishInternal(const ros::Time & timestamp);
 
-	/// Publisher - packed info
-	ros::Publisher m_ocUpdatePublisher;
+  /// On camera position changed callback
+  void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
 
-	/// Packed info publisher name
-	std::string m_ocUpdatePublisherName;
+  // main loop when spinning our own thread
+  // - process callbacks in our callback queue
+  // - process pending goals
+  void spinThread();
 
-	//! Message filter (we only want point cloud 2 messages)
-	tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
+  //! Test if point is in camera cone
+  bool inSensorCone(const cv::Point2d& uv) const;
 
-	/// Counters
-	long m_countVisible, m_countAll;
+  /// Set number of incomplete frames callback
+  bool setNumIncompleteFramesCB(but_env_model_msgs::SetNumIncompleteFrames::Request & req, but_env_model_msgs::SetNumIncompleteFrames::Response & res);
 
-	float min, max;
+protected:
+  /// Should camera position and orientation be transformed?
+  bool m_bTransformCamera;
 
-	//! Spin out own input callback thread
-	bool m_bSpinThread;
+  /// Camera frame id
+  std::string m_cameraFrameId;
 
-	// these are needed when spinning up a dedicated thread
-	boost::scoped_ptr<boost::thread> spin_thread_;
-	ros::NodeHandle nh_;
-	ros::CallbackQueue callback_queue_;
-	volatile bool need_to_terminate_;
+  // Camera position topic name
+  std::string m_cameraInfoTopic;
 
-	// Mutex used to lock camera position parameters
-	boost::recursive_mutex m_camPosMutex;
+  /// Subscriber - camera position
+  // message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
+  ros::Subscriber m_camPosSubscriber;
 
-	/// Camera model
-	image_geometry::PinholeCameraModel m_camera_model, m_camera_model_buffer;
+  /// Publisher - packed info
+  ros::Publisher m_ocUpdatePublisher;
 
-	//! Transform listener
-	tf::TransformListener m_tfListener;
+  /// Packed info publisher name
+  std::string m_ocUpdatePublisherName;
 
-	/// Transform from pointcloud to camera space
-	tf::Transform m_to_sensor;
+  //! Message filter (we only want point cloud 2 messages)
+  tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
 
-	/// Camera offsets
-	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+  /// Counters
+  long m_countVisible, m_countAll;
 
-	/// Camera size
-	cv::Size m_camera_size, m_camera_size_buffer;
+  float min, max;
 
-	//! Camera info buffer
-	sensor_msgs::CameraInfo m_camera_info_buffer;
+  //! Spin out own input callback thread
+  bool m_bSpinThread;
 
-	/// Is camera model initialized?
-	bool m_bCamModelInitialized;
+  // these are needed when spinning up a dedicated thread
+  boost::scoped_ptr<boost::thread> spin_thread_;
+  ros::NodeHandle nh_;
+  ros::CallbackQueue callback_queue_;
+  volatile bool need_to_terminate_;
 
-	//! Pubilishing counter
-	long m_frame_counter;
+  // Mutex used to lock camera position parameters
+  boost::recursive_mutex m_camPosMutex;
 
-	//! Every n-th frame should be complete
-	long m_uncomplete_frames;
+  /// Camera model
+  image_geometry::PinholeCameraModel m_camera_model, m_camera_model_buffer;
 
-	//! Should be complete frame published?
-	bool m_bPublishComplete;
+  //! Transform listener
+  tf::TransformListener m_tfListener;
 
-	//! Create packed info message?
-	bool m_bCreatePackedInfoMsg;
+  /// Transform from pointcloud to camera space
+  tf::Transform m_to_sensor;
 
-	//! Publish simple cloud too?
-	bool m_bPublishSimpleCloud;
+  /// Camera offsets
+  int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
 
-	//! Packed info message data
-	but_env_model_msgs::OctomapUpdatesPtr m_octomap_updates_msg;
+  /// Camera size
+  cv::Size m_camera_size, m_camera_size_buffer;
 
-	/// Service - set number of incomplete frames
-	ros::ServiceServer m_serviceSetNumIncomplete;
+  //! Camera info buffer
+  sensor_msgs::CameraInfo m_camera_info_buffer;
 
-	/// Should output pointcloud be transformed
-	bool m_bTransformOutput;
+  /// Is camera model initialized?
+  bool m_bCamModelInitialized;
+
+  //! Pubilishing counter
+  long m_frame_counter;
+
+  //! Every n-th frame should be complete
+  long m_uncomplete_frames;
+
+  //! Should be complete frame published?
+  bool m_bPublishComplete;
+
+  //! Create packed info message?
+  bool m_bCreatePackedInfoMsg;
+
+  //! Publish simple cloud too?
+  bool m_bPublishSimpleCloud;
+
+  //! Packed info message data
+  but_env_model_msgs::OctomapUpdatesPtr m_octomap_updates_msg;
+
+  /// Service - set number of incomplete frames
+  ros::ServiceServer m_serviceSetNumIncomplete;
+
+  /// Should output pointcloud be transformed
+  bool m_bTransformOutput;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

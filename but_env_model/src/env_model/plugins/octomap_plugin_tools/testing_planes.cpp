@@ -32,8 +32,8 @@
  * Simple constructor
  */
 but_env_model::CTestingPlane::CTestingPlane()
-: m_plane()
-, m_d( 0.0 )
+  : m_plane()
+  , m_d(0.0)
 {
 
 }
@@ -42,8 +42,8 @@ but_env_model::CTestingPlane::CTestingPlane()
  * Copy constructor
  */
 but_env_model::CTestingPlane::CTestingPlane(const CTestingPlane & plane)
-: m_plane( plane.m_plane )
-, m_d( plane.m_d )
+  : m_plane(plane.m_plane)
+  , m_d(plane.m_d)
 {
 
 }
@@ -54,10 +54,10 @@ but_env_model::CTestingPlane::CTestingPlane(const CTestingPlane & plane)
  */
 but_env_model::CTestingPlane but_env_model::CTestingPlane::operator =(const CTestingPlane & plane)
 {
-	m_plane = plane.m_plane;
-	m_d = plane.m_d;
+  m_plane = plane.m_plane;
+  m_d = plane.m_d;
 
-	return plane;
+  return plane;
 }
 
 
@@ -66,8 +66,8 @@ but_env_model::CTestingPlane but_env_model::CTestingPlane::operator =(const CTes
  */
 but_env_model::CTestingPlane::CTestingPlane(const tPoint & p1, const tPoint & p2, const tPoint & p3)
 {
-	// Just call method
-	set( p1, p2, p3 );
+  // Just call method
+  set(p1, p2, p3);
 }
 
 
@@ -76,8 +76,8 @@ but_env_model::CTestingPlane::CTestingPlane(const tPoint & p1, const tPoint & p2
  */
 but_env_model::CTestingPlane::CTestingPlane(const tPoint & point, const tPoint & normal)
 {
-	// Just call method
-	set( point, normal );
+  // Just call method
+  set(point, normal);
 }
 
 
@@ -86,31 +86,31 @@ but_env_model::CTestingPlane::CTestingPlane(const tPoint & point, const tPoint &
  *
  * This points are used:
  *
- *	  normal
- * 		|    p3
+ *    normal
+ *    |    p3
  *      |   /
- * 		|  /
- * 		| /
- * 		p1---------------p2
+ *    |  /
+ *    | /
+ *    p1---------------p2
  *
- * 		d1 = p2 - p1
- * 		d2 = p3 - p1
- * 		n = d1 x d2
+ *    d1 = p2 - p1
+ *    d2 = p3 - p1
+ *    n = d1 x d2
  */
 void but_env_model::CTestingPlane::set(const tPoint & p1, const tPoint & p2, const tPoint & p3)
 {
-	// Compute directional vectors
-	tPoint dir1( p2 - p1 ), dir2( p3 - p1 );
+  // Compute directional vectors
+  tPoint dir1(p2 - p1), dir2(p3 - p1);
 
-	// Get normal vector from cross-product
-	m_plane = dir1;
-	m_plane = m_plane.cross(dir2);
-	m_plane.normalize();
+  // Get normal vector from cross-product
+  m_plane = dir1;
+  m_plane = m_plane.cross(dir2);
+  m_plane.normalize();
 
-//	std::cerr << "Point: " << p1 << std::endl << "Normal: " << m_plane << std::endl;
+//  std::cerr << "Point: " << p1 << std::endl << "Normal: " << m_plane << std::endl;
 
-	// Compute last parameter
-	m_d = - p1.dot( m_plane );
+  // Compute last parameter
+  m_d = - p1.dot(m_plane);
 }
 
 
@@ -119,9 +119,9 @@ void but_env_model::CTestingPlane::set(const tPoint & p1, const tPoint & p2, con
  */
 void but_env_model::CTestingPlane::set(const tPoint & point, const tPoint & normal)
 {
-	m_plane = normal;
-	m_plane.normalize();
-	m_d = - point.dot( m_plane );
+  m_plane = normal;
+  m_plane.normalize();
+  m_d = - point.dot(m_plane);
 }
 
 
@@ -130,9 +130,9 @@ void but_env_model::CTestingPlane::set(const tPoint & point, const tPoint & norm
  */
 bool but_env_model::CTestingPlane::isIn(double x, double y, double z)
 {
-	tPoint p( x, y, z );
+  tPoint p(x, y, z);
 
-	return p.dot( m_plane ) + m_d >= 0;
+  return p.dot(m_plane) + m_d >= 0;
 }
 
 
@@ -151,8 +151,8 @@ but_env_model::CTestingPlanes::CTestingPlanes()
  */
 but_env_model::CTestingPlanes::CTestingPlanes(const tPlanesStack & planes)
 {
-	// Just call method
-	set( planes );
+  // Just call method
+  set(planes);
 }
 
 
@@ -161,26 +161,26 @@ but_env_model::CTestingPlanes::CTestingPlanes(const tPlanesStack & planes)
  */
 void but_env_model::CTestingPlanes::set(const tPlanesStack & planes)
 {
-	if( planes.size() == 0 )
-		return;
+  if (planes.size() == 0)
+    return;
 
-	m_planes.clear();
-	m_planes.reserve( planes.size() );
-	std::copy( planes.begin(), planes.end(), m_planes.begin() );
+  m_planes.clear();
+  m_planes.reserve(planes.size());
+  std::copy(planes.begin(), planes.end(), m_planes.begin());
 }
 
 /*
  * Test point
  */
-bool but_env_model::CTestingPlanes::isIn( double x, double y, double z )
+bool but_env_model::CTestingPlanes::isIn(double x, double y, double z)
 {
-	tPlanesStack::iterator i, end;
-	for( i = m_planes.begin(), end = m_planes.end(); i != end; ++i)
-	{
-		// One wrong is enough
-		if( ! i->isIn( x, y, z ) )
-			return false;
-	}
+  tPlanesStack::iterator i, end;
+  for (i = m_planes.begin(), end = m_planes.end(); i != end; ++i)
+  {
+    // One wrong is enough
+    if (! i->isIn(x, y, z))
+      return false;
+  }
 
-	return true;
+  return true;
 }

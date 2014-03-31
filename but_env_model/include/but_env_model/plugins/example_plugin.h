@@ -39,31 +39,34 @@ namespace but_env_model
 class CExamplePlugin : public CServerPluginBase
 {
 public:
-	//! Constructor. Plugin name can be used for debug string output.
-	CExamplePlugin( const std::string & name = "ExamplePlugin ")
-	    : CServerPluginBase( name )
-	{}
+  //! Constructor. Plugin name can be used for debug string output.
+  CExamplePlugin(const std::string & name = "ExamplePlugin ")
+    : CServerPluginBase(name)
+  {}
 
-	//! This method is called by server on start. Use node_handle to do
-	//! parameters reading and all initializations here (subscriber
-	//! connection, publisher creation, etc.)
-	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh) {}
+  //! This method is called by server on start. Use node_handle to do
+  //! parameters reading and all initializations here (subscriber
+  //! connection, publisher creation, etc.)
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh) {}
 
-	//! This method is called when user wants to reset server.
-	virtual void reset() {}
+  //! This method is called when user wants to reset server.
+  virtual void reset() {}
 
 protected:
-	//!	New scan has been inserted in the octomap. After that
-	//! publishing stage starts and if this node has something to
-	//! publish (see last method), this method is called.
-	virtual void publishInternal(const ros::Time & timestamp){}
+  //! New scan has been inserted in the octomap. After that
+  //! publishing stage starts and if this node has something to
+  //! publish (see last method), this method is called.
+  virtual void publishInternal(const ros::Time & timestamp) {}
 
-	//! Return true, if you want to publish something now. Called
-	//! before onPublish method.
-	virtual bool shouldPublish() { return false; }
+  //! Return true, if you want to publish something now. Called
+  //! before onPublish method.
+  virtual bool shouldPublish()
+  {
+    return false;
+  }
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CExamplePlugin
 
@@ -74,91 +77,96 @@ public:
  * plugin uses data interface to store color used in handleOccupiedNode method.
  */
 class CExampleCrawlerPlugin
-: public CServerPluginBase
-, public COctomapCrawlerBase<tButServerOcTree::NodeType>
-, public CDataHolderBase<std::vector<unsigned char> >
+  : public CServerPluginBase
+  , public COctomapCrawlerBase<tButServerOcTree::NodeType>
+  , public CDataHolderBase<std::vector<unsigned char> >
 {
 public:
-	//! Constructor. Plugin name can be used for debug string output.
-	CExampleCrawlerPlugin( const std::string & name = "ExamplePlugin ")
-	    : CServerPluginBase( name )
-	{
-		m_data->resize(3);
+  //! Constructor. Plugin name can be used for debug string output.
+  CExampleCrawlerPlugin(const std::string & name = "ExamplePlugin ")
+    : CServerPluginBase(name)
+  {
+    m_data->resize(3);
 
-		// Store some data
-		(*m_data)[0] = 255; (*m_data)[0] = 0; (*m_data)[0] = 0;
+    // Store some data
+    (*m_data)[0] = 255;
+    (*m_data)[0] = 0;
+    (*m_data)[0] = 0;
 
-	}
+  }
 
-	//! Destructor - do cleanup.
-	~CExampleCrawlerPlugin() { }
+  //! Destructor - do cleanup.
+  ~CExampleCrawlerPlugin() { }
 
-	/// Basic plugin methods are the same
-	virtual void init(ros::NodeHandle & node_handle){}
+  /// Basic plugin methods are the same
+  virtual void init(ros::NodeHandle & node_handle) {}
 
-	//! Reset plugin
-	virtual void reset() {}
+  //! Reset plugin
+  virtual void reset() {}
 
 protected:
-	//! Set used octomap frame id and timestamp.
-	virtual void newMapDataCB( SMapWithParameters & par )
-	{
-		m_frame_id = par.frameId;
-		m_time_stamp = par.currentTime;
+  //! Set used octomap frame id and timestamp.
+  virtual void newMapDataCB(SMapWithParameters & par)
+  {
+    m_frame_id = par.frameId;
+    m_time_stamp = par.currentTime;
 
-		// Initialize leaf iterators
-		tButServerOcTree & tree( par.map->getTree() );
-		but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+    // Initialize leaf iterators
+    tButServerOcTree & tree(par.map->getTree());
+    but_env_model::tButServerOcTree::leaf_iterator it, itEnd(tree.end_leafs());
 
-		// Crawl through nodes
-		for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
-		{
-			// Node is occupied?
-			if (tree.isNodeOccupied(*it))
-			{
-				handleOccupiedNode(it, par);
-			}// Node is occupied?
-			else
-			{
-				handleFreeNode(it, par);
-			}
+    // Crawl through nodes
+    for (it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+    {
+      // Node is occupied?
+      if (tree.isNodeOccupied(*it))
+      {
+        handleOccupiedNode(it, par);
+      }// Node is occupied?
+      else
+      {
+        handleFreeNode(it, par);
+      }
 
-		} // Iterate through octree
+    } // Iterate through octree
 
-		invalidate();
-	}
-
-
-	virtual void publishInternal(const ros::Time & timestamp){}
-
-	/**
-	 * We publish no data
-	 */
-	virtual bool shouldPublish(){ return false; }
+    invalidate();
+  }
 
 
-	/// Hook that is called when traversing occupied nodes of the updated Octree.
-	/// We set node color to the stored one.
-	virtual void handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
-	{
-		it->r() = (*m_data)[0];
-		it->g() = (*m_data)[1];
-		it->b() = (*m_data)[2];
-	}
+  virtual void publishInternal(const ros::Time & timestamp) {}
 
-	//! Handle free node - set its color to the green.
-	virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp )
-	{
-		it->r() = 0;
-		it->g() = 255;
-		it->b() = 0;
-	}
+  /**
+   * We publish no data
+   */
+  virtual bool shouldPublish()
+  {
+    return false;
+  }
 
-	/// Called when all nodes was visited.
-	virtual void handlePostNodeTraversal(const SMapWithParameters & mp){}
+
+  /// Hook that is called when traversing occupied nodes of the updated Octree.
+  /// We set node color to the stored one.
+  virtual void handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
+  {
+    it->r() = (*m_data)[0];
+    it->g() = (*m_data)[1];
+    it->b() = (*m_data)[2];
+  }
+
+  //! Handle free node - set its color to the green.
+  virtual void handleFreeNode(tButServerOcTree::iterator & it, const SMapWithParameters & mp)
+  {
+    it->r() = 0;
+    it->g() = 255;
+    it->b() = 0;
+  }
+
+  /// Called when all nodes was visited.
+  virtual void handlePostNodeTraversal(const SMapWithParameters & mp) {}
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CExampleCrawlerPlugin
 

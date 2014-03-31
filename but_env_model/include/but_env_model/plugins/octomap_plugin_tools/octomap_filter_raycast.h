@@ -41,114 +41,114 @@ namespace but_env_model
 class COcFilterRaycast : public COcTreeFilterBase
 {
 public:
-	//! Constructor
-	COcFilterRaycast(const std::string & octree_frame_id, ERunMode mode = FILTER_ALLWAYS);
+  //! Constructor
+  COcFilterRaycast(const std::string & octree_frame_id, ERunMode mode = FILTER_ALLWAYS);
 
-	//! Initialize. Must be called before first filtering
-	virtual void init(ros::NodeHandle & node_handle);
+  //! Initialize. Must be called before first filtering
+  virtual void init(ros::NodeHandle & node_handle);
 
-	//! Configure filter before each frame. Set input cloud.
-	void setCloud(tPointCloudConstPtr cloud);
+  //! Configure filter before each frame. Set input cloud.
+  void setCloud(tPointCloudConstPtr cloud);
 
-	//! Write some info about last filter run
-	virtual void writeLastRunInfo();
-
-protected:
-	//! Filtering function implementation
-	virtual void filterInternal( tButServerOcTree & tree );
-
-	/// Camera info callback
-	void cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
-
-	/// Compute sensor origin from the header info
-	octomap::point3d getSensorOrigin(const std_msgs::Header& sensor_header);
-
-	/// Is point in sensor cone?
-	bool inSensorCone(const cv::Point2d& uv) const;
-
-	/// Return true, if occupied cell is between origin and p
-	bool isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p, double resolution, tButServerOcTree & tree) const;
-
-	/// Return true if point is occluded by pointcloud
-	bool isOccludedRaw(const cv::Point2d& uv, double range);
-
-	//! Compute boundig box
-	void computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max);
+  //! Write some info about last filter run
+  virtual void writeLastRunInfo();
 
 protected:
-	//! Sensor frame id
-	std_msgs::Header m_sensor_header;
+  //! Filtering function implementation
+  virtual void filterInternal(tButServerOcTree & tree);
 
-	//! Initialized
-	bool m_bFilterInitialized;
+  /// Camera info callback
+  void cameraInfoCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
 
-	//! Transform listener
-	tf::TransformListener m_tfListener;
+  /// Compute sensor origin from the header info
+  octomap::point3d getSensorOrigin(const std_msgs::Header& sensor_header);
 
-	/// Camera offsets
-	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+  /// Is point in sensor cone?
+  bool inSensorCone(const cv::Point2d& uv) const;
 
-	/// Camera size
-	cv::Size m_camera_size;
+  /// Return true, if occupied cell is between origin and p
+  bool isOccludedMap(const octomap::point3d& sensor_origin, const octomap::point3d& p, double resolution, tButServerOcTree & tree) const;
 
-	/// Camera model
-	image_geometry::PinholeCameraModel m_camera_model;
+  /// Return true if point is occluded by pointcloud
+  bool isOccludedRaw(const cv::Point2d& uv, double range);
 
-	/// Is camera model initialized?
-	bool m_bCamModelInitialized;
+  //! Compute boundig box
+  void computeBBX(const std_msgs::Header& sensor_header, octomap::point3d& bbx_min, octomap::point3d& bbx_max);
 
-	/// Camera info locking
-	boost::mutex m_lockCamera;
+protected:
+  //! Sensor frame id
+  std_msgs::Header m_sensor_header;
 
-	/// Input cloud lock
-	boost::mutex m_lockData;
+  //! Initialized
+  bool m_bFilterInitialized;
 
-	/// Camera info topic name
-	std::string m_camera_info_topic;
+  //! Transform listener
+  tf::TransformListener m_tfListener;
 
-	/// Camera info subscriber
-	ros::Subscriber m_ciSubscriber;
+  /// Camera offsets
+  int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
 
-	/// Point cloud
-	tPointCloudConstPtr m_cloudPtr;
+  /// Camera size
+  cv::Size m_camera_size;
 
-	/// Number of removed leafs
-	long m_numLeafsRemoved;
+  /// Camera model
+  image_geometry::PinholeCameraModel m_camera_model;
 
-	/// Number of leafs out of sensor cone
-	long m_numLeafsOutOfCone;
+  /// Is camera model initialized?
+  bool m_bCamModelInitialized;
 
-	/// Number of leafs out of raw map
-	long m_numLeafsOutOfMap;
+  /// Camera info locking
+  boost::mutex m_lockCamera;
 
-	/// Num of tested leafs
-	long m_numLeafsTested;
+  /// Input cloud lock
+  boost::mutex m_lockData;
 
-	octomap::point3d m_sensor_origin;
+  /// Camera info topic name
+  std::string m_camera_info_topic;
 
-	//! Visualizations marker publisher
-	ros::Publisher marker_pub_;
+  /// Camera info subscriber
+  ros::Subscriber m_ciSubscriber;
 
-	//! Grid points publisher
-	ros::Publisher grid_pub_;
+  /// Point cloud
+  tPointCloudConstPtr m_cloudPtr;
 
-	//! Use voxel filter to downsample pointcloud
-	pcl::VoxelGrid<tPclPoint> m_vgfilter;
+  /// Number of removed leafs
+  long m_numLeafsRemoved;
 
-	//! Output filtered cloud
-	tPointCloud::Ptr m_filtered_cloud;
+  /// Number of leafs out of sensor cone
+  long m_numLeafsOutOfCone;
 
-	/// Speedup of integrate miss no time function
-	float m_miss_speedup;
+  /// Number of leafs out of raw map
+  long m_numLeafsOutOfMap;
 
-	/// Maximal sensor range
-	double m_max_sensor_range;
+  /// Num of tested leafs
+  long m_numLeafsTested;
 
-	/// Tree resolution
-	float m_tree_resolution;
+  octomap::point3d m_sensor_origin;
+
+  //! Visualizations marker publisher
+  ros::Publisher marker_pub_;
+
+  //! Grid points publisher
+  ros::Publisher grid_pub_;
+
+  //! Use voxel filter to downsample pointcloud
+  pcl::VoxelGrid<tPclPoint> m_vgfilter;
+
+  //! Output filtered cloud
+  tPointCloud::Ptr m_filtered_cloud;
+
+  /// Speedup of integrate miss no time function
+  float m_miss_speedup;
+
+  /// Maximal sensor range
+  double m_max_sensor_range;
+
+  /// Tree resolution
+  float m_tree_resolution;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class COcFilterRaycast
 

@@ -8,7 +8,7 @@
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
- * 
+ *
  * This code is derived from the OctoMap server provided by A. Hornung.
  * Please, see the original comments below.
  */
@@ -74,7 +74,7 @@
 
 //#define _EXAMPLES_
 #ifdef _EXAMPLES_
-#	include <but_env_model/plugins/example_plugin.h>
+# include <but_env_model/plugins/example_plugin.h>
 #endif
 
 
@@ -87,127 +87,127 @@ namespace but_env_model
 class CButServer
 {
 public:
-    //! Type of the used pointcloud
-    typedef pcl::PointCloud<pcl::PointXYZ> tPCLPointCloud;
+  //! Type of the used pointcloud
+  typedef pcl::PointCloud<pcl::PointXYZ> tPCLPointCloud;
 
-    //! Constructor - load file
-    CButServer(ros::NodeHandle nh, ros::NodeHandle private_nh, const std::string& filename = std::string("") );
+  //! Constructor - load file
+  CButServer(ros::NodeHandle nh, ros::NodeHandle private_nh, const std::string& filename = std::string(""));
 
-    //! Destructor
-    virtual ~CButServer();
+  //! Destructor
+  virtual ~CButServer();
 
-    /// Reset server and all plugins
-    void reset();
+  /// Reset server and all plugins
+  void reset();
 
-    /// Pause-resume server
-    void pause( bool bPause );
-
-protected:
-    //! Publish all
-    void publishAll(const ros::Time& rostime );
-
-    //! On octomap data changed
-    void onOcMapDataChanged( tButServerOcMapConstPtr mapdata, const ros::Time & stamp )
-    {
-        publishAll(stamp);
-    }
-
-    /// On reset service call
-    bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
-    {
-        reset();
-        return true;
-    }
-
-    /// On pause service call
-    bool onPause( but_env_model_msgs::EnvModelPause::Request & request, but_env_model_msgs::EnvModelPause::Response & response );
-
-    //! Publish all
-    void publishPlugins(const ros::Time& rostime);
-
-    /// Use/do not use color service callback
-	bool onUseInputColor(but_env_model_msgs::UseInputColor::Request & req, but_env_model_msgs::UseInputColor::Response & res );
+  /// Pause-resume server
+  void pause(bool bPause);
 
 protected:
-    //! Is server running now
-    bool m_bIsPaused;
+  //! Publish all
+  void publishAll(const ros::Time& rostime);
 
-    /// Node handle
-    ros::NodeHandle m_nh, m_privnh;
+  //! On octomap data changed
+  void onOcMapDataChanged(tButServerOcMapConstPtr mapdata, const ros::Time & stamp)
+  {
+    publishAll(stamp);
+  }
 
-    bool m_latchedTopics;
+  /// On reset service call
+  bool onReset(std_srvs::Empty::Request& request, std_srvs::Empty::Response& response)
+  {
+    reset();
+    return true;
+  }
 
-    //! Every N-th frame should be processed when including point-cloud.
-    int m_numPCFramesProcessed;
+  /// On pause service call
+  bool onPause(but_env_model_msgs::EnvModelPause::Request & request, but_env_model_msgs::EnvModelPause::Response & response);
 
-    //! Current frame counter
-    int m_frameCounter;
+  //! Publish all
+  void publishPlugins(const ros::Time& rostime);
 
-    //======================================================================================================
-    // Services
+  /// Use/do not use color service callback
+  bool onUseInputColor(but_env_model_msgs::UseInputColor::Request & req, but_env_model_msgs::UseInputColor::Response & res);
 
-    /// Reset service
-    ros::ServiceServer m_serviceReset;
+protected:
+  //! Is server running now
+  bool m_bIsPaused;
 
-    /// Pause service
-    ros::ServiceServer m_servicePause;
+  /// Node handle
+  ros::NodeHandle m_nh, m_privnh;
 
-	/// Use input color service
-	ros::ServiceServer m_serviceUseInputColor;
+  bool m_latchedTopics;
 
-    //======================================================================================================
-    // Plugins
+  //! Every N-th frame should be processed when including point-cloud.
+  int m_numPCFramesProcessed;
 
-    /// All plugins vector type
-    typedef std::vector<CServerPluginBase *> tVecPlugins;
+  //! Current frame counter
+  int m_frameCounter;
 
-    /// All plugins
-    tVecPlugins m_plugins;
+  //======================================================================================================
+  // Services
 
-    /// Call all plugins function
+  /// Reset service
+  ros::ServiceServer m_serviceReset;
+
+  /// Pause service
+  ros::ServiceServer m_servicePause;
+
+  /// Use input color service
+  ros::ServiceServer m_serviceUseInputColor;
+
+  //======================================================================================================
+  // Plugins
+
+  /// All plugins vector type
+  typedef std::vector<CServerPluginBase *> tVecPlugins;
+
+  /// All plugins
+  tVecPlugins m_plugins;
+
+  /// Call all plugins function
 #define FOR_ALL_PLUGINS( X ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X; } }
 #define FOR_ALL_PLUGINS_PARAM( X, Y ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y); } }
 #define FOR_ALL_PLUGINS_PARAM2( X, Y, Z ) { for( tVecPlugins::iterator p = m_plugins.begin(); p != m_plugins.end(); ++p ){ (*p)->X(Y,Z); } }
 
-    /// Collision map
-    boost::shared_ptr< CCollisionMapPlugin > m_plugCMap;
+  /// Collision map
+  boost::shared_ptr< CCollisionMapPlugin > m_plugCMap;
 
-    /// Incoming depth points cloud
-    boost::shared_ptr< CPointCloudPlugin > m_plugInputPointCloud;
+  /// Incoming depth points cloud
+  boost::shared_ptr< CPointCloudPlugin > m_plugInputPointCloud;
 
-    /// Output depth points cloud - whole octomap
-    boost::shared_ptr< CPointCloudPlugin > m_plugOcMapPointCloud;
+  /// Output depth points cloud - whole octomap
+  boost::shared_ptr< CPointCloudPlugin > m_plugOcMapPointCloud;
 
-    /// Visible points point cloud
-    boost::shared_ptr< CPointCloudPlugin > m_plugVisiblePointCloud;
+  /// Visible points point cloud
+  boost::shared_ptr< CPointCloudPlugin > m_plugVisiblePointCloud;
 
-    /// Octo map plugin
-    boost::shared_ptr< COctoMapPlugin > m_plugOctoMap;
+  /// Octo map plugin
+  boost::shared_ptr< COctoMapPlugin > m_plugOctoMap;
 
-    /// Collision object plugin
-    boost::shared_ptr< CCollisionObjectPlugin > m_plugCollisionObject;
+  /// Collision object plugin
+  boost::shared_ptr< CCollisionObjectPlugin > m_plugCollisionObject;
 
-    /// 2D map plugin
-    boost::shared_ptr< COccupancyGridPlugin > m_plugMap2D;
+  /// 2D map plugin
+  boost::shared_ptr< COccupancyGridPlugin > m_plugMap2D;
 
-    /// Interactive markers server plugin
-    boost::shared_ptr< CIMarkersPlugin > m_plugIMarkers;
+  /// Interactive markers server plugin
+  boost::shared_ptr< CIMarkersPlugin > m_plugIMarkers;
 
-    /// Marker array publisher plugin
-    boost::shared_ptr< CMarkerArrayPlugin > m_plugMarkerArray;
-    
-    /// ObjTree plugin
-    boost::shared_ptr< CObjTreePlugin > m_plugObjTree;
+  /// Marker array publisher plugin
+  boost::shared_ptr< CMarkerArrayPlugin > m_plugMarkerArray;
 
-    /// Compressed pointcloud plugin
-    boost::shared_ptr< CCompressedPointCloudPlugin > m_plugCompressedPointCloud;
+  /// ObjTree plugin
+  boost::shared_ptr< CObjTreePlugin > m_plugObjTree;
+
+  /// Compressed pointcloud plugin
+  boost::shared_ptr< CCompressedPointCloudPlugin > m_plugCompressedPointCloud;
 
 #ifdef _EXAMPLES_
-    /// Create example plugin
-    boost::shared_ptr< CExamplePlugin > m_plugExample;
+  /// Create example plugin
+  boost::shared_ptr< CExamplePlugin > m_plugExample;
 
-    /// Create crawler plugin holder
-    boost::shared_ptr< CExampleCrawlerPlugin > m_plugExampleCrawler;
+  /// Create crawler plugin holder
+  boost::shared_ptr< CExampleCrawlerPlugin > m_plugExampleCrawler;
 #endif
 };
 

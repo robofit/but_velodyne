@@ -46,59 +46,62 @@ class Node;
 class Object
 {
 public:
-    enum Type
-    {
-        PLANE = 1,
-        ALIGNED_BOUNDING_BOX = 2,
-        GENERAL_BOUNDING_BOX = 3
-    };
+  enum Type
+  {
+    PLANE = 1,
+    ALIGNED_BOUNDING_BOX = 2,
+    GENERAL_BOUNDING_BOX = 3
+  };
 
 private:
-    std::list<Node*> m_inNodes;
-    unsigned int m_id;
+  std::list<Node*> m_inNodes;
+  unsigned int m_id;
 
 protected:
-    Type m_type;
+  Type m_type;
 #if HISTORY_ENABLED
-    History *m_history;
+  History *m_history;
 #endif
 
 public:
-    Object();
-    ~Object();
+  Object();
+  ~Object();
 
-    virtual bool fitsIntoBox(const Box &box) const = 0;
-    virtual bool interfereWithBox(const Box &box) const = 0;
-    virtual bool isSimilar(const Object *object) const = 0;
-    virtual bool isPointInside(float x, float y, float z) const = 0;
+  virtual bool fitsIntoBox(const Box &box) const = 0;
+  virtual bool interfereWithBox(const Box &box) const = 0;
+  virtual bool isSimilar(const Object *object) const = 0;
+  virtual bool isPointInside(float x, float y, float z) const = 0;
 
-    void setId(unsigned int id);
-    unsigned int id() const;
-    bool hasId() const;
-    Type type() const;
+  void setId(unsigned int id);
+  unsigned int id() const;
+  bool hasId() const;
+  Type type() const;
 
-    void newNode(Node *node);
-    void removeNode(Node *node);
+  void newNode(Node *node);
+  void removeNode(Node *node);
 
-    unsigned int inNodesCount() const;
+  unsigned int inNodesCount() const;
 
 #if HISTORY_ENABLED
-    /// Gets history.
-    History *history() { return m_history; }
-    /// Move history from other object.
-    void takeHistory(Object *object)
+  /// Gets history.
+  History *history()
+  {
+    return m_history;
+  }
+  /// Move history from other object.
+  void takeHistory(Object *object)
+  {
+    if (!object->m_history)
     {
-        if(!object->m_history)
-        {
-            object->m_history = new History;
-        }
-
-        object->updateHistory();
-        m_history = object->m_history;
-        object->m_history = 0;
+      object->m_history = new History;
     }
-    /// Updates history
-    virtual void updateHistory() = 0;
+
+    object->updateHistory();
+    m_history = object->m_history;
+    object->m_history = 0;
+  }
+  /// Updates history
+  virtual void updateHistory() = 0;
 #endif
 };
 

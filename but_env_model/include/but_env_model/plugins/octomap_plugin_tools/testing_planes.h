@@ -44,58 +44,58 @@ namespace but_env_model
 class CTestingPlane : public CTestingObjectBase
 {
 public:
-	/// Point type
-	typedef Eigen::Vector3f tPoint;
+  /// Point type
+  typedef Eigen::Vector3f tPoint;
 
 public:
-	//! Simple constructor
-	CTestingPlane();
+  //! Simple constructor
+  CTestingPlane();
 
-	//! Copy constructor
-	CTestingPlane( const CTestingPlane &plane );
+  //! Copy constructor
+  CTestingPlane(const CTestingPlane &plane);
 
-	//! Assignement operator
-	CTestingPlane operator =( const CTestingPlane &plane );
+  //! Assignement operator
+  CTestingPlane operator =(const CTestingPlane &plane);
 
-	/**
-	 * Initialize by three points
-	 *
-	 * This points are used:
-	 *
-	 *	  normal
-	 * 		|    p3
-	 *      |   /
-	 * 		|  /
-	 * 		| /
-	 * 		p1---------------p2
-	 *
-	 * 		d1 = p2 - p1
-	 * 		d2 = p3 - p1
-	 * 		n = d1 x d2
-	 */
-	CTestingPlane( const tPoint &p1, const tPoint &p2, const tPoint &p3 );
+  /**
+   * Initialize by three points
+   *
+   * This points are used:
+   *
+   *    normal
+   *    |    p3
+   *      |   /
+   *    |  /
+   *    | /
+   *    p1---------------p2
+   *
+   *    d1 = p2 - p1
+   *    d2 = p3 - p1
+   *    n = d1 x d2
+   */
+  CTestingPlane(const tPoint &p1, const tPoint &p2, const tPoint &p3);
 
-	//! Initialize by point and normal
-	CTestingPlane( const tPoint &point, const tPoint &normal );
+  //! Initialize by point and normal
+  CTestingPlane(const tPoint &point, const tPoint &normal);
 
-	//! Initialize by three points
-	void set( const tPoint &p1, const tPoint &p2, const tPoint &p3 );
+  //! Initialize by three points
+  void set(const tPoint &p1, const tPoint &p2, const tPoint &p3);
 
-	//! Initialize by point and normal
-	void set( const tPoint &point, const tPoint &normal );
+  //! Initialize by point and normal
+  void set(const tPoint &point, const tPoint &normal);
 
-	//! Test point
-	virtual bool isIn( double x, double y, double z );
+  //! Test point
+  virtual bool isIn(double x, double y, double z);
 
 protected:
-	//! Plane parameters
-	tPoint m_plane;
+  //! Plane parameters
+  tPoint m_plane;
 
-	//! Last plane parameter
-	double m_d;
+  //! Last plane parameter
+  double m_d;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CTestingPlane
 
@@ -105,34 +105,40 @@ public:
 class CTestingPlanes : public CTestingObjectBase
 {
 public:
-	//! Stack of planes type
-	typedef std::vector< CTestingPlane, Eigen::aligned_allocator<CTestingPlane> > tPlanesStack;
+  //! Stack of planes type
+  typedef std::vector< CTestingPlane, Eigen::aligned_allocator<CTestingPlane> > tPlanesStack;
 
 public:
-	//! Simple constructor
-	CTestingPlanes();
+  //! Simple constructor
+  CTestingPlanes();
 
-	//! Initialize as a stack of planes
-	CTestingPlanes( const tPlanesStack & planes );
+  //! Initialize as a stack of planes
+  CTestingPlanes(const tPlanesStack & planes);
 
-	//! Initialize by stack of planes
-	void set( const tPlanesStack &planes );
+  //! Initialize by stack of planes
+  void set(const tPlanesStack &planes);
 
-	//! Add plane to the stack
-	void addPlane( const CTestingPlane &plane ) { m_planes.push_back( plane ); }
+  //! Add plane to the stack
+  void addPlane(const CTestingPlane &plane)
+  {
+    m_planes.push_back(plane);
+  }
 
-	//! Clear all planes from stack
-	void clearPlanes(){ m_planes.clear(); }
+  //! Clear all planes from stack
+  void clearPlanes()
+  {
+    m_planes.clear();
+  }
 
-	//! Test point
-	virtual bool isIn( double x, double y, double z );
+  //! Test point
+  virtual bool isIn(double x, double y, double z);
 
 protected:
-	//! Planes stack
-	tPlanesStack m_planes;
+  //! Planes stack
+  tPlanesStack m_planes;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CTestingPlanes
 

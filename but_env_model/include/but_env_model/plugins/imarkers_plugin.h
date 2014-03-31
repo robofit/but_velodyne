@@ -10,17 +10,17 @@
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
- * 
+ *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -46,94 +46,97 @@ namespace but_env_model
 class CIMarkersPlugin : public CServerPluginBase
 {
 public:
-	typedef boost::shared_ptr<interactive_markers::InteractiveMarkerServer> InteractiveMarkerServerPtr;
+  typedef boost::shared_ptr<interactive_markers::InteractiveMarkerServer> InteractiveMarkerServerPtr;
 
 public:
-	/// Constructor
-	CIMarkersPlugin(const std::string & name);
+  /// Constructor
+  CIMarkersPlugin(const std::string & name);
 
-	/// Destructor
-	virtual ~CIMarkersPlugin();
+  /// Destructor
+  virtual ~CIMarkersPlugin();
 
-	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
-
-protected:
-    /**
-     * @brief Insert or modify plane array
-     *
-     * @param pa Array of planes
-     */
-    bool insertPlaneCallback( but_env_model_msgs::AddPlanes::Request & req, but_env_model_msgs::AddPlanes::Response & res );
-
-    /**
-     * @brief Insert/modify/remove plane
-     *
-     * @param plane Plane
-     */
-    void operatePlane( const but_env_model_msgs::PlaneDesc & plane );
-
-    /**
-     * @brief Service helper - add plane
-     *
-     * @param plane Added plane
-     */
-    void addPlaneSrvCall( const but_env_model_msgs::PlaneDesc & plane, const std::string & name );
-
-    /**
-     * @brief Service helper - remove plane
-     *
-     * @param plane Added plane
-     */
-    void removePlaneSrvCall( const but_env_model_msgs::PlaneDesc & plane, const std::string & name );
-
-    /**
-     *  @brief Get unique string (used as interactive marker name)
-     */
-    std::string getUniqueName();
-
-    //! Should plugin publish data?
-	virtual bool shouldPublish(){ return false; }
-
-	//! Publish data - virtual function
-	virtual void publishInternal( const ros::Time & timestamp ){}
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
 protected:
-	/// Insert some planes service
-    ros::ServiceServer m_serviceInsertPlanes;
+  /**
+   * @brief Insert or modify plane array
+   *
+   * @param pa Array of planes
+   */
+  bool insertPlaneCallback(but_env_model_msgs::AddPlanes::Request & req, but_env_model_msgs::AddPlanes::Response & res);
 
-    /// Remove object from the interactive markers server pointer
-    ros::ServiceClient m_removeInteractiveMarkerService;
+  /**
+   * @brief Insert/modify/remove plane
+   *
+   * @param plane Plane
+   */
+  void operatePlane(const but_env_model_msgs::PlaneDesc & plane);
 
-    /// Add plane interactive marker service
-    ros::ServiceClient m_addInteractivePlaneService;
+  /**
+   * @brief Service helper - add plane
+   *
+   * @param plane Added plane
+   */
+  void addPlaneSrvCall(const but_env_model_msgs::PlaneDesc & plane, const std::string & name);
 
-    //! Used frame id (input data will be transformed to it)
-    std::string m_IMarkersFrameId;
+  /**
+   * @brief Service helper - remove plane
+   *
+   * @param plane Added plane
+   */
+  void removePlaneSrvCall(const but_env_model_msgs::PlaneDesc & plane, const std::string & name);
 
-    /// Interactive markers server pointer
-    but_interaction_primitives::InteractiveMarkerServerPtr m_imServer;
+  /**
+   *  @brief Get unique string (used as interactive marker name)
+   */
+  std::string getUniqueName();
 
-    // DETECTED ENTITIES
-    /// Plane
-    typedef std::pair< std::string, but_env_model_msgs::PlaneDesc > tNamedPlane;
-    typedef std::map< int, tNamedPlane > tPlanesMap;
-    tPlanesMap m_dataPlanes;
+  //! Should plugin publish data?
+  virtual bool shouldPublish()
+  {
+    return false;
+  }
 
-    //! Planes frame id
-    std::string m_planesFrameId;
+  //! Publish data - virtual function
+  virtual void publishInternal(const ros::Time & timestamp) {}
 
-    //! Server topic name
-    std::string m_serverTopicName;
+protected:
+  /// Insert some planes service
+  ros::ServiceServer m_serviceInsertPlanes;
 
-    /// Unique name counter
-    long int m_uniqueNameCounter;
+  /// Remove object from the interactive markers server pointer
+  ros::ServiceClient m_removeInteractiveMarkerService;
 
-    /// Use external server services?
-    bool m_bUseExternalServer;
+  /// Add plane interactive marker service
+  ros::ServiceClient m_addInteractivePlaneService;
+
+  //! Used frame id (input data will be transformed to it)
+  std::string m_IMarkersFrameId;
+
+  /// Interactive markers server pointer
+  but_interaction_primitives::InteractiveMarkerServerPtr m_imServer;
+
+  // DETECTED ENTITIES
+  /// Plane
+  typedef std::pair< std::string, but_env_model_msgs::PlaneDesc > tNamedPlane;
+  typedef std::map< int, tNamedPlane > tPlanesMap;
+  tPlanesMap m_dataPlanes;
+
+  //! Planes frame id
+  std::string m_planesFrameId;
+
+  //! Server topic name
+  std::string m_serverTopicName;
+
+  /// Unique name counter
+  long int m_uniqueNameCounter;
+
+  /// Use external server services?
+  bool m_bUseExternalServer;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CIMarkersPlugin
 

@@ -38,32 +38,32 @@ namespace objtree
 
 struct Box
 {
-    float x, y, z;
-    float w, h, d;
+  float x, y, z;
+  float w, h, d;
 
-    inline Box()
-    {
-    }
+  inline Box()
+  {
+  }
 
-    inline Box(float x, float y, float z, float w, float h, float d)
-    {
-        init(x, y, z, w, h, d);
-    }
+  inline Box(float x, float y, float z, float w, float h, float d)
+  {
+    init(x, y, z, w, h, d);
+  }
 
-    inline void init(float x, float y, float z, float w, float h, float d)
-    {
-        this->x = x;
-        this->y = y;
-        this->z = z;
-        this->w = w;
-        this->h = h;
-        this->d = d;
-    }
+  inline void init(float x, float y, float z, float w, float h, float d)
+  {
+    this->x = x;
+    this->y = y;
+    this->z = z;
+    this->w = w;
+    this->h = h;
+    this->d = d;
+  }
 
-    bool operator==(const Box &box)
-    {
-        return box.x == x && box.y == y && box.z == z && box.w == w && box.h == h && box.d == d;
-    }
+  bool operator==(const Box &box)
+  {
+    return box.x == x && box.y == y && box.z == z && box.w == w && box.h == h && box.d == d;
+  }
 };
 
 }

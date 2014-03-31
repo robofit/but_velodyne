@@ -37,16 +37,16 @@ namespace but_env_model
 class EnvModelNodelet: public nodelet::Nodelet
 {
 public:
-    EnvModelNodelet() {}
-    ~EnvModelNodelet() {}
+  EnvModelNodelet() {}
+  ~EnvModelNodelet() {}
 
 private:
-    virtual void onInit()
-    {
-        env_model_server_.reset( new CButServer(getNodeHandle(), getPrivateNodeHandle()) );
-    }
+  virtual void onInit()
+  {
+    env_model_server_.reset(new CButServer(getNodeHandle(), getPrivateNodeHandle()));
+  }
 
-    boost::shared_ptr<CButServer> env_model_server_;
+  boost::shared_ptr<CButServer> env_model_server_;
 };
 
 } // namespace but_velodyne

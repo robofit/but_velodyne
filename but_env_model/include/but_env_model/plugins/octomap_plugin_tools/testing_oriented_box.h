@@ -37,27 +37,27 @@ namespace but_env_model
 class CTestingOrientedBox : public CTestingObjectBase
 {
 public:
-	//! Constructor - simple
-	CTestingOrientedBox();
+  //! Constructor - simple
+  CTestingOrientedBox();
 
-	//! Constructor - initializing
-	CTestingOrientedBox( double minx, double miny, double minz, double maxx, double maxy, double maxz );
+  //! Constructor - initializing
+  CTestingOrientedBox(double minx, double miny, double minz, double maxx, double maxy, double maxz);
 
-	//! Set by limits
-	void set( double minx, double miny, double minz, double maxx, double maxy, double maxz );
+  //! Set by limits
+  void set(double minx, double miny, double minz, double maxx, double maxy, double maxz);
 
-	//! Set by center and sizes
-	void setCenterSize( double x, double y, double z, double sx, double sy, double sz );
+  //! Set by center and sizes
+  void setCenterSize(double x, double y, double z, double sx, double sy, double sz);
 
-	//! Testing function
-	virtual bool isIn( double x, double y, double z );
+  //! Testing function
+  virtual bool isIn(double x, double y, double z);
 
 protected:
-	//! Minimal range
-	double m_minX, m_minY, m_minZ;
+  //! Minimal range
+  double m_minX, m_minY, m_minZ;
 
-	//! Maximal range
-	double m_maxX, m_maxY, m_maxZ;
+  //! Maximal range
+  double m_maxX, m_maxY, m_maxZ;
 
 }; // CTestingOrientedBox
 

@@ -36,12 +36,12 @@ namespace objtree
  * @param box bounding box position and size
  */
 GBBox::GBBox(const Point &position, const Vector4f &orientation, const Point &scale, const Box &box) :
-    BBox(box),
-    m_position(position),
-    m_orientation(orientation),
-    m_scale(scale)
+  BBox(box),
+  m_position(position),
+  m_orientation(orientation),
+  m_scale(scale)
 {
-    m_type = GENERAL_BOUNDING_BOX;
+  m_type = GENERAL_BOUNDING_BOX;
 }
 
 /**
@@ -51,9 +51,9 @@ GBBox::GBBox(const Point &position, const Vector4f &orientation, const Point &sc
  */
 bool GBBox::isSimilar(const Object *object) const
 {
-    if(object->type() != GENERAL_BOUNDING_BOX) return false;
+  if (object->type() != GENERAL_BOUNDING_BOX) return false;
 
-    return isSimilarBBox((BBox*)object);
+  return isSimilarBBox((BBox*)object);
 }
 
 }

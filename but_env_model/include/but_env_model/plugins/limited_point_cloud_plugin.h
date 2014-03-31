@@ -10,17 +10,17 @@
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
- * 
+ *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -44,87 +44,90 @@ namespace but_env_model
 class CLimitedPointCloudPlugin : public CPointCloudPlugin
 {
 public:
-	/// Constructor
-	CLimitedPointCloudPlugin( const std::string & name );
+  /// Constructor
+  CLimitedPointCloudPlugin(const std::string & name);
 
-	/// Destructor
-	virtual ~CLimitedPointCloudPlugin();
+  /// Destructor
+  virtual ~CLimitedPointCloudPlugin();
 
-	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
-	//! Connect/disconnect plugin to/from all topics
-	virtual void pause( bool bPause, ros::NodeHandle & node_handle);
+  //! Connect/disconnect plugin to/from all topics
+  virtual void pause(bool bPause, ros::NodeHandle & node_handle);
 
-	//! Wants plugin new map data?
-	virtual bool wantsMap() { return m_cameraFrameId.size() != 0; }
-
-protected:
-	//! Set used octomap frame id and timestamp
-	virtual void newMapDataCB( SMapWithParameters & par );
-
-	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
-
-	//! Called when new scan was inserted and now all can be published
-	virtual void publishInternal(const ros::Time & timestamp);
-
-	/// On camera position changed callback
-	void onCameraPositionChangedCB(const but_env_model_msgs::RVIZCameraPosition::ConstPtr& position);
-
-	// main loop when spinning our own thread
-	// - process callbacks in our callback queue
-	// - process pending goals
-	void spinThread();
+  //! Wants plugin new map data?
+  virtual bool wantsMap()
+  {
+    return m_cameraFrameId.size() != 0;
+  }
 
 protected:
-	/// Should camera position and orientation be transformed?
-	bool m_bTransformCamera;
+  //! Set used octomap frame id and timestamp
+  virtual void newMapDataCB(SMapWithParameters & par);
 
-	/// Camera frame id
-	std::string m_cameraFrameId;
+  /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+  virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-    // Camera position topic name
-    std::string m_cameraPositionTopic;
+  //! Called when new scan was inserted and now all can be published
+  virtual void publishInternal(const ros::Time & timestamp);
 
-	/// Camera normalized normal - part of the plane equation
-	Eigen::Vector3f m_normal, m_normalBuf;
+  /// On camera position changed callback
+  void onCameraPositionChangedCB(const but_env_model_msgs::RVIZCameraPosition::ConstPtr& position);
 
-	/// Last part of the plane equation
-	float m_d, m_dBuf;
+  // main loop when spinning our own thread
+  // - process callbacks in our callback queue
+  // - process pending goals
+  void spinThread();
 
-	/// Transformation from camera to the octomap frame id - rotation
-	Eigen::Matrix3f m_camToOcRot;
+protected:
+  /// Should camera position and orientation be transformed?
+  bool m_bTransformCamera;
 
-	/// Transformation from camera to the octomap frame id - translation
-	Eigen::Vector3f m_camToOcTrans;
+  /// Camera frame id
+  std::string m_cameraFrameId;
 
-	/// Subscriber - camera position
-	// message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
-	ros::Subscriber m_camPosSubscriber;
+  // Camera position topic name
+  std::string m_cameraPositionTopic;
 
-	//! Message filter (we only want point cloud 2 messages)
-	tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
+  /// Camera normalized normal - part of the plane equation
+  Eigen::Vector3f m_normal, m_normalBuf;
 
-	/// Counters
-	long m_countVisible, m_countHidden;
+  /// Last part of the plane equation
+  float m_d, m_dBuf;
 
-	float min, max;
+  /// Transformation from camera to the octomap frame id - rotation
+  Eigen::Matrix3f m_camToOcRot;
 
-	//! Spin out own input callback thread
-	bool m_bSpinThread;
+  /// Transformation from camera to the octomap frame id - translation
+  Eigen::Vector3f m_camToOcTrans;
 
-	// these are needed when spinning up a dedicated thread
-	boost::scoped_ptr<boost::thread> spin_thread_;
-	ros::NodeHandle nh_;
-	ros::CallbackQueue callback_queue_;
-	volatile bool need_to_terminate_;
+  /// Subscriber - camera position
+  // message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition> *m_camPosSubscriber;
+  ros::Subscriber m_camPosSubscriber;
 
-	// Mutex used to lock camera position parameters
-	boost::recursive_mutex m_camPosMutex;
+  //! Message filter (we only want point cloud 2 messages)
+  tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition> *m_tfCamPosSub;
+
+  /// Counters
+  long m_countVisible, m_countHidden;
+
+  float min, max;
+
+  //! Spin out own input callback thread
+  bool m_bSpinThread;
+
+  // these are needed when spinning up a dedicated thread
+  boost::scoped_ptr<boost::thread> spin_thread_;
+  ros::NodeHandle nh_;
+  ros::CallbackQueue callback_queue_;
+  volatile bool need_to_terminate_;
+
+  // Mutex used to lock camera position parameters
+  boost::recursive_mutex m_camPosMutex;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

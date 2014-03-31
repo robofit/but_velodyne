@@ -43,30 +43,48 @@ namespace objtree
 class Plane : public Object
 {
 private:
-    Point m_pos;
-    Vector m_normal;
-    Polygon m_points;
-    float m_d;
-    Point m_boundingMin, m_boundingMax;
+  Point m_pos;
+  Vector m_normal;
+  Polygon m_points;
+  float m_d;
+  Point m_boundingMin, m_boundingMax;
 
 public:
-    Plane(const Point &center, const Vector &normal, const Point &scale);
-    Plane(const Polygon &points);
+  Plane(const Point &center, const Vector &normal, const Point &scale);
+  Plane(const Polygon &points);
 
-    virtual bool fitsIntoBox(const Box &box) const;
-    virtual bool interfereWithBox(const Box &box) const;
-    virtual bool isSimilar(const Object *object) const;
-    virtual bool isPointInside(float x, float y, float z) const;
+  virtual bool fitsIntoBox(const Box &box) const;
+  virtual bool interfereWithBox(const Box &box) const;
+  virtual bool isSimilar(const Object *object) const;
+  virtual bool isPointInside(float x, float y, float z) const;
 
-    const Point& pos() const { return m_pos; }
-    const Vector& normal() const { return m_normal; }
-    const Polygon& points() const { return m_points; }
-    const Point& boundingMin() const { return m_boundingMin;  }
-    const Point& boundingMax() const { return m_boundingMax;  }
+  const Point& pos() const
+  {
+    return m_pos;
+  }
+  const Vector& normal() const
+  {
+    return m_normal;
+  }
+  const Polygon& points() const
+  {
+    return m_points;
+  }
+  const Point& boundingMin() const
+  {
+    return m_boundingMin;
+  }
+  const Point& boundingMax() const
+  {
+    return m_boundingMax;
+  }
 
 #if HISTORY_ENABLED
-    /// Updates history
-    virtual void updateHistory() { m_history->update(m_pos); }
+  /// Updates history
+  virtual void updateHistory()
+  {
+    m_history->update(m_pos);
+  }
 #endif
 };
 

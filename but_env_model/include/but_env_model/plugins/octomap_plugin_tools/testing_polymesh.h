@@ -39,27 +39,27 @@ namespace but_env_model
 class CTestingPolymesh : public CTestingPlanes
 {
 public:
-	/// Point type
-	typedef Eigen::Vector3f tPoint;
+  /// Point type
+  typedef Eigen::Vector3f tPoint;
 
-	/// Quaternion type
-	typedef Eigen::Quaternionf tQuaternion;
+  /// Quaternion type
+  typedef Eigen::Quaternionf tQuaternion;
 
-	/// Transform type
-	typedef Eigen::Transform<float, 3, Eigen::Affine> tTransform;
-
-public:
-	//! Simple constructor
-	CTestingPolymesh();
-
-	//! Construct as oriented box
-	CTestingPolymesh( const tPoint &center, const tQuaternion &orientation, const tPoint & size );
-
-	//! Create as oriented box
-	void setAsBox( const tPoint &center, const tQuaternion &orientation, const tPoint & size );
+  /// Transform type
+  typedef Eigen::Transform<float, 3, Eigen::Affine> tTransform;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  //! Simple constructor
+  CTestingPolymesh();
+
+  //! Construct as oriented box
+  CTestingPolymesh(const tPoint &center, const tQuaternion &orientation, const tPoint & size);
+
+  //! Create as oriented box
+  void setAsBox(const tPoint &center, const tQuaternion &orientation, const tPoint & size);
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CTestingPolymesh
 

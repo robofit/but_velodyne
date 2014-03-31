@@ -40,16 +40,30 @@ namespace objtree
 
 struct Point
 {
-    float x, y, z;
+  float x, y, z;
 
-    Point(float x, float y, float z) : x(x), y(y), z(z) {}
-    Point(const Point &p) : x(p.x), y(p.y), z(p.z) {}
-    Point() {}
+  Point(float x, float y, float z) : x(x), y(y), z(z) {}
+  Point(const Point &p) : x(p.x), y(p.y), z(p.z) {}
+  Point() {}
 
-    Point operator-(const Point &p) const { return Point(x-p.x, y-p.y, z-p.z); }
-    Point operator+(const Point &p) const { return Point(x+p.x, y+p.y, z+p.z); }
-    void operator/=(float num) { x/=num; y/=num; z/=num; }
-    Point operator/(float num) const { return Point(x/num, y/num, z/num); }
+  Point operator-(const Point &p) const
+  {
+    return Point(x - p.x, y - p.y, z - p.z);
+  }
+  Point operator+(const Point &p) const
+  {
+    return Point(x + p.x, y + p.y, z + p.z);
+  }
+  void operator/=(float num)
+  {
+    x /= num;
+    y /= num;
+    z /= num;
+  }
+  Point operator/(float num) const
+  {
+    return Point(x / num, y / num, z / num);
+  }
 };
 
 typedef Point Vector;
@@ -57,11 +71,11 @@ typedef std::vector<Point> Polygon;
 
 struct Vector4f
 {
-    float x, y, z, w;
+  float x, y, z, w;
 
-    Vector4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
-    Vector4f(const Vector4f &v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
-    Vector4f() {}
+  Vector4f(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+  Vector4f(const Vector4f &v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
+  Vector4f() {}
 };
 
 }

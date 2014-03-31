@@ -42,22 +42,25 @@ namespace objtree
 class BBox : public Object
 {
 private:
-    Box m_box;
+  Box m_box;
 
 public:
-    BBox(const Box &box);
+  BBox(const Box &box);
 
-    virtual bool fitsIntoBox(const Box &box) const;
-    virtual bool interfereWithBox(const Box &box) const;
-    virtual bool isSimilar(const Object *object) const;
-    virtual bool isSimilarBBox(const BBox *object) const;
-    virtual bool isPointInside(float x, float y, float z) const;
+  virtual bool fitsIntoBox(const Box &box) const;
+  virtual bool interfereWithBox(const Box &box) const;
+  virtual bool isSimilar(const Object *object) const;
+  virtual bool isSimilarBBox(const BBox *object) const;
+  virtual bool isPointInside(float x, float y, float z) const;
 
-    const Box& box() const;
+  const Box& box() const;
 
 #if HISTORY_ENABLED
-    /// Updates history
-    virtual void updateHistory() { m_history->update(Point(m_box.x, m_box.y, m_box.z)); }
+  /// Updates history
+  virtual void updateHistory()
+  {
+    m_history->update(Point(m_box.x, m_box.y, m_box.z));
+  }
 #endif
 };
 
