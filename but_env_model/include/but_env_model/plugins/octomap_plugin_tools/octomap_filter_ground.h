@@ -39,48 +39,54 @@ namespace but_env_model
 class COcFilterGround : public COcTreeFilterBase
 {
 public:
-	//! Constructor
-	COcFilterGround(const std::string & octree_frame_id, ERunMode mode = FILTER_ALLWAYS);
+  //! Constructor
+  COcFilterGround(const std::string & octree_frame_id, ERunMode mode = FILTER_ALLWAYS);
 
-	//! Write some info about last filter run
-	virtual void writeLastRunInfo()
-	{
-		std::cerr << "COcFilterGround: Ground cloud size: " << m_groundPc->points.size()<< std::endl;
-		std::cerr << "COcFilterGround: Non ground cloud size: " << m_nongroundPc->points.size()<< std::endl;
-	}
+  //! Write some info about last filter run
+  virtual void writeLastRunInfo()
+  {
+    std::cerr << "COcFilterGround: Ground cloud size: " << m_groundPc->points.size() << std::endl;
+    std::cerr << "COcFilterGround: Non ground cloud size: " << m_nongroundPc->points.size() << std::endl;
+  }
 
-	//! Initialize. Must be called before first filtering
-	virtual void init(ros::NodeHandle & node_handle);
+  //! Initialize. Must be called before first filtering
+  virtual void init(ros::NodeHandle & node_handle);
 
-	//! Configure filter before each frame. Set input cloud.
-	void setCloud(const tPointCloud * cloud);
+  //! Configure filter before each frame. Set input cloud.
+  void setCloud(const tPointCloud * cloud);
 
-	//! Get ground cloud
-	tPointCloud * getGroundPc() { return m_groundPc; }
+  //! Get ground cloud
+  tPointCloud * getGroundPc()
+  {
+    return m_groundPc;
+  }
 
-	//! Get non ground cloud
-	tPointCloud * getNongroundPc() { return m_nongroundPc; }
+  //! Get non ground cloud
+  tPointCloud * getNongroundPc()
+  {
+    return m_nongroundPc;
+  }
 
 protected:
-	//! Filtering function implementation
-	virtual void filterInternal(tButServerOcTree & tree);
+  //! Filtering function implementation
+  virtual void filterInternal(tButServerOcTree & tree);
 
 protected:
-	//! Number of specles removed
-	long m_numSpecRemoved;
+  //! Number of specles removed
+  long m_numSpecRemoved;
 
-	//! Input point cloud
-	const tPointCloud * m_inputPc;
+  //! Input point cloud
+  const tPointCloud * m_inputPc;
 
-	//! Ground cloud
-	tPointCloud * m_groundPc;
+  //! Ground cloud
+  tPointCloud * m_groundPc;
 
-	//! Nonground cloud
-	tPointCloud * m_nongroundPc;
+  //! Nonground cloud
+  tPointCloud * m_nongroundPc;
 
-	double m_groundFilterDistance;
-	double m_groundFilterAngle;
-	double m_groundFilterPlaneDistance;
+  double m_groundFilterDistance;
+  double m_groundFilterAngle;
+  double m_groundFilterPlaneDistance;
 };
 
 } // namespace but_env_model

@@ -27,53 +27,53 @@
 
 #include <but_env_model/plugins/octomap_plugin_tools/octomap_filter_base.h>
 
-but_env_model::COcTreeFilterBase::COcTreeFilterBase( const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/ )
-: m_mode(mode)
-, m_framesSkipped(0)
-, m_framesCount(0)
-, m_lap( m_timer.elapsed_min() )
-, m_treeFrameId( octree_frame_id )
+but_env_model::COcTreeFilterBase::COcTreeFilterBase(const std::string & octree_frame_id, ERunMode mode /*= FILTER_ALLWAYS*/)
+  : m_mode(mode)
+  , m_framesSkipped(0)
+  , m_framesCount(0)
+  , m_lap(m_timer.elapsed_min())
+  , m_treeFrameId(octree_frame_id)
 {
-	m_timer.restart();
+  m_timer.restart();
 }
 
 /**
  * Set number of frames skipped between runs
  */
-void but_env_model::COcTreeFilterBase::setFrameSkip( unsigned skip )
+void but_env_model::COcTreeFilterBase::setFrameSkip(unsigned skip)
 {
-	m_framesSkipped = skip;
+  m_framesSkipped = skip;
 }
 
 /**
  * Set timer lap
  * \return true if lap can be measured and is set
  */
-bool but_env_model::COcTreeFilterBase::setTimerLap( double lap )
+bool but_env_model::COcTreeFilterBase::setTimerLap(double lap)
 {
-	if( lap > m_timer.elapsed_min() && lap < m_timer.elapsed_max() )
-	{
-		m_lap = lap;
-		m_timer.restart();
-		return true;
-	}
+  if (lap > m_timer.elapsed_min() && lap < m_timer.elapsed_max())
+  {
+    m_lap = lap;
+    m_timer.restart();
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
 /**
  * Filter tree
  */
-void but_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree, bool bPruneAfterFinish /*= true*/ )
+void but_env_model::COcTreeFilterBase::filter(tButServerOcTree & tree, bool bPruneAfterFinish /*= true*/)
 {
-	++m_framesCount;
+  ++m_framesCount;
 
-	if( useFrame() )
-	{
-		filterInternal( tree );
-		if(bPruneAfterFinish)
-			tree.prune();
-	}
+  if (useFrame())
+  {
+    filterInternal(tree);
+    if (bPruneAfterFinish)
+      tree.prune();
+  }
 }
 
 /**
@@ -81,36 +81,36 @@ void but_env_model::COcTreeFilterBase::filter( tButServerOcTree & tree, bool bPr
  */
 bool but_env_model::COcTreeFilterBase::useFrame()
 {
-	switch( m_mode )
-	{
-	case FILTER_ALLWAYS:
-//		std::cerr << "Allways" << std::endl;
-		return true;
+  switch (m_mode)
+  {
+  case FILTER_ALLWAYS:
+//    std::cerr << "Allways" << std::endl;
+    return true;
 
-	case FILTER_TEST_FRAME:
-//		std::cerr << "Frame" << std::endl;
-		if( m_framesCount > m_framesSkipped )
-		{
-			m_framesCount = 0;
-			return true;
-		}
+  case FILTER_TEST_FRAME:
+//    std::cerr << "Frame" << std::endl;
+    if (m_framesCount > m_framesSkipped)
+    {
+      m_framesCount = 0;
+      return true;
+    }
 
-		return false;
+    return false;
 
-	case FILTER_TEST_TIME:
-//		std::cerr << "Time. Elapsed: " << m_timer.elapsed() << std::endl;
-		if( m_timer.elapsed() > m_lap)
-		{
-//			std::cerr << "Time elapsed: " << m_timer.elapsed() << ", lap: " << m_lap << std::endl;
-			m_timer.restart();
-			return true;
-		}
+  case FILTER_TEST_TIME:
+//    std::cerr << "Time. Elapsed: " << m_timer.elapsed() << std::endl;
+    if (m_timer.elapsed() > m_lap)
+    {
+//      std::cerr << "Time elapsed: " << m_timer.elapsed() << ", lap: " << m_lap << std::endl;
+      m_timer.restart();
+      return true;
+    }
 
-		return false;
+    return false;
 
-	default:
-		return false;
-	}
+  default:
+    return false;
+  }
 
-	return false;
+  return false;
 }

@@ -40,31 +40,36 @@ namespace but_env_model
 class CTestingSphere : public CTestingObjectBase
 {
 public:
-	//! Simple constructor
-	CTestingSphere() : m_radiussq( 0.0 ), m_x( 0.0 ), m_y(0.0), m_z(0.0) {}
+  //! Simple constructor
+  CTestingSphere() : m_radiussq(0.0), m_x(0.0), m_y(0.0), m_z(0.0) {}
 
-	//! Initializing constructor
-	CTestingSphere( double x, double y, double z, double radius )
-	: m_radiussq( radius * radius ), m_x( x ), m_y( y ), m_z( z )
-	{}
+  //! Initializing constructor
+  CTestingSphere(double x, double y, double z, double radius)
+    : m_radiussq(radius * radius), m_x(x), m_y(y), m_z(z)
+  {}
 
-	//! Set sphere parameters
-	void set( double x, double y, double z, double radius )
-	{ m_radiussq = radius*radius; m_x = x; m_y = y; m_z = z; }
+  //! Set sphere parameters
+  void set(double x, double y, double z, double radius)
+  {
+    m_radiussq = radius * radius;
+    m_x = x;
+    m_y = y;
+    m_z = z;
+  }
 
-	//! Test point
-	virtual bool isIn( double x, double y, double z )
-	{
-		double sx( x - m_x ), sy( y - m_y ), sz( z - m_z );
-		return sx*sx + sy*sy + sz*sz < m_radiussq;
-	}
+  //! Test point
+  virtual bool isIn(double x, double y, double z)
+  {
+    double sx(x - m_x), sy(y - m_y), sz(z - m_z);
+    return sx * sx + sy * sy + sz * sz < m_radiussq;
+  }
 
 protected:
-	//! Sphere radius squared
-	double m_radiussq;
+  //! Sphere radius squared
+  double m_radiussq;
 
-	//! Sphere position
-	double m_x, m_y, m_z;
+  //! Sphere position
+  double m_x, m_y, m_z;
 
 }; // class CTestingSphere
 

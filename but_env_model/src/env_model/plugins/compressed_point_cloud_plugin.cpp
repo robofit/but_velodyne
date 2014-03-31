@@ -34,17 +34,17 @@
 /**
  * Constructor
  */
-but_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const std::string & name )
-: but_env_model::CPointCloudPlugin( name, false )
-, m_bTransformCamera( false )
-, m_bSpinThread( true )
-, m_frame_counter(0)
-, m_uncomplete_frames( 10 )
-, m_bPublishComplete( false )
-, m_octomap_updates_msg( new but_env_model_msgs::OctomapUpdates )
-, m_bTransformOutput( false )
+but_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin(const std::string & name)
+  : but_env_model::CPointCloudPlugin(name, false)
+  , m_bTransformCamera(false)
+  , m_bSpinThread(true)
+  , m_frame_counter(0)
+  , m_uncomplete_frames(10)
+  , m_bPublishComplete(false)
+  , m_octomap_updates_msg(new but_env_model_msgs::OctomapUpdates)
+  , m_bTransformOutput(false)
 {
-	m_use_every_nth = 1;
+  m_use_every_nth = 1;
 }
 
 /**
@@ -52,11 +52,11 @@ but_env_model::CCompressedPointCloudPlugin::CCompressedPointCloudPlugin( const s
  */
 but_env_model::CCompressedPointCloudPlugin::~CCompressedPointCloudPlugin()
 {
-	if (spin_thread_.get())
-	{
-		need_to_terminate_ = true;
-		spin_thread_->join();
-	}
+  if (spin_thread_.get())
+  {
+    need_to_terminate_ = true;
+    spin_thread_->join();
+  }
 }
 
 /**
@@ -79,80 +79,80 @@ void but_env_model::CCompressedPointCloudPlugin::spinThread()
  */
 void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & nh, ros::NodeHandle & private_nh)
 {
-	ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
+  ROS_DEBUG("Initializing CCompressedPointCloudPlugin");
 
-	// 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
-	private_nh.param("ocmap_frame_id", m_frame_id, m_frame_id);
+  // 2013/01/31 Majkl: I guess we should publish the map in the Octomap TF frame...
+  private_nh.param("ocmap_frame_id", m_frame_id, m_frame_id);
 
-	if ( m_bSpinThread )
-	{
-		// if we're spinning our own thread, we'll also need our own callback queue
-		nh.setCallbackQueue( &callback_queue_ );
+  if (m_bSpinThread)
+  {
+    // if we're spinning our own thread, we'll also need our own callback queue
+    nh.setCallbackQueue(&callback_queue_);
 
-		need_to_terminate_ = false;
-		spin_thread_.reset( new boost::thread(boost::bind(&CCompressedPointCloudPlugin::spinThread, this)) );
-		nh_ = nh;
-	}
+    need_to_terminate_ = false;
+    spin_thread_.reset(new boost::thread(boost::bind(&CCompressedPointCloudPlugin::spinThread, this)));
+    nh_ = nh;
+  }
 
-    // Read parameters
-	{
-		// Where to get camera position information
-		private_nh.param("compressed_pc_camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME );
-		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_camera_info_topic_name: %s", m_cameraInfoTopic.c_str() );
+  // Read parameters
+  {
+    // Where to get camera position information
+    private_nh.param("compressed_pc_camera_info_topic_name", m_cameraInfoTopic, CPC_CAMERA_INFO_PUBLISHER_NAME);
+    ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_camera_info_topic_name: %s", m_cameraInfoTopic.c_str());
 
-		// Point cloud publishing topic name
-		private_nh.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_SIMPLE_PC_PUBLISHING_TOPIC_NAME);
-		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_pointcloud_centers_publisher: %s", m_pcPublisherName.c_str() );
+    // Point cloud publishing topic name
+    private_nh.param("compressed_pc_pointcloud_centers_publisher", m_pcPublisherName, CPC_SIMPLE_PC_PUBLISHING_TOPIC_NAME);
+    ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_pointcloud_centers_publisher: %s", m_pcPublisherName.c_str());
 
-		// Should simple pointcloud be published too?
-		private_nh.param("publish_simple_cloud", m_bPublishSimpleCloud, false );
+    // Should simple pointcloud be published too?
+    private_nh.param("publish_simple_cloud", m_bPublishSimpleCloud, false);
 
-		// How many uncomplete frames should be published before complete one
-		int uf;
-		private_nh.param("compressed_pc_differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES );
-		m_uncomplete_frames = uf;
+    // How many uncomplete frames should be published before complete one
+    int uf;
+    private_nh.param("compressed_pc_differential_frames_count", uf, CPC_NUM_DIFFERENTIAL_FRAMES);
+    m_uncomplete_frames = uf;
 
-		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %i", uf );
+    ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %i", uf);
 
-		// Complete data topic name
-		private_nh.param( "compressed_pc_update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME );
-		ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %s", m_ocUpdatePublisherName.c_str() );
-	}
+    // Complete data topic name
+    private_nh.param("compressed_pc_update_data_topic_name", m_ocUpdatePublisherName, CPC_COMPLETE_TOPIC_NAME);
+    ROS_INFO("SRS_ENV_SERVER: parameter - compressed_pc_update_data_topic_name: %s", m_ocUpdatePublisherName.c_str());
+  }
 
-	// Services
-	{
-		m_serviceSetNumIncomplete = nh.advertiseService( SetNumIncompleteFrames_SRV,
-				&but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB, this );
-	}
+  // Services
+  {
+    m_serviceSetNumIncomplete = nh.advertiseService(SetNumIncompleteFrames_SRV,
+                                &but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB, this);
+  }
 
-    // Create publisher - simple point cloud
-	if( m_bPublishSimpleCloud)
-		m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+  // Create publisher - simple point cloud
+  if (m_bPublishSimpleCloud)
+    m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
-    // Create publisher - packed info - cam position and update pointcloud
-    m_ocUpdatePublisher = nh.advertise< but_env_model_msgs::OctomapUpdates > ( m_ocUpdatePublisherName, 5, m_latchedTopics );
+  // Create publisher - packed info - cam position and update pointcloud
+  m_ocUpdatePublisher = nh.advertise< but_env_model_msgs::OctomapUpdates > (m_ocUpdatePublisherName, 5, m_latchedTopics);
 
-    // Subscribe to position topic
-    // Create subscriber
-    m_camPosSubscriber = nh.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
-    // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(nh, cameraPositionTopic, 1);
+  // Subscribe to position topic
+  // Create subscriber
+  m_camPosSubscriber = nh.subscribe<sensor_msgs::CameraInfo>(m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this);
+  // = new message_filters::Subscriber<but_env_model_msgs::RVIZCameraPosition>(nh, cameraPositionTopic, 1);
 
-    if (!m_camPosSubscriber)
-    {
-        ROS_ERROR("Not subscribed...");
-        PERROR( "Cannot subscribe to the camera position publisher..." );
-    }
-/*
-    // Create message filter
-    m_tfCamPosSub = new tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition>( *m_camPosSubscriber, m_tfListener, "/map", 1);
-    m_tfCamPosSub->registerCallback(boost::bind( &CCompressedPointCloudPlugin::onCameraPositionChangedCB, this, _1));
-*/
-    // Clear old pointcloud data
-    m_data->clear();
+  if (!m_camPosSubscriber)
+  {
+    ROS_ERROR("Not subscribed...");
+    PERROR("Cannot subscribe to the camera position publisher...");
+  }
+  /*
+      // Create message filter
+      m_tfCamPosSub = new tf::MessageFilter<but_env_model_msgs::RVIZCameraPosition>( *m_camPosSubscriber, m_tfListener, "/map", 1);
+      m_tfCamPosSub->registerCallback(boost::bind( &CCompressedPointCloudPlugin::onCameraPositionChangedCB, this, _1));
+  */
+  // Clear old pointcloud data
+  m_data->clear();
 
-    // stereo cam params for sensor cone:
-	private_nh.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
-	private_nh.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
+  // stereo cam params for sensor cone:
+  private_nh.param<int> ("compressed_pc_camera_stereo_offset_left", m_camera_stereo_offset_left, 0); // 128
+  private_nh.param<int> ("compressed_pc_camera_stereo_offset_right", m_camera_stereo_offset_right, 0);
 
 }
 
@@ -160,117 +160,120 @@ void but_env_model::CCompressedPointCloudPlugin::init(ros::NodeHandle & nh, ros:
  * Set used octomap frame id and timestamp
  */
 
-void but_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameters & par )
+void but_env_model::CCompressedPointCloudPlugin::newMapDataCB(SMapWithParameters & par)
 {
-	ROS_DEBUG( "CCompressedPointCloudPlugin: onFrameStart" );
+  ROS_DEBUG("CCompressedPointCloudPlugin: onFrameStart");
 
-    // Copy buffered camera normal and d parameter
-    boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
+  // Copy buffered camera normal and d parameter
+  boost::recursive_mutex::scoped_lock lock(m_camPosMutex);
 
-	// Increase frames count
-	++m_frame_counter;
+  // Increase frames count
+  ++m_frame_counter;
 
-	// Is this frame complete?
-	m_bPublishComplete = m_frame_counter % m_uncomplete_frames == 0;
+  // Is this frame complete?
+  m_bPublishComplete = m_frame_counter % m_uncomplete_frames == 0;
 
-	// Create packed octomap update info?
-	m_bCreatePackedInfoMsg = m_ocUpdatePublisher.getNumSubscribers() > 0;
+  // Create packed octomap update info?
+  m_bCreatePackedInfoMsg = m_ocUpdatePublisher.getNumSubscribers() > 0;
 
-    // Reset counters
-    m_countVisible = m_countAll = 0;
+  // Reset counters
+  m_countVisible = m_countAll = 0;
 
-    min = 10000000;
-    max = -10000000;
+  min = 10000000;
+  max = -10000000;
 
-    // Call parent frame start
-    if( ! m_publishPointCloud )
-    		return;
+  // Call parent frame start
+  if (! m_publishPointCloud)
+    return;
 
-    // Just for sure
-	if(m_frame_id != par.frameId)
-	{
-		PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
-		return;
-	}
+  // Just for sure
+  if (m_frame_id != par.frameId)
+  {
+    PERROR("Map frame id has changed, this should never happen. Exiting newMapDataCB.");
+    return;
+  }
 
-    // Clear data
-	m_data->clear();
-	m_DataTimeStamp = m_time_stamp = par.currentTime;
+  // Clear data
+  m_data->clear();
+  m_DataTimeStamp = m_time_stamp = par.currentTime;
 
-	// Pointcloud is used as output for octomap...
-	m_bAsInput = false;
+  // Pointcloud is used as output for octomap...
+  m_bAsInput = false;
 
-    if( m_cameraFrameId.size() == 0 )
-    {
-        ROS_DEBUG("CCompressedPointCloudPlugin::newMapDataCB: Wrong camera frame id...");
+  if (m_cameraFrameId.size() == 0)
+  {
+    ROS_DEBUG("CCompressedPointCloudPlugin::newMapDataCB: Wrong camera frame id...");
 //        m_bTransformCamera = false;
-        return;
-    }
+    return;
+  }
 
 //    m_bTransformCamera = m_cameraFrameId != m_pcFrameId;
-    bool m_bTransformCamera(m_cameraFrameId != m_frame_id);
+  bool m_bTransformCamera(m_cameraFrameId != m_frame_id);
 
-    m_to_sensor = tf::StampedTransform::getIdentity();
+  m_to_sensor = tf::StampedTransform::getIdentity();
 
-    // If different frame id
-    if( m_bTransformCamera )
+  // If different frame id
+  if (m_bTransformCamera)
+  {
+    // Some transforms
+    tf::StampedTransform camToOcTf, ocToCamTf;
+
+    // Get transforms
+    try
     {
-        // Some transforms
-        tf::StampedTransform camToOcTf, ocToCamTf;
+      // Transformation - to, from, time, waiting time
+      m_tfListener.waitForTransform(m_cameraFrameId, m_frame_id,
+                                    par.currentTime, ros::Duration(5));
 
-        // Get transforms
-        try {
-            // Transformation - to, from, time, waiting time
-            m_tfListener.waitForTransform(m_cameraFrameId, m_frame_id,
-                    par.currentTime, ros::Duration(5));
+      m_tfListener.lookupTransform(m_cameraFrameId, m_frame_id,
+                                   par.currentTime, ocToCamTf);
 
-            m_tfListener.lookupTransform( m_cameraFrameId, m_frame_id,
-            		par.currentTime, ocToCamTf );
-
-        } catch (tf::TransformException& ex) {
-            ROS_ERROR_STREAM( m_name << ": Transform error - " << ex.what() << ", quitting callback");
-            PERROR( "Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frame_id );
-            return;
-        }
-
-        m_to_sensor = ocToCamTf;
-
-//        PERROR( "Camera position: " << m_camToOcTrans );
+    }
+    catch (tf::TransformException& ex)
+    {
+      ROS_ERROR_STREAM(m_name << ": Transform error - " << ex.what() << ", quitting callback");
+      PERROR("Camera FID: " << m_cameraFrameId << ", Octomap FID: " << m_frame_id);
+      return;
     }
 
-    // Store camera information
-    m_camera_size = m_camera_size_buffer;
-    m_camera_model.fromCameraInfo( m_camera_info_buffer);
-    m_octomap_updates_msg->camera_info = m_camera_info_buffer;
-    m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
+    m_to_sensor = ocToCamTf;
 
-    // Majkl 2013/01/24: missing frame id in the message header
-    m_octomap_updates_msg->pointcloud2.header.frame_id = par.frameId;
+//        PERROR( "Camera position: " << m_camToOcTrans );
+  }
 
-    // Initialize leaf iterators
-	tButServerOcTree & tree( par.map->getTree() );
-	but_env_model::tButServerOcTree::leaf_iterator it, itEnd( tree.end_leafs() );
+  // Store camera information
+  m_camera_size = m_camera_size_buffer;
+  m_camera_model.fromCameraInfo(m_camera_info_buffer);
+  m_octomap_updates_msg->camera_info = m_camera_info_buffer;
+  m_octomap_updates_msg->pointcloud2.header.stamp = par.currentTime;
 
-	// Crawl through nodes
-	for ( it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
-	{
-		// Node is occupied?
-		if (tree.isNodeOccupied(*it))
-		{
-			handleOccupiedNode(it, par);
-		}// Node is occupied?
+  // Majkl 2013/01/24: missing frame id in the message header
+  m_octomap_updates_msg->pointcloud2.header.frame_id = par.frameId;
 
-	} // Iterate through octree
+  // Initialize leaf iterators
+  tButServerOcTree & tree(par.map->getTree());
+  but_env_model::tButServerOcTree::leaf_iterator it, itEnd(tree.end_leafs());
 
-	// 2013/01/31 Majkl
-	m_data->header.frame_id = par.frameId;
-	m_data->header.stamp = par.currentTime.toNSec();
+  // Crawl through nodes
+  for (it = tree.begin_leafs(m_crawlDepth); it != itEnd; ++it)
+  {
+    // Node is occupied?
+    if (tree.isNodeOccupied(*it))
+    {
+      handleOccupiedNode(it, par);
+    }// Node is occupied?
 
-	m_DataTimeStamp = par.currentTime;
+  } // Iterate through octree
 
-	lock.unlock();
+  // 2013/01/31 Majkl
+  m_data->header.frame_id = par.frameId;
+  m_data->header.stamp = par.currentTime.toNSec();
 
-	invalidate();
+  m_DataTimeStamp = par.currentTime;
+
+  lock.unlock();
+
+  invalidate();
 }
 
 /**
@@ -278,28 +281,28 @@ void but_env_model::CCompressedPointCloudPlugin::newMapDataCB( SMapWithParameter
  */
 void but_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(but_env_model::tButServerOcTree::iterator& it, const SMapWithParameters & mp)
 {
-//	PERROR("OnHandleOccupied");
+//  PERROR("OnHandleOccupied");
 
-	++m_countAll;
+  ++m_countAll;
 
-	if( ! m_bCamModelInitialized )
-		return;
+  if (! m_bCamModelInitialized)
+    return;
 
-	if( ! m_bPublishComplete )
-	{
-		// Test input point
-		tf::Point pos(it.getX(), it.getY(), it.getZ());
-		tf::Point posRel = m_to_sensor(pos);
-		cv::Point2d uv = m_camera_model.project3dToPixel(cv::Point3d( posRel.x(), posRel.y(), posRel.z()));
+  if (! m_bPublishComplete)
+  {
+    // Test input point
+    tf::Point pos(it.getX(), it.getY(), it.getZ());
+    tf::Point posRel = m_to_sensor(pos);
+    cv::Point2d uv = m_camera_model.project3dToPixel(cv::Point3d(posRel.x(), posRel.y(), posRel.z()));
 
-		// ignore point if not in sensor cone
-		if (!inSensorCone(uv))
-			return;
-	}
+    // ignore point if not in sensor cone
+    if (!inSensorCone(uv))
+      return;
+  }
 
-	// Ok, add it...
-	CPointCloudPlugin::handleOccupiedNode( it, mp );
-	++m_countVisible;
+  // Ok, add it...
+  CPointCloudPlugin::handleOccupiedNode(it, mp);
+  ++m_countVisible;
 }
 
 /**
@@ -307,93 +310,93 @@ void but_env_model::CCompressedPointCloudPlugin::handleOccupiedNode(but_env_mode
  */
 void but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info)
 {
-	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
+  boost::recursive_mutex::scoped_lock lock(m_camPosMutex);
 
-	//PERROR("OnCameraChange.");
+  //PERROR("OnCameraChange.");
 
-//	ROS_DEBUG( "CCompressedPointCloudPlugin: onCameraChangedCB" );
+//  ROS_DEBUG( "CCompressedPointCloudPlugin: onCameraChangedCB" );
 
-    // Set camera position frame id
-    m_cameraFrameId = cam_info->header.frame_id;
+  // Set camera position frame id
+  m_cameraFrameId = cam_info->header.frame_id;
 
-    ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
-	m_camera_model_buffer.fromCameraInfo(*cam_info);
-	m_camera_size_buffer = m_camera_model_buffer.fullResolution();
+  ROS_DEBUG("OctMapPlugin: Set camera info: %d x %d\n", cam_info->height, cam_info->width);
+  m_camera_model_buffer.fromCameraInfo(*cam_info);
+  m_camera_size_buffer = m_camera_model_buffer.fullResolution();
 
-	// Set flag
-	m_bCamModelInitialized = true;
+  // Set flag
+  m_bCamModelInitialized = true;
 
-    m_camera_info_buffer = *cam_info;
+  m_camera_info_buffer = *cam_info;
 }
 
 //! Called when new scan was inserted and now all can be published
 void but_env_model::CCompressedPointCloudPlugin::publishInternal(const ros::Time & timestamp)
 {
-//	ROS_DEBUG( "CCompressedPointCloudPlugin: onPublish" );
+//  ROS_DEBUG( "CCompressedPointCloudPlugin: onPublish" );
 
 //    PERROR( "Visible: " << m_countVisible << ", all: " << m_countAll << ", compression: " << double(m_countVisible)/double(m_countAll) );
 //    PERROR( "Num of points: " << m_data->size() );
 //    but_env_model::CPointCloudPlugin::publishInternal( timestamp );
 
-    if( shouldPublish() )
+  if (shouldPublish())
+  {
+    // Fill header information
+    m_octomap_updates_msg->header = pcl_conversions::fromPCL(m_data->header);
+
+    // Majkl 2013/1/24: trying to solve empty header of the output
+    m_octomap_updates_msg->header.stamp = m_DataTimeStamp;
+    m_octomap_updates_msg->header.frame_id = m_frame_id;
+
+    // Convert data
+    pcl::toROSMsg< tPclPoint >(*m_data, m_octomap_updates_msg->pointcloud2);
+
+    // Set message parameters and publish
+    m_octomap_updates_msg->pointcloud2.header.frame_id = m_frame_id;
+    //  m_octomap_updates_msg->pointcloud2.header.stamp = timestamp;
+
+    // Majkl 2013/1/24: trying to solve empty header of the output
+    m_octomap_updates_msg->pointcloud2.header.stamp = m_DataTimeStamp;
+
+    if (m_bPublishComplete)
     {
-    	// Fill header information
-    	m_octomap_updates_msg->header = pcl_conversions::fromPCL(m_data->header);
-
-		// Majkl 2013/1/24: trying to solve empty header of the output
-    	m_octomap_updates_msg->header.stamp = m_DataTimeStamp;
-    	m_octomap_updates_msg->header.frame_id = m_frame_id;
-
-    	// Convert data
-		pcl::toROSMsg< tPclPoint >(*m_data, m_octomap_updates_msg->pointcloud2);
-
-		// Set message parameters and publish
-		m_octomap_updates_msg->pointcloud2.header.frame_id = m_frame_id;
-	//	m_octomap_updates_msg->pointcloud2.header.stamp = timestamp;
-
-		// Majkl 2013/1/24: trying to solve empty header of the output
-		m_octomap_updates_msg->pointcloud2.header.stamp = m_DataTimeStamp;
-
-		if( m_bPublishComplete )
-		{
-//			std::cerr << "Publishing complete cloud. Size: " << m_data->points.size() << std::endl;
-			m_octomap_updates_msg->isPartial = 0;
-		}
-		else
-		{
-//			std::cerr << "Publishing only differential cloud. Size: " << m_data->points.size() << std::endl;
-			m_octomap_updates_msg->isPartial = 1;
-		}
-
-		// Publish data
-		m_ocUpdatePublisher.publish( m_octomap_updates_msg );
-
-		if( m_bPublishSimpleCloud )
-			m_pcPublisher.publish( m_octomap_updates_msg->pointcloud2 );
+//      std::cerr << "Publishing complete cloud. Size: " << m_data->points.size() << std::endl;
+      m_octomap_updates_msg->isPartial = 0;
     }
+    else
+    {
+//      std::cerr << "Publishing only differential cloud. Size: " << m_data->points.size() << std::endl;
+      m_octomap_updates_msg->isPartial = 1;
+    }
+
+    // Publish data
+    m_ocUpdatePublisher.publish(m_octomap_updates_msg);
+
+    if (m_bPublishSimpleCloud)
+      m_pcPublisher.publish(m_octomap_updates_msg->pointcloud2);
+  }
 }
 
 /**
  *  Connect/disconnect plugin to/from all topics
  */
-void but_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHandle & nh)
+void but_env_model::CCompressedPointCloudPlugin::pause(bool bPause, ros::NodeHandle & nh)
 {
-	boost::recursive_mutex::scoped_lock lock( m_camPosMutex );
+  boost::recursive_mutex::scoped_lock lock(m_camPosMutex);
 
-	if( bPause )
-	{
-		m_pcPublisher.shutdown();
-		m_camPosSubscriber.shutdown();
-	}
-	else
-	{
-		// Create publisher
-		m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
+  if (bPause)
+  {
+    m_pcPublisher.shutdown();
+    m_camPosSubscriber.shutdown();
+  }
+  else
+  {
+    // Create publisher
+    m_pcPublisher = nh.advertise<sensor_msgs::PointCloud2> (m_pcPublisherName, 5, m_latchedTopics);
 
-		// Subscribe to position topic
-		// Create subscriber
-		m_camPosSubscriber = nh.subscribe<sensor_msgs::CameraInfo>( m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this );
-	}
+    // Subscribe to position topic
+    // Create subscriber
+    m_camPosSubscriber = nh.subscribe<sensor_msgs::CameraInfo>(m_cameraInfoTopic, 10, &but_env_model::CCompressedPointCloudPlugin::onCameraChangedCB, this);
+  }
 }
 
 /**
@@ -401,16 +404,16 @@ void but_env_model::CCompressedPointCloudPlugin::pause( bool bPause, ros::NodeHa
  */
 bool but_env_model::CCompressedPointCloudPlugin::inSensorCone(const cv::Point2d& uv) const
 {
-	//PERROR( uv.x << " > " << m_camera_stereo_offset_left + 1 << " && " << uv.x << " < " << m_camera_size.width + m_camera_stereo_offset_right - 2 );
-	//PERROR( uv.y <<	" > " << 1 << " && " << uv.y << " < " << m_camera_size.height - 2 );
-	// Check if projected 2D coordinate in pixel range.
-		// This check is a little more restrictive than it should be by using
-		// 1 pixel less to account for rounding / discretization errors.
-		// Otherwise points on the corner are accounted to be in the sensor cone.
-		return ((uv.x > m_camera_stereo_offset_left + 1) &&
-				(uv.x < m_camera_size.width + m_camera_stereo_offset_right - 2) &&
-				(uv.y > 1) &&
-				(uv.y < m_camera_size.height - 2));
+  //PERROR( uv.x << " > " << m_camera_stereo_offset_left + 1 << " && " << uv.x << " < " << m_camera_size.width + m_camera_stereo_offset_right - 2 );
+  //PERROR( uv.y << " > " << 1 << " && " << uv.y << " < " << m_camera_size.height - 2 );
+  // Check if projected 2D coordinate in pixel range.
+  // This check is a little more restrictive than it should be by using
+  // 1 pixel less to account for rounding / discretization errors.
+  // Otherwise points on the corner are accounted to be in the sensor cone.
+  return ((uv.x > m_camera_stereo_offset_left + 1) &&
+          (uv.x < m_camera_size.width + m_camera_stereo_offset_right - 2) &&
+          (uv.y > 1) &&
+          (uv.y < m_camera_size.height - 2));
 }
 
 /**
@@ -418,25 +421,25 @@ bool but_env_model::CCompressedPointCloudPlugin::inSensorCone(const cv::Point2d&
  */
 bool but_env_model::CCompressedPointCloudPlugin::shouldPublish()
 {
-	ROS_DEBUG( "CCompressedPointCloudPlugin: shouldPublish" );
+  ROS_DEBUG("CCompressedPointCloudPlugin: shouldPublish");
 
-	bool rv( m_bCamModelInitialized && m_publishPointCloud && (m_pcPublisher.getNumSubscribers() > 0 || m_ocUpdatePublisher.getNumSubscribers() > 0 ) );
+  bool rv(m_bCamModelInitialized && m_publishPointCloud && (m_pcPublisher.getNumSubscribers() > 0 || m_ocUpdatePublisher.getNumSubscribers() > 0));
 
-	if( !rv )
-	{
-//		PERROR( "Should not publish." << int(m_bCamModelInitialized) << "." << int(m_publishPointCloud) << "." << int(m_pcPublisher.getNumSubscribers() > 0));
-	}
+  if (!rv)
+  {
+//    PERROR( "Should not publish." << int(m_bCamModelInitialized) << "." << int(m_publishPointCloud) << "." << int(m_pcPublisher.getNumSubscribers() > 0));
+  }
 
-	return rv;
+  return rv;
 }
 
 /**
  * Set number of incomplete frames callback
  */
-bool but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB( but_env_model_msgs::SetNumIncompleteFrames::Request & req, but_env_model_msgs::SetNumIncompleteFrames::Response & res )
+bool but_env_model::CCompressedPointCloudPlugin::setNumIncompleteFramesCB(but_env_model_msgs::SetNumIncompleteFrames::Request & req, but_env_model_msgs::SetNumIncompleteFrames::Response & res)
 {
-	m_use_every_nth = req.num;
-	PERROR( "New number of incomplete frames set: " << m_use_every_nth );
+  m_use_every_nth = req.num;
+  PERROR("New number of incomplete frames set: " << m_use_every_nth);
 
-	return true;
+  return true;
 }

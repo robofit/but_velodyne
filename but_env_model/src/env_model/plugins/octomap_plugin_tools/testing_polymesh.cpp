@@ -42,7 +42,7 @@ but_env_model::CTestingPolymesh::CTestingPolymesh()
  */
 but_env_model::CTestingPolymesh::CTestingPolymesh(const tPoint &center, const tQuaternion &orientation, const tPoint & size)
 {
-	setAsBox( center, orientation, size );
+  setAsBox(center, orientation, size);
 }
 
 /**
@@ -50,99 +50,115 @@ but_env_model::CTestingPolymesh::CTestingPolymesh(const tPoint &center, const tQ
  */
 void but_env_model::CTestingPolymesh::setAsBox(const tPoint &center, const tQuaternion &orientation, const tPoint & size)
 {
-	// Corners
-	tPoint points[8];
+  // Corners
+  tPoint points[8];
 
-	// Create simple oriented box
-	// Cube positions
-	//
-	//      7-----------6
-	//     /|          /|
-	//    /           / |
-	//   /  |        /  |
-	//  4-----------5   |
-	//  |   |       |   |
-	//  |   3 - - - + - 2
-	//  |  /        |  /
-	//  |           | /
-	//  |/          |/
-	//  0-----------1
-	//
-	//
-	//
-	//
-/*
-	points[0][0] = -size[0]; points[0][1] = -size[1]; points[0][2] = -size[2];
-	points[1][0] =  size[0]; points[1][1] = -size[1]; points[1][2] = -size[2];
-	points[2][0] =  size[0]; points[2][1] =  size[1]; points[2][2] = -size[2];
-	points[3][0] = -size[0]; points[3][1] =  size[1]; points[3][2] = -size[2];
-	points[4][0] = -size[0]; points[4][1] = -size[1]; points[4][2] =  size[2];
-	points[5][0] =  size[0]; points[5][1] = -size[1]; points[5][2] =  size[2];
-	points[6][0] =  size[0]; points[6][1] =  size[1]; points[6][2] =  size[2];
-	points[7][0] = -size[0]; points[7][1] =  size[1]; points[7][2] =  size[2];
-*/
-	points[0][0] = -size[0]/2.0; points[0][1] = -size[1]/2.0; points[0][2] = -size[2]/2.0;
-	points[1][0] =  size[0]/2.0; points[1][1] = -size[1]/2.0; points[1][2] = -size[2]/2.0;
-	points[2][0] =  size[0]/2.0; points[2][1] =  size[1]/2.0; points[2][2] = -size[2]/2.0;
-	points[3][0] = -size[0]/2.0; points[3][1] =  size[1]/2.0; points[3][2] = -size[2]/2.0;
-	points[4][0] = -size[0]/2.0; points[4][1] = -size[1]/2.0; points[4][2] =  size[2]/2.0;
-	points[5][0] =  size[0]/2.0; points[5][1] = -size[1]/2.0; points[5][2] =  size[2]/2.0;
-	points[6][0] =  size[0]/2.0; points[6][1] =  size[1]/2.0; points[6][2] =  size[2]/2.0;
-	points[7][0] = -size[0]/2.0; points[7][1] =  size[1]/2.0; points[7][2] =  size[2]/2.0;
+  // Create simple oriented box
+  // Cube positions
+  //
+  //      7-----------6
+  //     /|          /|
+  //    /           / |
+  //   /  |        /  |
+  //  4-----------5   |
+  //  |   |       |   |
+  //  |   3 - - - + - 2
+  //  |  /        |  /
+  //  |           | /
+  //  |/          |/
+  //  0-----------1
+  //
+  //
+  //
+  //
+  /*
+    points[0][0] = -size[0]; points[0][1] = -size[1]; points[0][2] = -size[2];
+    points[1][0] =  size[0]; points[1][1] = -size[1]; points[1][2] = -size[2];
+    points[2][0] =  size[0]; points[2][1] =  size[1]; points[2][2] = -size[2];
+    points[3][0] = -size[0]; points[3][1] =  size[1]; points[3][2] = -size[2];
+    points[4][0] = -size[0]; points[4][1] = -size[1]; points[4][2] =  size[2];
+    points[5][0] =  size[0]; points[5][1] = -size[1]; points[5][2] =  size[2];
+    points[6][0] =  size[0]; points[6][1] =  size[1]; points[6][2] =  size[2];
+    points[7][0] = -size[0]; points[7][1] =  size[1]; points[7][2] =  size[2];
+  */
+  points[0][0] = -size[0] / 2.0;
+  points[0][1] = -size[1] / 2.0;
+  points[0][2] = -size[2] / 2.0;
+  points[1][0] =  size[0] / 2.0;
+  points[1][1] = -size[1] / 2.0;
+  points[1][2] = -size[2] / 2.0;
+  points[2][0] =  size[0] / 2.0;
+  points[2][1] =  size[1] / 2.0;
+  points[2][2] = -size[2] / 2.0;
+  points[3][0] = -size[0] / 2.0;
+  points[3][1] =  size[1] / 2.0;
+  points[3][2] = -size[2] / 2.0;
+  points[4][0] = -size[0] / 2.0;
+  points[4][1] = -size[1] / 2.0;
+  points[4][2] =  size[2] / 2.0;
+  points[5][0] =  size[0] / 2.0;
+  points[5][1] = -size[1] / 2.0;
+  points[5][2] =  size[2] / 2.0;
+  points[6][0] =  size[0] / 2.0;
+  points[6][1] =  size[1] / 2.0;
+  points[6][2] =  size[2] / 2.0;
+  points[7][0] = -size[0] / 2.0;
+  points[7][1] =  size[1] / 2.0;
+  points[7][2] =  size[2] / 2.0;
 
-	/*
-	std::cerr << "Points: " << std::endl;
+  /*
+  std::cerr << "Points: " << std::endl;
 
-	for( int i = 0; i < 8; ++i )
-		{
+  for( int i = 0; i < 8; ++i )
+    {
 
-			std::cerr << "X: " << points[i][0] << ", Y: " << points[i][1] << ", Z: " << points[i][2] << std::endl;
+      std::cerr << "X: " << points[i][0] << ", Y: " << points[i][1] << ", Z: " << points[i][2] << std::endl;
 
-		}
-*/
+    }
+  */
 
-	// Create transformation
-	tTransform transform( tTransform::Identity() );
-	transform *= Eigen::Translation3f( center );
-	transform *=  orientation;
+  // Create transformation
+  tTransform transform(tTransform::Identity());
+  transform *= Eigen::Translation3f(center);
+  transform *=  orientation;
 
-//	std::cerr << "Points: " << std::endl;
+//  std::cerr << "Points: " << std::endl;
 
-	// Transform box coordinates
-	for( int i = 0; i < 8; ++i )
-	{
-		points[i] = transform * points[i];
+  // Transform box coordinates
+  for (int i = 0; i < 8; ++i)
+  {
+    points[i] = transform * points[i];
 
-//		std::cerr << "X: " << points[i][0] << ", Y: " << points[i][1] << ", Z: " << points[i][2] << std::endl;
+//    std::cerr << "X: " << points[i][0] << ", Y: " << points[i][1] << ", Z: " << points[i][2] << std::endl;
 
-	}
+  }
 
-	// Create planes
-	// Planes should be defined:
-	//
-	//   n
-	//   | 3
-	//   |/
-	//   1----2
+  // Create planes
+  // Planes should be defined:
+  //
+  //   n
+  //   | 3
+  //   |/
+  //   1----2
 
 
 
-	// Bottom
-	addPlane( CTestingPlane(points[0], points[1], points[3] ) );
+  // Bottom
+  addPlane(CTestingPlane(points[0], points[1], points[3]));
 
-	// Top
-	addPlane( CTestingPlane(points[4], points[7], points[5] ) );
+  // Top
+  addPlane(CTestingPlane(points[4], points[7], points[5]));
 
-	// Front
-	addPlane( CTestingPlane(points[0], points[4], points[1] ) );
+  // Front
+  addPlane(CTestingPlane(points[0], points[4], points[1]));
 
-	// Back
-	addPlane( CTestingPlane(points[3], points[2], points[7] ) );
+  // Back
+  addPlane(CTestingPlane(points[3], points[2], points[7]));
 
-	// Left
-	addPlane( CTestingPlane(points[0], points[3], points[4] ) );
+  // Left
+  addPlane(CTestingPlane(points[0], points[3], points[4]));
 
-	// Right
-	addPlane( CTestingPlane(points[1], points[5], points[2] ) );
+  // Right
+  addPlane(CTestingPlane(points[1], points[5], points[2]));
 }
 

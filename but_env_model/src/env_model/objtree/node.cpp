@@ -39,35 +39,35 @@ namespace objtree
  */
 Node::Node(unsigned char place, Node *parent)
 {
-    m_place = place;
-    m_parent = parent;
+  m_place = place;
+  m_parent = parent;
 
-    if(m_parent != NULL)
+  if (m_parent != NULL)
+  {
+    //Update neighbor pointers in neighbors
+    for (unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
     {
-        //Update neighbor pointers in neighbors
-        for(unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
-        {
-            m_neighbors[neighbor] = computeNeighbor(neighbor);
+      m_neighbors[neighbor] = computeNeighbor(neighbor);
 
-            if(m_neighbors[neighbor] != NULL)
-            {
-                m_neighbors[neighbor]->m_neighbors[reverseNeighborId(neighbor)] = this;
-            }
-        }
+      if (m_neighbors[neighbor] != NULL)
+      {
+        m_neighbors[neighbor]->m_neighbors[reverseNeighborId(neighbor)] = this;
+      }
     }
-    else
+  }
+  else
+  {
+    //Root node hasn't got any neighbors
+    for (unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
     {
-        //Root node hasn't got any neighbors
-        for(unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
-        {
-            m_neighbors[neighbor] = NULL;
-        }
+      m_neighbors[neighbor] = NULL;
     }
+  }
 
-    for(unsigned char i = 0; i < CHILDREN; i++)
-    {
-        m_children[i] = NULL;
-    }
+  for (unsigned char i = 0; i < CHILDREN; i++)
+  {
+    m_children[i] = NULL;
+  }
 }
 
 /**
@@ -75,27 +75,27 @@ Node::Node(unsigned char place, Node *parent)
  */
 Node::~Node()
 {
-    //Nullify all neighbor pointers to this node
-    for(unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
+  //Nullify all neighbor pointers to this node
+  for (unsigned char neighbor = 0; neighbor < NEIGHBORS; neighbor++)
+  {
+    if (m_neighbors[neighbor] != NULL)
     {
-        if(m_neighbors[neighbor] != NULL)
-        {
-            m_neighbors[neighbor]->m_neighbors[reverseNeighborId(neighbor)] = NULL;
-        }
+      m_neighbors[neighbor]->m_neighbors[reverseNeighborId(neighbor)] = NULL;
     }
+  }
 
-    //Delete all children
-    for(unsigned char place = 0; place < CHILDREN; place++)
-    {
-        if(m_children[place]) delete m_children[place];
-    }
+  //Delete all children
+  for (unsigned char place = 0; place < CHILDREN; place++)
+  {
+    if (m_children[place]) delete m_children[place];
+  }
 
-    //Delete all objects
-    for(std::list<Object*>::iterator i = m_objects.begin(); i != m_objects.end(); i++)
-    {
-        (*i)->removeNode(this);
-        delete *i;
-    }
+  //Delete all objects
+  for (std::list<Object*>::iterator i = m_objects.begin(); i != m_objects.end(); i++)
+  {
+    (*i)->removeNode(this);
+    delete *i;
+  }
 }
 
 /**
@@ -104,7 +104,7 @@ Node::~Node()
  */
 Node* Node::parent()
 {
-    return m_parent;
+  return m_parent;
 }
 
 /**
@@ -115,12 +115,12 @@ Node* Node::parent()
  */
 Node* Node::child(unsigned char place, bool createNew)
 {
-    if(!m_children[place] && createNew)
-    {
-        m_children[place] = new Node(place, this);
-    }
+  if (!m_children[place] && createNew)
+  {
+    m_children[place] = new Node(place, this);
+  }
 
-    return m_children[place];
+  return m_children[place];
 }
 
 /**
@@ -130,7 +130,7 @@ Node* Node::child(unsigned char place, bool createNew)
  */
 Node* Node::neighbor(unsigned char dir)
 {
-    return m_neighbors[dir];
+  return m_neighbors[dir];
 }
 
 /**
@@ -139,7 +139,7 @@ Node* Node::neighbor(unsigned char dir)
  */
 const std::list<Object*>& Node::objects() const
 {
-    return m_objects;
+  return m_objects;
 }
 
 /**
@@ -148,8 +148,8 @@ const std::list<Object*>& Node::objects() const
  */
 void Node::add(Object* object)
 {
-    m_objects.push_back(object);
-    object->newNode(this);
+  m_objects.push_back(object);
+  object->newNode(this);
 }
 
 /**
@@ -161,45 +161,45 @@ void Node::add(Object* object)
  */
 Box& Node::getChildBox(unsigned char place, Box &childBox, const Box &parentBox)
 {
-    childBox = parentBox;
+  childBox = parentBox;
 
-    childBox.w/=2.0f;
-    childBox.h/=2.0f;
-    childBox.d/=2.0f;
+  childBox.w /= 2.0f;
+  childBox.h /= 2.0f;
+  childBox.d /= 2.0f;
 
-    switch(place)
-    {
-        case 0:
-            break;
-        case 1:
-            childBox.x+=childBox.w;
-            break;
-        case 2:
-            childBox.y+=childBox.h;
-            break;
-        case 3:
-            childBox.x+=childBox.w;
-            childBox.y+=childBox.h;
-            break;
-        case 4:
-            childBox.z+=childBox.d;
-            break;
-        case 5:
-            childBox.x+=childBox.w;
-            childBox.z+=childBox.d;
-            break;
-        case 6:
-            childBox.y+=childBox.h;
-            childBox.z+=childBox.d;
-            break;
-        case 7:
-            childBox.x+=childBox.w;
-            childBox.y+=childBox.h;
-            childBox.z+=childBox.d;
-            break;
-    }
+  switch (place)
+  {
+  case 0:
+    break;
+  case 1:
+    childBox.x += childBox.w;
+    break;
+  case 2:
+    childBox.y += childBox.h;
+    break;
+  case 3:
+    childBox.x += childBox.w;
+    childBox.y += childBox.h;
+    break;
+  case 4:
+    childBox.z += childBox.d;
+    break;
+  case 5:
+    childBox.x += childBox.w;
+    childBox.z += childBox.d;
+    break;
+  case 6:
+    childBox.y += childBox.h;
+    childBox.z += childBox.d;
+    break;
+  case 7:
+    childBox.x += childBox.w;
+    childBox.y += childBox.h;
+    childBox.z += childBox.d;
+    break;
+  }
 
-    return childBox;
+  return childBox;
 }
 
 /**
@@ -210,12 +210,12 @@ Box& Node::getChildBox(unsigned char place, Box &childBox, const Box &parentBox)
  */
 Node* Node::parentNeighborChild(unsigned char parentNeighbor, unsigned char child)
 {
-    if(m_parent->m_neighbors[parentNeighbor] != NULL)
-    {
-        return m_parent->m_neighbors[parentNeighbor]->m_children[child];
-    }
+  if (m_parent->m_neighbors[parentNeighbor] != NULL)
+  {
+    return m_parent->m_neighbors[parentNeighbor]->m_children[child];
+  }
 
-    return NULL;
+  return NULL;
 }
 
 /*
@@ -245,35 +245,35 @@ Node* Node::parentNeighborChild(unsigned char parentNeighbor, unsigned char chil
  */
 Node* Node::computeNeighbor(unsigned char dir)
 {
-   if(dir >= 13) dir++;
+  if (dir >= 13) dir++;
 
-   unsigned char x = m_place%2+1;
-   unsigned char y = (m_place%4)/2+1;
-   unsigned char z = m_place/4+1;
+  unsigned char x = m_place % 2 + 1;
+  unsigned char y = (m_place % 4) / 2 + 1;
+  unsigned char z = m_place / 4 + 1;
 
-   x -= dir%3 == 0;
-   x += (dir+1)%3 == 0;
+  x -= dir % 3 == 0;
+  x += (dir + 1) % 3 == 0;
 
-   y -= dir%9 <= 2;
-   y += dir%9 >= 6;
+  y -= dir % 9 <= 2;
+  y += dir % 9 >= 6;
 
-   z -= dir <= 8;
-   z += dir >= 18;
+  z -= dir <= 8;
+  z += dir >= 18;
 
-   unsigned char child = 1-x%2;
-   if(y%2 == 0) child += 2;
-   if(z%2 == 0) child += 4;
+  unsigned char child = 1 - x % 2;
+  if (y % 2 == 0) child += 2;
+  if (z % 2 == 0) child += 4;
 
-   x -= x >= 2;
-   y -= y >= 2;
-   z -= z >= 2;
+  x -= x >= 2;
+  y -= y >= 2;
+  z -= z >= 2;
 
-   unsigned char parent = z*9+y*3+x;
+  unsigned char parent = z * 9 + y * 3 + x;
 
-   if(parent == 13) return m_parent->m_children[child];
-   if(parent > 13) parent--;
+  if (parent == 13) return m_parent->m_children[child];
+  if (parent > 13) parent--;
 
-   return parentNeighborChild(parent, child);
+  return parentNeighborChild(parent, child);
 }
 
 /**
@@ -283,7 +283,7 @@ Node* Node::computeNeighbor(unsigned char dir)
  */
 unsigned char Node::reverseNeighborId(unsigned char dir)
 {
-    return 25-dir;
+  return 25 - dir;
 }
 
 /**
@@ -293,14 +293,14 @@ unsigned char Node::reverseNeighborId(unsigned char dir)
  */
 void Node::removeObject(Object *object)
 {
-    m_objects.remove(object);
+  m_objects.remove(object);
 
-    if(m_objects.size() == 0)
-    {
-        m_parent->m_children[m_place] = NULL;
-        m_parent->deleteIfEmpty();
-        delete this;
-    }
+  if (m_objects.size() == 0)
+  {
+    m_parent->m_children[m_place] = NULL;
+    m_parent->deleteIfEmpty();
+    delete this;
+  }
 }
 
 /**
@@ -308,28 +308,28 @@ void Node::removeObject(Object *object)
  */
 void Node::deleteIfEmpty()
 {
-    //We don't want to delete root node
-    if(m_parent == NULL)
-    {
-        return;
-    }
+  //We don't want to delete root node
+  if (m_parent == NULL)
+  {
+    return;
+  }
 
-    for(unsigned char child = 0; child < CHILDREN; child++)
+  for (unsigned char child = 0; child < CHILDREN; child++)
+  {
+    if (m_children[child] != NULL)
     {
-        if(m_children[child] != NULL)
-        {
-            return;
-        }
+      return;
     }
+  }
 
-    if(m_objects.size() != 0)
-    {
-        return;
-    }
+  if (m_objects.size() != 0)
+  {
+    return;
+  }
 
-    m_parent->m_children[m_place] = NULL;
-    m_parent->deleteIfEmpty();
-    delete this;
+  m_parent->m_children[m_place] = NULL;
+  m_parent->deleteIfEmpty();
+  delete this;
 }
 
 }

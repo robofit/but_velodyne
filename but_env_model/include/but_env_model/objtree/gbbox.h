@@ -41,18 +41,27 @@ namespace objtree
 class GBBox : public BBox
 {
 private:
-    const Point m_position;
-    const Vector4f m_orientation;
-    const Point m_scale;
+  const Point m_position;
+  const Vector4f m_orientation;
+  const Point m_scale;
 
 public:
-    GBBox(const Point &position, const Vector4f &orientation, const Point &scale, const Box &box);
+  GBBox(const Point &position, const Vector4f &orientation, const Point &scale, const Box &box);
 
-    virtual bool isSimilar(const Object *object) const;
+  virtual bool isSimilar(const Object *object) const;
 
-    const Point& position() const { return m_position; }
-    const Vector4f& orientation() const { return m_orientation; }
-    const Point& scale() const { return m_scale; }
+  const Point& position() const
+  {
+    return m_position;
+  }
+  const Vector4f& orientation() const
+  {
+    return m_orientation;
+  }
+  const Point& scale() const
+  {
+    return m_scale;
+  }
 };
 
 }

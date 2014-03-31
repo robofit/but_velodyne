@@ -60,66 +60,78 @@ namespace but_velodyne
 class LaserScan
 {
 public:
-    //! Configuration parameters
-    struct Params
+  //! Configuration parameters
+  struct Params
+  {
+    //! Target frame ID
+    //! - An empty value means to use the same frame ID as the input point cloud has...
+    std::string frame_id;
+
+    //! Range to accumulate particular Velodyne scans
+    //! - Specifying two exactly similar values means to accumulate all the Velodyne points...
+    double min_z, max_z;
+
+    //! Angular resolution [degrees]
+    double angular_res;
+
+    //! Minimal range used to remove points close to the robot.
+    //! - Negative value means that the minimum will be obtained from the data.
+    double min_range;
+
+    //! Default constructor
+    Params()
+      : frame_id("")
+      , min_z(getDefaultMinZ())
+      , max_z(getDefaultMaxZ())
+      , angular_res(getDefaultAngularRes())
+      , min_range(getDefaultMinRange())
+    {}
+
+    //! Default parameter values.
+    static double getDefaultMinZ()
     {
-        //! Target frame ID
-        //! - An empty value means to use the same frame ID as the input point cloud has...
-        std::string frame_id;
-
-        //! Range to accumulate particular Velodyne scans
-        //! - Specifying two exactly similar values means to accumulate all the Velodyne points...
-        double min_z, max_z;
-
-        //! Angular resolution [degrees]
-        double angular_res;
-
-        //! Minimal range used to remove points close to the robot.
-        //! - Negative value means that the minimum will be obtained from the data.
-        double min_range;
-
-        //! Default constructor
-        Params()
-            : frame_id("")
-            , min_z(getDefaultMinZ())
-            , max_z(getDefaultMaxZ())
-            , angular_res(getDefaultAngularRes())
-            , min_range(getDefaultMinRange())
-        {}
-
-        //! Default parameter values.
-        static double getDefaultMinZ() { return 0.0; }
-        static double getDefaultMaxZ() { return 0.0; }
-        static double getDefaultAngularRes() { return 0.1; }
-        static double getDefaultMinRange() { return -1.0; }
-    };
+      return 0.0;
+    }
+    static double getDefaultMaxZ()
+    {
+      return 0.0;
+    }
+    static double getDefaultAngularRes()
+    {
+      return 0.1;
+    }
+    static double getDefaultMinRange()
+    {
+      return -1.0;
+    }
+  };
 
 public:
-    //! Default constructor.
-    LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh);
+  //! Default constructor.
+  LaserScan(ros::NodeHandle nh, ros::NodeHandle private_nh);
 
-    //! Virtual destructor.
-    virtual ~LaserScan() {}
+  //! Virtual destructor.
+  virtual ~LaserScan() {}
 
-    //! Processes input Velodyne point cloud and publishes the output message
-    virtual void process(const sensor_msgs::PointCloud2::ConstPtr &cloud);
+  //! Processes input Velodyne point cloud and publishes the output message
+  virtual void process(const sensor_msgs::PointCloud2::ConstPtr &cloud);
 
 private:
-    //! Node handle
-    ros::NodeHandle nh_, private_nh_;
+  //! Node handle
+  ros::NodeHandle nh_, private_nh_;
 
-    //! Parameters...
-    Params params_;
+  //! Parameters...
+  Params params_;
 
-    //! Point cloud buffer to avoid reallocation on every message.
-    VPointCloud pcl_in_;
+  //! Point cloud buffer to avoid reallocation on every message.
+  VPointCloud pcl_in_;
 
-    // TF, message filters, etc.
-    message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
-    tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter_;
-    ros::Publisher scan_pub_;
-    ros::Subscriber points_sub_;
-    tf::TransformListener listener_;
+  // TF, message filters, etc.
+  message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
+  tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter_;
+  ros::Publisher scan_pub_;
+  ros::Subscriber points_sub_;
+  tf::TransformListener listener_;
 };
 
 

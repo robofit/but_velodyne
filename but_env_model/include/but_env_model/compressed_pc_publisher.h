@@ -49,88 +49,88 @@ namespace but_env_model
 class CCompressedPCPublisher
 {
 public:
-	//! Define pcl point type
-	typedef pcl::PointXYZRGB tPclPoint;
+  //! Define pcl point type
+  typedef pcl::PointXYZRGB tPclPoint;
 
-	//! Define internal point cloud type
-	typedef pcl::PointCloud<tPclPoint> tPointCloudInternal;
+  //! Define internal point cloud type
+  typedef pcl::PointCloud<tPclPoint> tPointCloudInternal;
 
-	//! Input data type
-	typedef but_env_model_msgs::OctomapUpdates tInputData;
+  //! Input data type
+  typedef but_env_model_msgs::OctomapUpdates tInputData;
 
-	//! Incoming point cloud type
-	typedef tInputData::_pointcloud2_type tInputCloudMsg;
+  //! Incoming point cloud type
+  typedef tInputData::_pointcloud2_type tInputCloudMsg;
 
-	//! Output point cloud message type
-	typedef sensor_msgs::PointCloud2 tOutputCloudMsg;
+  //! Output point cloud message type
+  typedef sensor_msgs::PointCloud2 tOutputCloudMsg;
 
-	//! Camera information type
-	typedef tInputData::_camera_info_type tCameraInfo;
-
-public:
-	//! Constructor
-	CCompressedPCPublisher(ros::NodeHandle & nh);
-
-protected:
-	//! Input message cb
-	void incommingDataCB( const tInputData::ConstPtr & data );
-
-	//! Copy point cloud from msg to internal type variable
-	long copyCloud( const tInputCloudMsg & input, tPointCloudInternal & output, bool bAdd = false );
-
-	//! Remove part of the cloud
-	long removeFrustumFromCloud( const tInputData::ConstPtr & data, tPointCloudInternal & cloud );
-
-	/// Test if incomming pointcloud2 has rgb part
-    bool isRGBCloud( const tInputCloudMsg & cloud );
-
-    /// Test if point is in sensor cone
-    bool inSensorCone(const cv::Point2d& uv) const;
-
-protected:
-	//! Published topic name
-	std::string m_publishedTopicName;
-
-	//! Publisher
-	ros::Publisher m_pub;
-
-	//! Subscribed topic name
-	std::string m_subscribedTopicName;
-
-	//! Subscriber
-//	ros::Subscriber m_sub;
-	message_filters::Subscriber<tInputData> m_sub;
-	tf::MessageFilter<tInputData> * m_tf_filter;
-
-	//! Stored point cloud
-	tPointCloudInternal m_cloud;
-
-	/// Camera offsets
-	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
-
-	/// Camera size
-	cv::Size m_camera_size;
-
-	/// Camera frame id
-	std::string m_cameraFrameId;
-
-	/// Camera model
-	image_geometry::PinholeCameraModel m_camera_model;
-
-	/// Transform from pointcloud to camera space
-	tf::Transform m_to_sensor;
-
-	/// Transform from incomming pc to publishing frame id
-	tf::Transform m_to_pfid;
-
-	/// Publishing frame id
-	std::string m_publishFID, m_cameraFID;
-
-	//! Transform listener
-	tf::TransformListener m_tfListener, m_tfListener2;
+  //! Camera information type
+  typedef tInputData::_camera_info_type tCameraInfo;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  //! Constructor
+  CCompressedPCPublisher(ros::NodeHandle & nh);
+
+protected:
+  //! Input message cb
+  void incommingDataCB(const tInputData::ConstPtr & data);
+
+  //! Copy point cloud from msg to internal type variable
+  long copyCloud(const tInputCloudMsg & input, tPointCloudInternal & output, bool bAdd = false);
+
+  //! Remove part of the cloud
+  long removeFrustumFromCloud(const tInputData::ConstPtr & data, tPointCloudInternal & cloud);
+
+  /// Test if incomming pointcloud2 has rgb part
+  bool isRGBCloud(const tInputCloudMsg & cloud);
+
+  /// Test if point is in sensor cone
+  bool inSensorCone(const cv::Point2d& uv) const;
+
+protected:
+  //! Published topic name
+  std::string m_publishedTopicName;
+
+  //! Publisher
+  ros::Publisher m_pub;
+
+  //! Subscribed topic name
+  std::string m_subscribedTopicName;
+
+  //! Subscriber
+//  ros::Subscriber m_sub;
+  message_filters::Subscriber<tInputData> m_sub;
+  tf::MessageFilter<tInputData> * m_tf_filter;
+
+  //! Stored point cloud
+  tPointCloudInternal m_cloud;
+
+  /// Camera offsets
+  int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+
+  /// Camera size
+  cv::Size m_camera_size;
+
+  /// Camera frame id
+  std::string m_cameraFrameId;
+
+  /// Camera model
+  image_geometry::PinholeCameraModel m_camera_model;
+
+  /// Transform from pointcloud to camera space
+  tf::Transform m_to_sensor;
+
+  /// Transform from incomming pc to publishing frame id
+  tf::Transform m_to_pfid;
+
+  /// Publishing frame id
+  std::string m_publishFID, m_cameraFID;
+
+  //! Transform listener
+  tf::TransformListener m_tfListener, m_tfListener2;
+
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

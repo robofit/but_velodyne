@@ -57,42 +57,43 @@
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "but_env_model");
+  ros::init(argc, argv, "but_env_model");
 
-    std::string mapFilename("");
+  std::string mapFilename("");
 
-    if( argc > 2 || (argc == 2 && std::string(argv[1] ) == "-h") )
+  if (argc > 2 || (argc == 2 && std::string(argv[1]) == "-h"))
+  {
+    ROS_ERROR("%s", USAGE);
+    exit(-1);
+  }
+
+  ROS_INFO_STREAM("Number of server parameters: " << argc);
+
+  if (argc == 2)
+  {
+    ROS_INFO_STREAM("Trying to load input octomap file: " << argv[1]);
+    mapFilename = std::string(argv[1]);
+  }
+  try
+  {
+    // Run server
+    but_env_model::CButServer ms(ros::NodeHandle(), ros::NodeHandle("~"), mapFilename);
+    ros::Rate loop_rate(10);
+
+    int count = 0;
+    while (ros::ok())
     {
-        ROS_ERROR("%s", USAGE);
-        exit(-1);
+      ros::spinOnce();
+
+      loop_rate.sleep();
+      ++count;
     }
+  }
+  catch (std::runtime_error& e)
+  {
+    ROS_ERROR_STREAM("Environment model server exception: " << e.what());
+    return -1;
+  }
 
-    ROS_INFO_STREAM( "Number of server parameters: " << argc );
-
-    if( argc == 2 )
-    {
-        ROS_INFO_STREAM( "Trying to load input octomap file: " << argv[1] );
-        mapFilename = std::string(argv[1]);
-    }
-    try {
-        // Run server
-        but_env_model::CButServer ms(ros::NodeHandle(), ros::NodeHandle("~"), mapFilename);
-        ros::Rate loop_rate(10);
-
-        int count = 0;
-        while( ros::ok() )
-        {
-            ros::spinOnce();
-
-            loop_rate.sleep();
-            ++count;
-        }
-    }
-    catch(std::runtime_error& e)
-    {
-        ROS_ERROR_STREAM( "Environment model server exception: " << e.what() );
-        return -1;
-    }
-
-    return 0;
+  return 0;
 }

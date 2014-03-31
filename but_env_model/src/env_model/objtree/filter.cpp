@@ -36,7 +36,7 @@ namespace objtree
  * @param box bounding box for object filtering
  */
 FilterBox::FilterBox(const Box &box) :
-    m_box(box)
+  m_box(box)
 {
 }
 
@@ -47,14 +47,14 @@ FilterBox::FilterBox(const Box &box) :
  */
 bool FilterBox::filter(const Box &dim) const
 {
-    if(dim.x > m_box.x+m_box.w || dim.x+dim.w < m_box.x
-            || dim.y > m_box.y+m_box.h || dim.y+dim.h < m_box.y
-            || dim.z > m_box.z+m_box.d || dim.z+dim.d < m_box.z)
-    {
-        return false;
-    }
+  if (dim.x > m_box.x + m_box.w || dim.x + dim.w < m_box.x
+      || dim.y > m_box.y + m_box.h || dim.y + dim.h < m_box.y
+      || dim.z > m_box.z + m_box.d || dim.z + dim.d < m_box.z)
+  {
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 /**
@@ -69,13 +69,13 @@ bool FilterBox::filter(const Box &dim) const
  */
 FilterPlane::FilterPlane(float posX, float posY, float posZ, float vecX, float vecY, float vecZ)
 {
-    m_posX = posX;
-    m_posY = posY;
-    m_posZ = posZ;
+  m_posX = posX;
+  m_posY = posY;
+  m_posZ = posZ;
 
-    m_vecX = vecX;
-    m_vecY = vecY;
-    m_vecZ = vecZ;
+  m_vecX = vecX;
+  m_vecY = vecY;
+  m_vecZ = vecZ;
 }
 
 /**
@@ -85,20 +85,20 @@ FilterPlane::FilterPlane(float posX, float posY, float posZ, float vecX, float v
  */
 bool FilterPlane::filter(const Box &dim) const
 {
-    float pointX = dim.x, pointY = dim.y, pointZ = dim.z;
+  float pointX = dim.x, pointY = dim.y, pointZ = dim.z;
 
-    if(m_vecX >= 0.0f) pointX += dim.w;
-    if(m_vecY >= 0.0f) pointY += dim.h;
-    if(m_vecZ >= 0.0f) pointZ += dim.d;
+  if (m_vecX >= 0.0f) pointX += dim.w;
+  if (m_vecY >= 0.0f) pointY += dim.h;
+  if (m_vecZ >= 0.0f) pointZ += dim.d;
 
-    float d = m_vecX*m_posX+m_vecY*m_posY+m_vecZ*m_posZ;
+  float d = m_vecX * m_posX + m_vecY * m_posY + m_vecZ * m_posZ;
 
-    if(pointX*m_vecX+pointY*m_vecY+pointZ*m_vecZ > d)
-    {
-        return true;
-    }
+  if (pointX * m_vecX + pointY * m_vecY + pointZ * m_vecZ > d)
+  {
+    return true;
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -108,7 +108,7 @@ bool FilterPlane::filter(const Box &dim) const
  */
 bool FilterZero::filter(const Box &dim) const
 {
-    return true;
+  return true;
 }
 
 /**
@@ -120,7 +120,7 @@ bool FilterZero::filter(const Box &dim) const
  * @param radius
  */
 FilterSphere::FilterSphere(float x, float y, float z, float radius) :
-    m_x(x), m_y(y), m_z(z), m_radiusSquare(radius*radius)
+  m_x(x), m_y(y), m_z(z), m_radiusSquare(radius*radius)
 {
 }
 
@@ -131,31 +131,31 @@ FilterSphere::FilterSphere(float x, float y, float z, float radius) :
  */
 bool FilterSphere::filter(const Box &dim) const
 {
-    float nearX, nearY, nearZ;
+  float nearX, nearY, nearZ;
 
-    if(m_x < dim.x) nearX = dim.x;
-    else if(m_x > dim.x+dim.w) nearX = dim.x+dim.w;
-    else nearX = m_x;
+  if (m_x < dim.x) nearX = dim.x;
+  else if (m_x > dim.x + dim.w) nearX = dim.x + dim.w;
+  else nearX = m_x;
 
-    if(m_y < dim.y) nearY = dim.y;
-    else if(m_y > dim.y+dim.h) nearY = dim.y+dim.h;
-    else nearY = m_y;
+  if (m_y < dim.y) nearY = dim.y;
+  else if (m_y > dim.y + dim.h) nearY = dim.y + dim.h;
+  else nearY = m_y;
 
-    if(m_z < dim.z) nearZ = dim.z;
-    else if(m_z > dim.z+dim.d) nearZ = dim.z+dim.d;
-    else nearZ = m_z;
+  if (m_z < dim.z) nearZ = dim.z;
+  else if (m_z > dim.z + dim.d) nearZ = dim.z + dim.d;
+  else nearZ = m_z;
 
-    float xDist = m_x-nearX;
-    float yDist = m_y-nearY;
-    float zDist = m_z-nearZ;
+  float xDist = m_x - nearX;
+  float yDist = m_y - nearY;
+  float zDist = m_z - nearZ;
 
-    if(xDist*xDist+yDist*yDist+zDist*zDist <= m_radiusSquare)
-    {
-        return true;
-    }
+  if (xDist*xDist + yDist*yDist + zDist*zDist <= m_radiusSquare)
+  {
+    return true;
+  }
 
 
-    return false;
+  return false;
 }
 
 }

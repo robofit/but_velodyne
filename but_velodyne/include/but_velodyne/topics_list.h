@@ -34,17 +34,17 @@
 
 namespace but_velodyne
 {
-    /**
-      * laser scan - input topics
-      */
-	static const std::string INPUT_POINT_CLOUD_TOPIC = "points_in";
-	static const std::string OUTPUT_LASER_SCAN_TOPIC = "scan_out";
+/**
+  * laser scan - input topics
+  */
+static const std::string INPUT_POINT_CLOUD_TOPIC = "points_in";
+static const std::string OUTPUT_LASER_SCAN_TOPIC = "scan_out";
 
-    /**
-      * ground map - input topics
-      */
-    //static const std::string INPUT_POINT_CLOUD_TOPIC = "points_in";
-    static const std::string OUTPUT_GROUND_MAP_TOPIC = "map2d_out";
+/**
+  * ground map - input topics
+  */
+//static const std::string INPUT_POINT_CLOUD_TOPIC = "points_in";
+static const std::string OUTPUT_GROUND_MAP_TOPIC = "map2d_out";
 }
 
 #endif // BUT_VELODYNE_TOPICS_LIST_H

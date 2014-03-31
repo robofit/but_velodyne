@@ -10,17 +10,17 @@
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
- * 
+ *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -40,67 +40,70 @@ namespace but_env_model
 class CCollisionObjectPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< moveit_msgs::CollisionObject >
 {
 public:
-    /// Constructor
-    CCollisionObjectPlugin(const std::string & name);
+  /// Constructor
+  CCollisionObjectPlugin(const std::string & name);
 
-    /// Destructor
-    virtual ~CCollisionObjectPlugin();
+  /// Destructor
+  virtual ~CCollisionObjectPlugin();
 
-    //! Enable or disable publishing
-    void enable( bool enabled ){ m_publishCollisionObject = enabled; }
+  //! Enable or disable publishing
+  void enable(bool enabled)
+  {
+    m_publishCollisionObject = enabled;
+  }
 
-    //! Should plugin publish data?
-    bool shouldPublish();
+  //! Should plugin publish data?
+  bool shouldPublish();
 
-    //! Initialize plugin - called in server constructor
-    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
-    //! Connect/disconnect plugin to/from all topics
-    virtual void pause( bool bPause, ros::NodeHandle & node_handle);
-
-protected:
-    //! Called when new scan was inserted and now all can be published
-    virtual void publishInternal(const ros::Time & timestamp);
-
-    //! Set used octomap frame id and timestamp
-    virtual void newMapDataCB( SMapWithParameters & par );
-
-    /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-    virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+  //! Connect/disconnect plugin to/from all topics
+  virtual void pause(bool bPause, ros::NodeHandle & node_handle);
 
 protected:
-    //! Is publishing enabled?
-    bool m_publishCollisionObject;
+  //! Called when new scan was inserted and now all can be published
+  virtual void publishInternal(const ros::Time & timestamp);
 
-    //! Collision object publisher name
-    std::string m_coPublisherName;
+  //! Set used octomap frame id and timestamp
+  virtual void newMapDataCB(SMapWithParameters & par);
 
-    /// Collision object publisher
-    ros::Publisher m_coPublisher;
+  /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+  virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-    //! Transform listener
-    tf::TransformListener m_tfListener;
+protected:
+  //! Is publishing enabled?
+  bool m_publishCollisionObject;
 
-    //
-    bool m_latchedTopics;
+  //! Collision object publisher name
+  std::string m_coPublisherName;
 
-    //! Used frame id (input data will be transformed to it)
-    std::string m_coFrameId;
+  /// Collision object publisher
+  ros::Publisher m_coPublisher;
 
-    /// Crawled octomap frame id
-    std::string m_ocFrameId;
+  //! Transform listener
+  tf::TransformListener m_tfListener;
 
-    /// Transformation from octomap to the collision object frame id - rotation
-    Eigen::Matrix3f m_ocToCoRot;
+  //
+  bool m_latchedTopics;
 
-    /// Transformation from octomap to the collision object frame id - translation
-    Eigen::Vector3f m_ocToCoTrans;
+  //! Used frame id (input data will be transformed to it)
+  std::string m_coFrameId;
 
-    /// Does point need to be converted from ocmap frame id to the collision objects frame id?
-    bool m_bConvert;
+  /// Crawled octomap frame id
+  std::string m_ocFrameId;
+
+  /// Transformation from octomap to the collision object frame id - rotation
+  Eigen::Matrix3f m_ocToCoRot;
+
+  /// Transformation from octomap to the collision object frame id - translation
+  Eigen::Vector3f m_ocToCoTrans;
+
+  /// Does point need to be converted from ocmap frame id to the collision objects frame id?
+  bool m_bConvert;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CCollisionObjectPlugin
 

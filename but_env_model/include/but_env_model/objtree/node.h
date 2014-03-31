@@ -44,48 +44,48 @@ namespace objtree
 class Node
 {
 public:
-    static const unsigned int CHILDREN = 8;
-    static const unsigned int NEIGHBORS = 26;
+  static const unsigned int CHILDREN = 8;
+  static const unsigned int NEIGHBORS = 26;
 
 private:
-    unsigned char m_place;
-    Node* m_parent;
+  unsigned char m_place;
+  Node* m_parent;
 
-    /*
-     * Neighbors ids (from top view)
-     * Top part:  Middle part:  Bottom part:
-     *  6  7  8     14 15 16      23 24 25
-     *  3  4  5     12    13      20 21 22
-     *  0  1  2      9 10 11      17 18 19
-    */
-    Node* m_neighbors[NEIGHBORS];
+  /*
+   * Neighbors ids (from top view)
+   * Top part:  Middle part:  Bottom part:
+   *  6  7  8     14 15 16      23 24 25
+   *  3  4  5     12    13      20 21 22
+   *  0  1  2      9 10 11      17 18 19
+  */
+  Node* m_neighbors[NEIGHBORS];
 
-    /*
-     * Node children ids (from top view)
-     * Top part:  Bottom part:
-     *   2  3         6  7
-     *   0  1         4  5
-     *
-    */
-    Node* m_children[CHILDREN];
-    std::list<Object*> m_objects;
+  /*
+   * Node children ids (from top view)
+   * Top part:  Bottom part:
+   *   2  3         6  7
+   *   0  1         4  5
+   *
+  */
+  Node* m_children[CHILDREN];
+  std::list<Object*> m_objects;
 
-    static unsigned char reverseNeighborId(unsigned char dir);
-    Node* parentNeighborChild(unsigned char parentNeighbor, unsigned char child);
-    Node* computeNeighbor(unsigned char dir);
+  static unsigned char reverseNeighborId(unsigned char dir);
+  Node* parentNeighborChild(unsigned char parentNeighbor, unsigned char child);
+  Node* computeNeighbor(unsigned char dir);
 
 public:
-    Node(unsigned char place = 0, Node *parent = NULL);
-    ~Node();
-    Node* parent();
-    Node* child(unsigned char place, bool createNew = false);
-    Node* neighbor(unsigned char dir);
-    const std::list<Object*>& objects() const;
-    void add(Object* object);
-    void removeObject(Object *object);
-    void deleteIfEmpty();
+  Node(unsigned char place = 0, Node *parent = NULL);
+  ~Node();
+  Node* parent();
+  Node* child(unsigned char place, bool createNew = false);
+  Node* neighbor(unsigned char dir);
+  const std::list<Object*>& objects() const;
+  void add(Object* object);
+  void removeObject(Object *object);
+  void deleteIfEmpty();
 
-    static Box& getChildBox(unsigned char place, Box &childBox, const Box &parentBox);
+  static Box& getChildBox(unsigned char place, Box &childBox, const Box &parentBox);
 };
 
 }

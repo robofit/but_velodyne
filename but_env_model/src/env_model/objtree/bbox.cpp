@@ -36,9 +36,9 @@ namespace objtree
  * @param box bounding box position and size
  */
 BBox::BBox(const Box &box) :
-    m_box(box)
+  m_box(box)
 {
-    m_type = ALIGNED_BOUNDING_BOX;
+  m_type = ALIGNED_BOUNDING_BOX;
 }
 
 /**
@@ -48,12 +48,12 @@ BBox::BBox(const Box &box) :
  */
 bool BBox::fitsIntoBox(const Box &box) const
 {
-    if(m_box.x >= box.x && m_box.y >= box.y && m_box.z >= box.z && m_box.x+m_box.w <= box.x+box.w && m_box.y+m_box.h <= box.y+box.h && m_box.z+m_box.d <= box.z+box.d)
-    {
-        return true;
-    }
+  if (m_box.x >= box.x && m_box.y >= box.y && m_box.z >= box.z && m_box.x + m_box.w <= box.x + box.w && m_box.y + m_box.h <= box.y + box.h && m_box.z + m_box.d <= box.z + box.d)
+  {
+    return true;
+  }
 
-    return false;
+  return false;
 }
 
 /**
@@ -63,22 +63,22 @@ bool BBox::fitsIntoBox(const Box &box) const
  */
 bool BBox::interfereWithBox(const Box &box) const
 {
-    if(m_box.x > box.x+box.w || m_box.x+m_box.w < box.x)
-    {
-        return false;
-    }
+  if (m_box.x > box.x + box.w || m_box.x + m_box.w < box.x)
+  {
+    return false;
+  }
 
-    if(m_box.y > box.y+box.h || m_box.y+m_box.h < box.y)
-    {
-        return false;
-    }
+  if (m_box.y > box.y + box.h || m_box.y + m_box.h < box.y)
+  {
+    return false;
+  }
 
-    if(m_box.z > box.z+box.d || m_box.z+m_box.d < box.z)
-    {
-        return false;
-    }
+  if (m_box.z > box.z + box.d || m_box.z + m_box.d < box.z)
+  {
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 /**
@@ -88,9 +88,9 @@ bool BBox::interfereWithBox(const Box &box) const
  */
 bool BBox::isSimilar(const Object *object) const
 {
-    if(object->type() != ALIGNED_BOUNDING_BOX) return false;
+  if (object->type() != ALIGNED_BOUNDING_BOX) return false;
 
-    return isSimilarBBox((BBox*)object);
+  return isSimilarBBox((BBox*)object);
 }
 
 /**
@@ -101,15 +101,15 @@ bool BBox::isSimilar(const Object *object) const
 bool BBox::isSimilarBBox(const BBox *box) const
 {
 
-    if(fabs(box->m_box.x-m_box.x) > 0.5f) return false;
-    if(fabs(box->m_box.y-m_box.y) > 0.5f) return false;
-    if(fabs(box->m_box.z-m_box.z) > 0.5f) return false;
+  if (fabs(box->m_box.x - m_box.x) > 0.5f) return false;
+  if (fabs(box->m_box.y - m_box.y) > 0.5f) return false;
+  if (fabs(box->m_box.z - m_box.z) > 0.5f) return false;
 
-    if(fabs(box->m_box.w-m_box.w) > 0.2f) return false;
-    if(fabs(box->m_box.h-m_box.h) > 0.2f) return false;
-    if(fabs(box->m_box.d-m_box.d) > 0.2f) return false;
+  if (fabs(box->m_box.w - m_box.w) > 0.2f) return false;
+  if (fabs(box->m_box.h - m_box.h) > 0.2f) return false;
+  if (fabs(box->m_box.d - m_box.d) > 0.2f) return false;
 
-    return true;
+  return true;
 }
 
 /**
@@ -121,9 +121,9 @@ bool BBox::isSimilarBBox(const BBox *box) const
  */
 bool BBox::isPointInside(float x, float y, float z) const
 {
-    return x >= m_box.x && x <= m_box.x+m_box.w
-            && y >= m_box.y && y <= m_box.y+m_box.h
-            && z >= m_box.z && z <= m_box.z+m_box.d;
+  return x >= m_box.x && x <= m_box.x + m_box.w
+         && y >= m_box.y && y <= m_box.y + m_box.h
+         && z >= m_box.z && z <= m_box.z + m_box.d;
 }
 
 /**
@@ -132,7 +132,7 @@ bool BBox::isPointInside(float x, float y, float z) const
  */
 const Box& BBox::box() const
 {
-    return m_box;
+  return m_box;
 }
 
 }

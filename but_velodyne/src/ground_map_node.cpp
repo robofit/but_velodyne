@@ -33,8 +33,8 @@
 /** Main node entry point. */
 int main(int argc, char **argv)
 {
-  ros::init( argc, argv, "but_velodyne_groundmap_node" );
-  but_velodyne::GroundMap scan( ros::NodeHandle(), ros::NodeHandle("~") );
+  ros::init(argc, argv, "but_velodyne_groundmap_node");
+  but_velodyne::GroundMap scan(ros::NodeHandle(), ros::NodeHandle("~"));
   ros::spin();
 
   return 0;

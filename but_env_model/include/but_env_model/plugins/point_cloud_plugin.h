@@ -10,17 +10,17 @@
  * Author: Vit Stancl (stancl@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
  * Date: dd/mm/2012
- * 
+ *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -49,146 +49,179 @@ namespace but_env_model
 class CPointCloudPlugin : public CServerPluginBase, public COctomapCrawlerBase<tButServerOcTree::NodeType>, public CDataHolderBase< tPointCloud >
 {
 public:
-    //! Incomming pointcloud type
-    typedef sensor_msgs::PointCloud2 tIncommingPointCloud;
+  //! Incomming pointcloud type
+  typedef sensor_msgs::PointCloud2 tIncommingPointCloud;
 
 public:
-    /// Constructor
-    CPointCloudPlugin(const std::string & name, bool subscribe );
+  /// Constructor
+  CPointCloudPlugin(const std::string & name, bool subscribe);
 
-    /// Destructor
-    virtual ~CPointCloudPlugin();
+  /// Destructor
+  virtual ~CPointCloudPlugin();
 
-    //! Enable or disable publishing
-    void enable( bool enabled ) { m_publishPointCloud = enabled; }
+  //! Enable or disable publishing
+  void enable(bool enabled)
+  {
+    m_publishPointCloud = enabled;
+  }
 
-    //! Initialize plugin - called in server constructor
-    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh);
 
-    //! Initialize plugin - called in server constructor, enable or disable subscription.
-    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh, bool subscribe) { m_bSubscribe = subscribe; init(nh, private_nh); }
+  //! Initialize plugin - called in server constructor, enable or disable subscription.
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh, bool subscribe)
+  {
+    m_bSubscribe = subscribe;
+    init(nh, private_nh);
+  }
 
-    //! Initialize plugin - use given input topic name
-    virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh, const std::string & topic) { m_pcSubscriberName = topic; init(nh, private_nh); }
+  //! Initialize plugin - use given input topic name
+  virtual void init(ros::NodeHandle & nh, ros::NodeHandle & private_nh, const std::string & topic)
+  {
+    m_pcSubscriberName = topic;
+    init(nh, private_nh);
+  }
 
-    //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
-    virtual void pause( bool bPause, ros::NodeHandle & node_handle );
+  //! Pause/resume plugin. All publishers and subscribers are disconnected on pause
+  virtual void pause(bool bPause, ros::NodeHandle & node_handle);
 
-    //! Wants plugin new map data?
-    virtual bool wantsMap();
+  //! Wants plugin new map data?
+  virtual bool wantsMap();
 
-    /// Set frame skip
-    void setFrameSkip(unsigned long skip){ m_use_every_nth = skip; }
+  /// Set frame skip
+  void setFrameSkip(unsigned long skip)
+  {
+    m_use_every_nth = skip;
+  }
 
-    /// Set use input color switch value
-    void setUseInputColor(bool bUseInputColor) {boost::mutex::scoped_lock lock(m_lockData); m_bUseInputColor = bUseInputColor;}
+  /// Set use input color switch value
+  void setUseInputColor(bool bUseInputColor)
+  {
+    boost::mutex::scoped_lock lock(m_lockData);
+    m_bUseInputColor = bUseInputColor;
+  }
 
-    /// Set default color value
-    void setDefaultColor(uint8_t r, uint8_t g, uint8_t b ){ boost::mutex::scoped_lock lock(m_lockData); m_r = r; m_g = g; m_b = b; }
+  /// Set default color value
+  void setDefaultColor(uint8_t r, uint8_t g, uint8_t b)
+  {
+    boost::mutex::scoped_lock lock(m_lockData);
+    m_r = r;
+    m_g = g;
+    m_b = b;
+  }
 
-    /// Filter incomming cloud for NAN's and ground. True is default
-    void enableCloudFiltering(bool bEnable) { m_bFilterPC = bEnable; }
+  /// Filter incomming cloud for NAN's and ground. True is default
+  void enableCloudFiltering(bool bEnable)
+  {
+    m_bFilterPC = bEnable;
+  }
 
-    /// Transform incomming cloud to the map frame id? True is default value
-    void enableCloudTransform(bool bEnable) { m_bTransformPC = bEnable; }
+  /// Transform incomming cloud to the map frame id? True is default value
+  void enableCloudTransform(bool bEnable)
+  {
+    m_bTransformPC = bEnable;
+  }
 
 protected:
-    //! Set used octomap frame id and timestamp
-    virtual void newMapDataCB( SMapWithParameters & par );
+  //! Set used octomap frame id and timestamp
+  virtual void newMapDataCB(SMapWithParameters & par);
 
-    //! Should plugin publish data?
-    virtual bool shouldPublish();
+  //! Should plugin publish data?
+  virtual bool shouldPublish();
 
-    //! Publish data implementation
-    virtual void publishInternal( const ros::Time & timestamp );
+  //! Publish data implementation
+  virtual void publishInternal(const ros::Time & timestamp);
 
-    /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-    void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+  /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+  void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-   /**
-    * @brief Insert point cloud callback
-    *
-    * @param cloud Input point cloud
-    */
-    void insertCloudCallback(const tIncommingPointCloud::ConstPtr& cloud);
+  /**
+   * @brief Insert point cloud callback
+   *
+   * @param cloud Input point cloud
+   */
+  void insertCloudCallback(const tIncommingPointCloud::ConstPtr& cloud);
 
-    /**
-     * Test if incomming pointcloud2 has rgb part
-     */
-    bool isRGBCloud( const tIncommingPointCloud::ConstPtr& cloud );
+  /**
+   * Test if incomming pointcloud2 has rgb part
+   */
+  bool isRGBCloud(const tIncommingPointCloud::ConstPtr& cloud);
 
-    //! Counts frames and checks if node should publish in this frame
-    virtual bool useFrame() { return ++m_frame_number % m_use_every_nth == 0; }
+  //! Counts frames and checks if node should publish in this frame
+  virtual bool useFrame()
+  {
+    return ++m_frame_number % m_use_every_nth == 0;
+  }
 
 protected:
-    //! Is publishing enabled?
-    bool m_publishPointCloud;
+  //! Is publishing enabled?
+  bool m_publishPointCloud;
 
-    //! Point cloud publisher name
-    std::string m_pcPublisherName;
+  //! Point cloud publisher name
+  std::string m_pcPublisherName;
 
-    //! Point cloud subscriber name
-    std::string m_pcSubscriberName;
+  //! Point cloud subscriber name
+  std::string m_pcSubscriberName;
 
-    //! Point cloud subscriber
-    message_filters::Subscriber<tIncommingPointCloud> *m_pcSubscriber;
+  //! Point cloud subscriber
+  message_filters::Subscriber<tIncommingPointCloud> *m_pcSubscriber;
 
-    //! Message filter (we only want PointCloud2 messages)
-    tf::MessageFilter<tIncommingPointCloud> *m_tfPointCloudSub;
+  //! Message filter (we only want PointCloud2 messages)
+  tf::MessageFilter<tIncommingPointCloud> *m_tfPointCloudSub;
 
-    //! Point cloud publisher
-    ros::Publisher m_pcPublisher;
+  //! Point cloud publisher
+  ros::Publisher m_pcPublisher;
 
-    //! Should this plugin subscribe to some published topic?
-    bool m_bSubscribe;
+  //! Should this plugin subscribe to some published topic?
+  bool m_bSubscribe;
 
-    //! Transform listener
-    tf::TransformListener m_tfListener;
+  //! Transform listener
+  tf::TransformListener m_tfListener;
 
-    //
-    bool m_latchedTopics;
+  //
+  bool m_latchedTopics;
 
-    //! Do pointcloud filtering?
-    bool m_bFilterPC;
+  //! Do pointcloud filtering?
+  bool m_bFilterPC;
 
-    //! Transform pointcloud?
-    bool m_bTransformPC;
+  //! Transform pointcloud?
+  bool m_bTransformPC;
 
-    //! TF frame used during the input point cloud filtering
-    std::string m_filterFrameId;
+  //! TF frame used during the input point cloud filtering
+  std::string m_filterFrameId;
 
-    //! Minimal and maximal Z value (base frame id)
-    double m_pointcloudMinZ, m_pointcloudMaxZ;
+  //! Minimal and maximal Z value (base frame id)
+  double m_pointcloudMinZ, m_pointcloudMaxZ;
 
-    //! Minimal and maximal distance from the sensor (base frame id)
-    double m_pointcloudMinDist, m_pointcloudMaxDist;
+  //! Minimal and maximal distance from the sensor (base frame id)
+  double m_pointcloudMinDist, m_pointcloudMaxDist;
 
-    //! Pointcloud working mode
-    bool m_bAsInput;
+  //! Pointcloud working mode
+  bool m_bAsInput;
 
-    //! Output points transform matrix
-    Eigen::Matrix4f m_pcOutTM;
+  //! Output points transform matrix
+  Eigen::Matrix4f m_pcOutTM;
 
-    //! Old point cloud used for registration
-    tPointCloudPtr m_oldCloud;
+  //! Old point cloud used for registration
+  tPointCloudPtr m_oldCloud;
 
-    //! Used buffer cloud
-    tPointCloudPtr m_bufferCloud;
+  //! Used buffer cloud
+  tPointCloudPtr m_bufferCloud;
 
-    //! Current frame number
-    unsigned long m_frame_number;
+  //! Current frame number
+  unsigned long m_frame_number;
 
-    //! Use every n-th frame (if m_frame_number modulo m_use_every_nth)
-    unsigned long m_use_every_nth;
+  //! Use every n-th frame (if m_frame_number modulo m_use_every_nth)
+  unsigned long m_use_every_nth;
 
-    //! Use input color information
-    bool m_bUseInputColor;
+  //! Use input color information
+  bool m_bUseInputColor;
 
-    //! If not using input color use this
-    uint8_t m_r, m_g, m_b;
+  //! If not using input color use this
+  uint8_t m_r, m_g, m_b;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CPointCloudPlugin
 

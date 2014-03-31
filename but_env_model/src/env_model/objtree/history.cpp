@@ -36,10 +36,10 @@ namespace objtree
  */
 History::History()
 {
-    for(unsigned int i = 0; i < length; i++)
-    {
-        m_history[i].x = m_history[i].y = m_history[i].z = 0.0f;
-    }
+  for (unsigned int i = 0; i < length; i++)
+  {
+    m_history[i].x = m_history[i].y = m_history[i].z = 0.0f;
+  }
 }
 
 /**
@@ -48,12 +48,12 @@ History::History()
  */
 void History::update(Point point)
 {
-    for(unsigned int i = length-1; i > 0; i--)
-    {
-        m_history[i] = m_history[i-1];
-    }
+  for (unsigned int i = length - 1; i > 0; i--)
+  {
+    m_history[i] = m_history[i - 1];
+  }
 
-    m_history[0] = point;
+  m_history[0] = point;
 }
 
 }

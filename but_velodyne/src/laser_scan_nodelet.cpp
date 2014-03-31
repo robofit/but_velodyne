@@ -37,17 +37,17 @@ namespace but_velodyne
 
 class LaserScanNodelet: public nodelet::Nodelet
 {
-    public:
-    LaserScanNodelet() {}
-    ~LaserScanNodelet() {}
+public:
+  LaserScanNodelet() {}
+  ~LaserScanNodelet() {}
 
 private:
-    virtual void onInit()
-    {
-        laser_scan_.reset( new LaserScan(getNodeHandle(), getPrivateNodeHandle()) );
-    }
+  virtual void onInit()
+  {
+    laser_scan_.reset(new LaserScan(getNodeHandle(), getPrivateNodeHandle()));
+  }
 
-    boost::shared_ptr<LaserScan> laser_scan_;
+  boost::shared_ptr<LaserScan> laser_scan_;
 };
 
 } // namespace but_velodyne

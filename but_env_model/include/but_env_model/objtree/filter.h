@@ -40,16 +40,16 @@ namespace objtree
 class Filter
 {
 public:
-    enum Type
-    {
-        ZERO = 0,
-        BOX = 1,
-        PLANE = 2,
-        SPHERE = 3
-    };
+  enum Type
+  {
+    ZERO = 0,
+    BOX = 1,
+    PLANE = 2,
+    SPHERE = 3
+  };
 
-    virtual bool filter(const Box &dim) const = 0;
-    virtual Type type() const = 0;
+  virtual bool filter(const Box &dim) const = 0;
+  virtual Type type() const = 0;
 };
 
 /**
@@ -58,16 +58,16 @@ public:
 class FilterBox : public Filter
 {
 private:
-    Box m_box;
+  Box m_box;
 
 public:
-    FilterBox(const Box &box);
-    virtual bool filter(const Box &dim) const;
+  FilterBox(const Box &box);
+  virtual bool filter(const Box &dim) const;
 
-    virtual Type type() const
-    {
-        return BOX;
-    }
+  virtual Type type() const
+  {
+    return BOX;
+  }
 };
 
 /**
@@ -76,17 +76,17 @@ public:
 class FilterPlane : public Filter
 {
 private:
-    float m_posX, m_posY, m_posZ;
-    float m_vecX, m_vecY, m_vecZ;
+  float m_posX, m_posY, m_posZ;
+  float m_vecX, m_vecY, m_vecZ;
 
 public:
-    FilterPlane(float posX, float posY, float posZ, float vecX, float vecY, float vecZ);
-    virtual bool filter(const Box &dim) const;
+  FilterPlane(float posX, float posY, float posZ, float vecX, float vecY, float vecZ);
+  virtual bool filter(const Box &dim) const;
 
-    virtual Type type() const
-    {
-        return PLANE;
-    }
+  virtual Type type() const
+  {
+    return PLANE;
+  }
 };
 
 /**
@@ -95,12 +95,12 @@ public:
 class FilterZero : public Filter
 {
 public:
-    virtual bool filter(const Box &dim) const;
+  virtual bool filter(const Box &dim) const;
 
-    virtual Type type() const
-    {
-        return ZERO;
-    }
+  virtual Type type() const
+  {
+    return ZERO;
+  }
 };
 
 /**
@@ -109,17 +109,17 @@ public:
 class FilterSphere : public Filter
 {
 private:
-    float m_x, m_y, m_z;
-    float m_radiusSquare;
+  float m_x, m_y, m_z;
+  float m_radiusSquare;
 
 public:
-    FilterSphere(float x, float y, float z, float radius);
-    virtual bool filter(const Box &dim) const;
+  FilterSphere(float x, float y, float z, float radius);
+  virtual bool filter(const Box &dim) const;
 
-    virtual Type type() const
-    {
-        return SPHERE;
-    }
+  virtual Type type() const
+  {
+    return SPHERE;
+  }
 };
 
 }

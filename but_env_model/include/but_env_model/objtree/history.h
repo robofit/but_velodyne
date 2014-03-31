@@ -43,16 +43,19 @@ class Node;
 class History
 {
 public:
-    static const unsigned int length = 10;
+  static const unsigned int length = 10;
 
-    History();
+  History();
 
-    void update(Point point);
-    /// Returns history.
-    const Point *get() const { return m_history; }
+  void update(Point point);
+  /// Returns history.
+  const Point *get() const
+  {
+    return m_history;
+  }
 
 private:
-    Point m_history[length];
+  Point m_history[length];
 };
 
 }

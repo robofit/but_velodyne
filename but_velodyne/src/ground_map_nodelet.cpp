@@ -37,17 +37,17 @@ namespace but_velodyne
 
 class GroundMapNodelet: public nodelet::Nodelet
 {
-    public:
-    GroundMapNodelet() {}
-    ~GroundMapNodelet() {}
+public:
+  GroundMapNodelet() {}
+  ~GroundMapNodelet() {}
 
 private:
-    virtual void onInit()
-    {
-        ground_map_.reset( new GroundMap(getNodeHandle(), getPrivateNodeHandle()) );
-    }
+  virtual void onInit()
+  {
+    ground_map_.reset(new GroundMap(getNodeHandle(), getPrivateNodeHandle()));
+  }
 
-    boost::shared_ptr<GroundMap> ground_map_;
+  boost::shared_ptr<GroundMap> ground_map_;
 };
 
 } // namespace but_velodyne

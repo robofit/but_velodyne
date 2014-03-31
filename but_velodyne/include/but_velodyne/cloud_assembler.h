@@ -80,31 +80,31 @@ class CloudAssembler
 {
 
 public:
-    //! Default constructor.
-	CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh);
+  //! Default constructor.
+  CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh);
 
-    //! Virtual destructor.
-    virtual ~CloudAssembler() {}
+  //! Virtual destructor.
+  virtual ~CloudAssembler() {}
 
-    //! Processes input Velodyne point cloud and publishes the output message
-    virtual void process(const sensor_msgs::PointCloud2::ConstPtr &cloud);
+  //! Processes input Velodyne point cloud and publishes the output message
+  virtual void process(const sensor_msgs::PointCloud2::ConstPtr &cloud);
 
 private:
-    //! Node handle
-    ros::NodeHandle nh_, private_nh_;
+  //! Node handle
+  ros::NodeHandle nh_, private_nh_;
 
-    // TF, message filters, etc.
-    message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
-    tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter_;
-    ros::Subscriber points_sub_;
-    ros::Publisher points_pub_;
-    tf::TransformListener listener_;
+  // TF, message filters, etc.
+  message_filters::Subscriber<sensor_msgs::PointCloud2> points_sub_filtered_;
+  tf::MessageFilter<sensor_msgs::PointCloud2> * tf_filter_;
+  ros::Subscriber points_sub_;
+  ros::Publisher points_pub_;
+  tf::TransformListener listener_;
 
-    boost::shared_ptr<CloudBuffer> cloud_buff_;
+  boost::shared_ptr<CloudBuffer> cloud_buff_;
 
-    geometry_msgs::PoseStamped robot_pose_;
+  geometry_msgs::PoseStamped robot_pose_;
 
-    bool getRobotPose(ros::Time time, geometry_msgs::PoseStamped& res);
+  bool getRobotPose(ros::Time time, geometry_msgs::PoseStamped& res);
 
 };
 

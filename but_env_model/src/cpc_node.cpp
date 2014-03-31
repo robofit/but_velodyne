@@ -29,23 +29,23 @@
 
 int main(int argc, char **argv)
 {
-	// Do initial ros stuff
-	ros::init(argc, argv, "but_cpc_node");
-	ros::NodeHandle n;
+  // Do initial ros stuff
+  ros::init(argc, argv, "but_cpc_node");
+  ros::NodeHandle n;
 
-	// Create object
-	but_env_model::CCompressedPCPublisher cpc( n );
+  // Create object
+  but_env_model::CCompressedPCPublisher cpc(n);
 
-	ros::Rate loop_rate(10);
+  ros::Rate loop_rate(10);
 
-	int count = 0;
+  int count = 0;
 
-	while (ros::ok())
-	{
-		ros::spinOnce();
+  while (ros::ok())
+  {
+    ros::spinOnce();
 
-		loop_rate.sleep();
-		++count;
-	}
+    loop_rate.sleep();
+    ++count;
+  }
 }
 

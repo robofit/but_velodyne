@@ -38,64 +38,70 @@ namespace but_env_model
 class COcTreeFilterBase
 {
 public:
-	//! Running mode
-	enum ERunMode
-	{
-		FILTER_ALLWAYS,
-		FILTER_TEST_FRAME,
-		FILTER_TEST_TIME
-	};
+  //! Running mode
+  enum ERunMode
+  {
+    FILTER_ALLWAYS,
+    FILTER_TEST_FRAME,
+    FILTER_TEST_TIME
+  };
 
 public:
-	//! Constructor - set running mode
-	COcTreeFilterBase( const std::string & octree_frame_id, ERunMode mode = FILTER_ALLWAYS );
+  //! Constructor - set running mode
+  COcTreeFilterBase(const std::string & octree_frame_id, ERunMode mode = FILTER_ALLWAYS);
 
-	//! Set number of frames skipped between runs
-	void setFrameSkip( unsigned skip );
+  //! Set number of frames skipped between runs
+  void setFrameSkip(unsigned skip);
 
-	//! Set timer lap
-	bool setTimerLap( double lap );
+  //! Set timer lap
+  bool setTimerLap(double lap);
 
-	//! Filter tree
-	void filter( tButServerOcTree & tree, bool bPruneAfterFinish = true );
+  //! Filter tree
+  void filter(tButServerOcTree & tree, bool bPruneAfterFinish = true);
 
-	//! Set filter running mode
-	void setRunMode( ERunMode mode ) { m_mode = mode; }
+  //! Set filter running mode
+  void setRunMode(ERunMode mode)
+  {
+    m_mode = mode;
+  }
 
-	//! Set tree frame id
-	void setTreeFrameId( const std::string & tree_frame_id ) { m_treeFrameId = tree_frame_id; }
+  //! Set tree frame id
+  void setTreeFrameId(const std::string & tree_frame_id)
+  {
+    m_treeFrameId = tree_frame_id;
+  }
 
-	//! Write some info about last filter run
-	virtual void writeLastRunInfo(){}
+  //! Write some info about last filter run
+  virtual void writeLastRunInfo() {}
 
 protected:
-	//! Test if this frame should be used
-	bool useFrame();
+  //! Test if this frame should be used
+  bool useFrame();
 
-	//! Filtering function implementation
-	virtual void filterInternal( tButServerOcTree & tree ){}
+  //! Filtering function implementation
+  virtual void filterInternal(tButServerOcTree & tree) {}
 
 protected:
-	//! Used running mode
-	ERunMode m_mode;
+  //! Used running mode
+  ERunMode m_mode;
 
-	//! How many frames should be skipped between runs
-	unsigned m_framesSkipped;
+  //! How many frames should be skipped between runs
+  unsigned m_framesSkipped;
 
-	//! Frames counter
-	long m_framesCount;
+  //! Frames counter
+  long m_framesCount;
 
-	//! Timer
-	boost::timer m_timer;
+  //! Timer
+  boost::timer m_timer;
 
-	//! Timer lap
-	double m_lap;
+  //! Timer lap
+  double m_lap;
 
-	//! Tree frame id
-	std::string m_treeFrameId;
+  //! Tree frame id
+  std::string m_treeFrameId;
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class COcTreeFilter
 

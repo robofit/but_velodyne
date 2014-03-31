@@ -39,11 +39,11 @@ namespace objtree
  * @param maxDepth maximum octree depth
  */
 Octree::Octree(unsigned int maxDepth) :
-    m_rootSize(0.0f, 0.0f, 0.0f, 16.0f, 16.0f, 16.0f)
+  m_rootSize(0.0f, 0.0f, 0.0f, 16.0f, 16.0f, 16.0f)
 {
-    m_root = new Node;
-    m_maxId = 0;
-    m_maxDepth = maxDepth;
+  m_root = new Node;
+  m_maxId = 0;
+  m_maxDepth = maxDepth;
 }
 
 /**
@@ -53,11 +53,11 @@ Octree::Octree(unsigned int maxDepth) :
  * @param maxDepth maximum octree depth
  */
 Octree::Octree(const Box &rootSize, unsigned int maxDepth) :
-    m_rootSize(rootSize)
+  m_rootSize(rootSize)
 {
-    m_root = new Node;
-    m_maxId = 0;
-    m_maxDepth = maxDepth;
+  m_root = new Node;
+  m_maxId = 0;
+  m_maxDepth = maxDepth;
 }
 
 /**
@@ -65,7 +65,7 @@ Octree::Octree(const Box &rootSize, unsigned int maxDepth) :
  */
 Octree::~Octree()
 {
-    delete m_root;
+  delete m_root;
 }
 
 /**
@@ -73,11 +73,11 @@ Octree::~Octree()
  */
 void Octree::clear()
 {
-    delete m_root;
-    m_objects.clear();
+  delete m_root;
+  m_objects.clear();
 
-    m_root = new Node;
-    m_maxId = 0;
+  m_root = new Node;
+  m_maxId = 0;
 }
 
 /**
@@ -87,30 +87,30 @@ void Octree::clear()
  */
 unsigned int Octree::insertOnFit(Object* object)
 {
-    Node *node = m_root;
+  Node *node = m_root;
 
-    Box box(m_rootSize);
-    Box childBox;
+  Box box(m_rootSize);
+  Box childBox;
 
-    bool fits = true;
-    unsigned char i;
+  bool fits = true;
+  unsigned char i;
 
-    while(fits)
+  while (fits)
+  {
+    for (i = 0; !(fits = object->fitsIntoBox(Node::getChildBox(i, childBox, box))) && i < Node::CHILDREN; i++);
+
+    if (fits)
     {
-        for(i = 0; !(fits = object->fitsIntoBox(Node::getChildBox(i, childBox, box))) && i < Node::CHILDREN; i++);
-
-        if(fits)
-        {
-            node = node->child(i, true);
-            box = childBox;
-        }
+      node = node->child(i, true);
+      box = childBox;
     }
+  }
 
-    node->add(object);
-    m_objects[m_maxId] = object;
-    object->setId(m_maxId++);
+  node->add(object);
+  m_objects[m_maxId] = object;
+  object->setId(m_maxId++);
 
-    return object->id();
+  return object->id();
 }
 
 /**
@@ -123,26 +123,26 @@ unsigned int Octree::insertOnFit(Object* object)
  */
 unsigned int Octree::insertOnInterfere(Object* object, Node *node, Box box, unsigned int depth)
 {
-    Box childBox;
+  Box childBox;
 
-    for(unsigned char i = 0; i < Node::CHILDREN; i++)
+  for (unsigned char i = 0; i < Node::CHILDREN; i++)
+  {
+    if (object->interfereWithBox(Node::getChildBox(i, childBox, box)))
     {
-        if(object->interfereWithBox(Node::getChildBox(i, childBox, box)))
-        {
-            Node *child = node->child(i, true);
+      Node *child = node->child(i, true);
 
-            if(depth < m_maxDepth)
-            {
-                insertOnInterfere(object, child, childBox, depth+1);
-            }
-            else
-            {
-                child->add(object);
-            }
-        }
+      if (depth < m_maxDepth)
+      {
+        insertOnInterfere(object, child, childBox, depth + 1);
+      }
+      else
+      {
+        child->add(object);
+      }
     }
+  }
 
-    return object->id();
+  return object->id();
 }
 
 /**
@@ -157,92 +157,92 @@ unsigned int Octree::insertOnInterfere(Object* object, Node *node, Box box, unsi
  */
 unsigned int Octree::insertUpdateOnInterfere(Object* object, Node *node, Box box, bool &inserted, unsigned int depth)
 {
-    Box childBox;
+  Box childBox;
 
-    for(unsigned char i = 0; i < Node::CHILDREN; i++)
+  for (unsigned char i = 0; i < Node::CHILDREN; i++)
+  {
+    if (object->interfereWithBox(Node::getChildBox(i, childBox, box)))
     {
-        if(object->interfereWithBox(Node::getChildBox(i, childBox, box)))
-        {
-            Node *child = node->child(i, true);
+      Node *child = node->child(i, true);
 
-            if(depth < m_maxDepth)
+      if (depth < m_maxDepth)
+      {
+        insertUpdateOnInterfere(object, child, childBox, inserted, depth + 1);
+      }
+      else
+      {
+        //Find similar object
+        Object *similar = NULL;
+
+        for (std::list<Object*>::const_iterator j = child->objects().begin(); j != child->objects().end() && !similar; j++)
+        {
+          if (*j != object && (*j)->isSimilar(object))
+          {
+            similar = *j;
+          }
+        }
+
+        for (unsigned int n = 0; n < Node::NEIGHBORS && !similar; n++)
+        {
+          Node *neighbor = child->neighbor(n);
+          if (neighbor == NULL)
+          {
+            continue;
+          }
+
+          for (std::list<Object*>::const_iterator j = neighbor->objects().begin(); j != neighbor->objects().end() && !similar; j++)
+          {
+            if (*j != object && (*j)->isSimilar(object))
             {
-                insertUpdateOnInterfere(object, child, childBox, inserted, depth+1);
+              similar = *j;
+            }
+          }
+        }
+
+        child->add(object);
+
+        //We have found a similar object
+        if (similar != NULL)
+        {
+          //Replace similar object in objects list
+          if (!inserted)
+          {
+            m_objects[similar->id()] = object;
+            object->setId(similar->id());
+            inserted = true;
+#if HISTORY_ENABLED
+            object->takeHistory(similar);
+#endif
+          }
+          //We have already replaced other object
+          else
+          {
+            m_objects.erase(similar->id());
+          }
+
+          delete similar;
+        }
+        //Similar object hasn't been found
+        else
+        {
+          if (!inserted)
+          {
+            if (!object->hasId())
+            {
+              m_objects[m_maxId] = object;
+              object->setId(m_maxId++);
             }
             else
             {
-                //Find similar object
-                Object *similar = NULL;
-
-                for(std::list<Object*>::const_iterator j = child->objects().begin(); j != child->objects().end() && !similar; j++)
-                {
-                    if(*j != object && (*j)->isSimilar(object))
-                    {
-                        similar = *j;
-                    }
-                }
-
-                for(unsigned int n = 0; n < Node::NEIGHBORS && !similar; n++)
-                {
-                    Node *neighbor = child->neighbor(n);
-                    if(neighbor == NULL)
-                    {
-                        continue;
-                    }
-
-                    for(std::list<Object*>::const_iterator j = neighbor->objects().begin(); j != neighbor->objects().end() && !similar; j++)
-                    {
-                        if(*j != object && (*j)->isSimilar(object))
-                        {
-                            similar = *j;
-                        }
-                    }
-                }
-
-                child->add(object);
-
-                //We have found a similar object
-                if(similar != NULL)
-                {
-                    //Replace similar object in objects list
-                    if(!inserted)
-                    {
-                        m_objects[similar->id()] = object;
-                        object->setId(similar->id());
-                        inserted = true;
-#if HISTORY_ENABLED
-                        object->takeHistory(similar);
-#endif
-                    }
-                    //We have already replaced other object
-                    else
-                    {
-                        m_objects.erase(similar->id());
-                    }
-
-                    delete similar;
-                }
-                //Similar object hasn't been found
-                else
-                {
-                    if(!inserted)
-                    {
-                        if(!object->hasId())
-                        {
-                            m_objects[m_maxId] = object;
-                            object->setId(m_maxId++);
-                        }
-                        else
-                        {
-                            m_objects[object->id()] = object;
-                        }
-                    }
-                }
+              m_objects[object->id()] = object;
             }
+          }
         }
+      }
     }
+  }
 
-    return object->id();
+  return object->id();
 }
 
 /**
@@ -255,51 +255,51 @@ unsigned int Octree::insertUpdateOnInterfere(Object* object, Node *node, Box box
  */
 Object* Octree::getSimilarObject(const Object *object, Node *node, Box box, unsigned int depth)
 {
-    Box childBox;
-    Object *similar;
+  Box childBox;
+  Object *similar;
 
-    for(unsigned char i = 0; i < Node::CHILDREN; i++)
+  for (unsigned char i = 0; i < Node::CHILDREN; i++)
+  {
+    Node *child = node->child(i);
+
+    if (!child) continue;
+
+    if (object->interfereWithBox(Node::getChildBox(i, childBox, box)))
     {
-        Node *child = node->child(i);
-
-        if(!child) continue;
-
-        if(object->interfereWithBox(Node::getChildBox(i, childBox, box)))
+      if (depth < m_maxDepth)
+      {
+        similar = getSimilarObject(object, child, childBox, depth + 1);
+        if (similar) return similar;
+      }
+      else
+      {
+        for (std::list<Object*>::const_iterator j = node->objects().begin(); j != node->objects().end(); j++)
         {
-            if(depth < m_maxDepth)
-            {
-                similar = getSimilarObject(object, child, childBox, depth+1);
-                if(similar) return similar;
-            }
-            else
-            {
-                for(std::list<Object*>::const_iterator j = node->objects().begin(); j != node->objects().end(); j++)
-                {
-                    if(*j != object && (*j)->isSimilar(object))
-                    {
-                        return *j;
-                    }
-                }
-
-                for(unsigned int n = 0; n < Node::NEIGHBORS; n++)
-                {
-                    Node *neighbor = child->neighbor(n);
-
-                    if(!neighbor) continue;
-
-                    for(std::list<Object*>::const_iterator j = neighbor->objects().begin(); j != neighbor->objects().end(); j++)
-                    {
-                        if(*j != object && (*j)->isSimilar(object))
-                        {
-                            return *j;
-                        }
-                    }
-                }
-            }
+          if (*j != object && (*j)->isSimilar(object))
+          {
+            return *j;
+          }
         }
-    }
 
-    return NULL;
+        for (unsigned int n = 0; n < Node::NEIGHBORS; n++)
+        {
+          Node *neighbor = child->neighbor(n);
+
+          if (!neighbor) continue;
+
+          for (std::list<Object*>::const_iterator j = neighbor->objects().begin(); j != neighbor->objects().end(); j++)
+          {
+            if (*j != object && (*j)->isSimilar(object))
+            {
+              return *j;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return NULL;
 }
 
 /**
@@ -309,7 +309,7 @@ Object* Octree::getSimilarObject(const Object *object, Node *node, Box box, unsi
  */
 Object* Octree::getSimilarObject(const Object* object)
 {
-    return getSimilarObject(object, m_root, m_rootSize);
+  return getSimilarObject(object, m_root, m_rootSize);
 }
 
 /**
@@ -319,17 +319,17 @@ Object* Octree::getSimilarObject(const Object* object)
  */
 unsigned int Octree::insert(Object* object)
 {
-    if(!object->hasId())
-    {
-        m_objects[m_maxId] = object;
-        object->setId(m_maxId++);
-    }
-    else
-    {
-        m_objects[object->id()] = object;
-    }
+  if (!object->hasId())
+  {
+    m_objects[m_maxId] = object;
+    object->setId(m_maxId++);
+  }
+  else
+  {
+    m_objects[object->id()] = object;
+  }
 
-    return insertOnInterfere(object, m_root, m_rootSize);
+  return insertOnInterfere(object, m_root, m_rootSize);
 }
 
 /**
@@ -340,8 +340,8 @@ unsigned int Octree::insert(Object* object)
  */
 unsigned int Octree::insertUpdate(Object* object)
 {
-    bool inserted = false;
-    return insertUpdateOnInterfere(object, m_root, m_rootSize, inserted);
+  bool inserted = false;
+  return insertUpdateOnInterfere(object, m_root, m_rootSize, inserted);
 }
 
 /**
@@ -353,22 +353,22 @@ unsigned int Octree::insertUpdate(Object* object)
  */
 unsigned int Octree::insertUpdate2(Object* object)
 {
-    Object *similar = getSimilarObject(object, m_root, m_rootSize);
+  Object *similar = getSimilarObject(object, m_root, m_rootSize);
 
-    if(similar)
-    {
-        m_objects[similar->id()] = object;
-        object->setId(similar->id());
+  if (similar)
+  {
+    m_objects[similar->id()] = object;
+    object->setId(similar->id());
 
-        delete similar;
-    }
-    else
-    {
-        m_objects[m_maxId] = object;
-        object->setId(m_maxId++);
-    }
+    delete similar;
+  }
+  else
+  {
+    m_objects[m_maxId] = object;
+    object->setId(m_maxId++);
+  }
 
-    return insertOnInterfere(object, m_root, m_rootSize);
+  return insertOnInterfere(object, m_root, m_rootSize);
 }
 
 /**
@@ -380,35 +380,35 @@ unsigned int Octree::insertUpdate2(Object* object)
  */
 bool Octree::isPositionFree(float x, float y, float z)
 {
-    Node *node = m_root;
+  Node *node = m_root;
 
-    Box box(m_rootSize);
+  Box box(m_rootSize);
 
-    for(;;)
+  for (;;)
+  {
+    unsigned char id = 0;
+
+    if (x >= box.x + box.w / 2.0f) id += 1;
+    if (y >= box.y + box.h / 2.0f) id += 2;
+    if (z >= box.z + box.d / 2.0f) id += 4;
+
+    node = node->child(id);
+
+    if (node == NULL)
     {
-        unsigned char id = 0;
-
-        if(x >= box.x+box.w/2.0f) id += 1;
-        if(y >= box.y+box.h/2.0f) id += 2;
-        if(z >= box.z+box.d/2.0f) id += 4;
-
-        node = node->child(id);
-
-        if(node == NULL)
-        {
-            return true;
-        }
-
-        for(std::list<Object*>::const_iterator i = node->objects().begin(); i != node->objects().end(); i++)
-        {
-            if((*i)->isPointInside(x, y, z))
-            {
-                return false;
-            }
-        }
-
-        Node::getChildBox(id, box, box);
+      return true;
     }
+
+    for (std::list<Object*>::const_iterator i = node->objects().begin(); i != node->objects().end(); i++)
+    {
+      if ((*i)->isPointInside(x, y, z))
+      {
+        return false;
+      }
+    }
+
+    Node::getChildBox(id, box, box);
+  }
 }
 
 /**
@@ -419,7 +419,7 @@ bool Octree::isPositionFree(float x, float y, float z)
  */
 void Octree::nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, const Filter *filter)
 {
-    nodes(nodesList, objectList, filter, m_rootSize, m_root);
+  nodes(nodesList, objectList, filter, m_rootSize, m_root);
 }
 
 /**
@@ -432,26 +432,26 @@ void Octree::nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, con
  */
 void Octree::nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, const Filter *filter, Box dim, Node *node)
 {
-    if(!filter->filter(dim)) return;
+  if (!filter->filter(dim)) return;
 
-    for(std::list<Object*>::const_iterator i = node->objects().begin(); i != node->objects().end(); i++)
+  for (std::list<Object*>::const_iterator i = node->objects().begin(); i != node->objects().end(); i++)
+  {
+    objectList.insert(*i);
+  }
+
+  nodesList.push_back(dim);
+
+  for (unsigned int i = 0; i < Node::CHILDREN; i++)
+  {
+    Node *child = node->child(i);
+
+    if (child)
     {
-        objectList.insert(*i);
+      Box newDim;
+      Node::getChildBox(i, newDim, dim);
+      nodes(nodesList, objectList, filter, newDim, child);
     }
-
-    nodesList.push_back(dim);
-
-    for(unsigned int i = 0; i < Node::CHILDREN; i++)
-    {
-        Node *child = node->child(i);
-
-        if(child)
-        {
-            Box newDim;
-            Node::getChildBox(i, newDim, dim);
-            nodes(nodesList, objectList, filter, newDim, child);
-        }
-    }
+  }
 }
 
 /**
@@ -461,16 +461,16 @@ void Octree::nodes(std::list<Box> &nodesList, std::set<Object*> &objectList, con
  */
 void Octree::objects(std::set<Object*> &objectList, const Filter *filter)
 {
-    std::list<Box> nodesList;
-    nodes(nodesList, objectList, filter, m_rootSize, m_root);
+  std::list<Box> nodesList;
+  nodes(nodesList, objectList, filter, m_rootSize, m_root);
 }
 
 const Object* Octree::object(unsigned int id) const
 {
-    std::map<unsigned int, Object*>::const_iterator i = m_objects.find(id);
+  std::map<unsigned int, Object*>::const_iterator i = m_objects.find(id);
 
-    if(i != m_objects.end()) return i->second;
-    else return NULL;
+  if (i != m_objects.end()) return i->second;
+  else return NULL;
 }
 
 /**
@@ -480,19 +480,19 @@ const Object* Octree::object(unsigned int id) const
  */
 bool Octree::removeObject(unsigned int id)
 {
-    std::map<unsigned int, Object*>::iterator i = m_objects.find(id);
+  std::map<unsigned int, Object*>::iterator i = m_objects.find(id);
 
-    if(i != m_objects.end())
-    {
-        delete i->second;
-        m_objects.erase(i);
+  if (i != m_objects.end())
+  {
+    delete i->second;
+    m_objects.erase(i);
 
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return true;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 /**
@@ -501,7 +501,7 @@ bool Octree::removeObject(unsigned int id)
  */
 Node* Octree::root() const
 {
-    return m_root;
+  return m_root;
 }
 
 /**
@@ -510,7 +510,7 @@ Node* Octree::root() const
  */
 unsigned int Octree::maxId() const
 {
-    return m_maxId;
+  return m_maxId;
 }
 
 /**
@@ -519,7 +519,7 @@ unsigned int Octree::maxId() const
  */
 unsigned int Octree::count() const
 {
-    return m_objects.size();
+  return m_objects.size();
 }
 
 /**
@@ -528,7 +528,7 @@ unsigned int Octree::count() const
  */
 const std::map<unsigned int, Object*>& Octree::objectsAll() const
 {
-    return m_objects;
+  return m_objects;
 }
 
 }

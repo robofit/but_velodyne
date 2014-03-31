@@ -36,9 +36,9 @@ namespace objtree
  */
 Object::Object()
 {
-    m_id = -1;
+  m_id = -1;
 #if HISTORY_ENABLED
-    m_history = NULL;
+  m_history = NULL;
 #endif
 }
 
@@ -48,16 +48,16 @@ Object::Object()
  */
 Object::~Object()
 {
-    for(std::list<Node*>::iterator i = m_inNodes.begin(); i != m_inNodes.end(); i++)
-    {
-        (*i)->removeObject(this);
-    }
+  for (std::list<Node*>::iterator i = m_inNodes.begin(); i != m_inNodes.end(); i++)
+  {
+    (*i)->removeObject(this);
+  }
 
 #if HISTORY_ENABLED
-    if(m_history)
-    {
-        delete m_history;
-    }
+  if (m_history)
+  {
+    delete m_history;
+  }
 #endif
 }
 
@@ -67,7 +67,7 @@ Object::~Object()
  */
 Object::Type Object::type() const
 {
-    return m_type;
+  return m_type;
 }
 
 /**
@@ -76,7 +76,7 @@ Object::Type Object::type() const
  */
 void Object::setId(unsigned int id)
 {
-    m_id = id;
+  m_id = id;
 }
 
 /**
@@ -85,7 +85,7 @@ void Object::setId(unsigned int id)
  */
 bool Object::hasId() const
 {
-    return m_id != (unsigned int)-1;
+  return m_id != (unsigned int) - 1;
 }
 
 /**
@@ -94,7 +94,7 @@ bool Object::hasId() const
  */
 unsigned int Object::id() const
 {
-    return m_id;
+  return m_id;
 }
 
 /**
@@ -103,7 +103,7 @@ unsigned int Object::id() const
  */
 void Object::newNode(Node *node)
 {
-    m_inNodes.push_back(node);
+  m_inNodes.push_back(node);
 }
 
 /**
@@ -112,7 +112,7 @@ void Object::newNode(Node *node)
  */
 void Object::removeNode(Node *node)
 {
-    m_inNodes.remove(node);
+  m_inNodes.remove(node);
 }
 
 /**
@@ -121,7 +121,7 @@ void Object::removeNode(Node *node)
  */
 unsigned int Object::inNodesCount() const
 {
-    return m_inNodes.size();
+  return m_inNodes.size();
 }
 
 }

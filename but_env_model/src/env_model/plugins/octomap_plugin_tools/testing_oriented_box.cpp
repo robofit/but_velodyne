@@ -31,12 +31,12 @@
  * Constructor
  */
 but_env_model::CTestingOrientedBox::CTestingOrientedBox()
-: m_minX( 0.0 )
-, m_minY( 0.0 )
-, m_minZ( 0.0 )
-, m_maxX( 0.0 )
-, m_maxY( 0.0 )
-, m_maxZ( 0.0 )
+  : m_minX(0.0)
+  , m_minY(0.0)
+  , m_minZ(0.0)
+  , m_maxX(0.0)
+  , m_maxY(0.0)
+  , m_maxZ(0.0)
 {
 
 }
@@ -44,13 +44,13 @@ but_env_model::CTestingOrientedBox::CTestingOrientedBox()
 /**
  * Constructor - initializing
  */
-but_env_model::CTestingOrientedBox::CTestingOrientedBox( double minx, double miny, double minz, double maxx, double maxy, double maxz )
-: m_minX( minx )
-, m_minY( miny )
-, m_minZ( minz )
-, m_maxX( maxx )
-, m_maxY( maxy )
-, m_maxZ( maxz )
+but_env_model::CTestingOrientedBox::CTestingOrientedBox(double minx, double miny, double minz, double maxx, double maxy, double maxz)
+  : m_minX(minx)
+  , m_minY(miny)
+  , m_minZ(minz)
+  , m_maxX(maxx)
+  , m_maxY(maxy)
+  , m_maxZ(maxz)
 {
 
 }
@@ -58,28 +58,35 @@ but_env_model::CTestingOrientedBox::CTestingOrientedBox( double minx, double min
 /**
  * Set limits
  */
-void but_env_model::CTestingOrientedBox::set( double minx, double miny, double minz, double maxx, double maxy, double maxz )
+void but_env_model::CTestingOrientedBox::set(double minx, double miny, double minz, double maxx, double maxy, double maxz)
 {
-	m_minX = minx; m_minY = miny; m_minZ = minz;
-	m_maxX = maxx; m_maxY = maxy; m_maxZ = maxz;
+  m_minX = minx;
+  m_minY = miny;
+  m_minZ = minz;
+  m_maxX = maxx;
+  m_maxY = maxy;
+  m_maxZ = maxz;
 }
 
 /**
  * Set by center and sizes
  */
-void but_env_model::CTestingOrientedBox::setCenterSize( double x, double y, double z, double sx, double sy, double sz )
+void but_env_model::CTestingOrientedBox::setCenterSize(double x, double y, double z, double sx, double sy, double sz)
 {
-	// Compute half size from sizes
-	double shx( sx / 2 ), shy( sy / 2), shz( sz / 2 );
+  // Compute half size from sizes
+  double shx(sx / 2), shy(sy / 2), shz(sz / 2);
 
-	m_minX = x - shx; m_maxX = x + shx;
-	m_minY = y - shy; m_maxY = y + shy;
-	m_minZ = z - shz; m_maxZ = z + shz;
+  m_minX = x - shx;
+  m_maxX = x + shx;
+  m_minY = y - shy;
+  m_maxY = y + shy;
+  m_minZ = z - shz;
+  m_maxZ = z + shz;
 }
 /**
  * Testing function
  */
-bool but_env_model::CTestingOrientedBox::isIn( double x, double y, double z )
+bool but_env_model::CTestingOrientedBox::isIn(double x, double y, double z)
 {
-	return ( x >= m_minX ) && ( x < m_maxX ) && ( y >= m_minY ) && ( y < m_maxY ) && ( z >= m_minZ ) && ( z < m_maxZ );
+  return (x >= m_minX) && (x < m_maxX) && (y >= m_minY) && (y < m_maxY) && (z >= m_minZ) && (z < m_maxZ);
 }

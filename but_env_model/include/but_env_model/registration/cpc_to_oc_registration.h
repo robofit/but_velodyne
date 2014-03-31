@@ -54,119 +54,125 @@ namespace but_env_model
 class COcPatchMaker
 {
 public:
-	//! Used cloud type
-	//typedef sensor_msgs::PointCloud2 tCloud;
-	typedef tPointCloud tCloud;
+  //! Used cloud type
+  //typedef sensor_msgs::PointCloud2 tCloud;
+  typedef tPointCloud tCloud;
 
 public:
-	//! Constructor
-	COcPatchMaker();
+  //! Constructor
+  COcPatchMaker();
 
-	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & node_handle);
 
-	//! Get output pointcloud
-	bool computeCloud( const SMapWithParameters & par, const ros::Time & time );
+  //! Get output pointcloud
+  bool computeCloud(const SMapWithParameters & par, const ros::Time & time);
 
-	//! Get cloud
-	tCloud & getCloud( ) { return m_cloud; }
+  //! Get cloud
+  tCloud & getCloud()
+  {
+    return m_cloud;
+  }
 
-	//! Set output cloud frame id
-	void setCloudFrameId( const std::string & fid ){ m_pcFrameId = fid; }
-
-protected:
-	/// On camera position changed callback
-	void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
-
-	// main loop when spinning our own thread
-	// - process callbacks in our callback queue
-	// - process pending goals
-	void spinThread();
-
-	//! Test if point is in camera cone
-	bool inSensorCone(const cv::Point2d& uv) const;
-
-	//! Called when new scan was inserted and now all can be published
-	void publishInternal(const ros::Time & timestamp);
-
-	/// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
-	virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
+  //! Set output cloud frame id
+  void setCloudFrameId(const std::string & fid)
+  {
+    m_pcFrameId = fid;
+  }
 
 protected:
-	/// Should camera position and orientation be transformed?
-	bool m_bTransformCamera;
+  /// On camera position changed callback
+  void onCameraChangedCB(const sensor_msgs::CameraInfo::ConstPtr &cam_info);
 
-	/// Camera frame id
-	std::string m_cameraFrameId;
+  // main loop when spinning our own thread
+  // - process callbacks in our callback queue
+  // - process pending goals
+  void spinThread();
 
-	//! Output frame id
-	std::string m_pcFrameId;
+  //! Test if point is in camera cone
+  bool inSensorCone(const cv::Point2d& uv) const;
 
-	// Camera position topic name
-	std::string m_cameraInfoTopic;
+  //! Called when new scan was inserted and now all can be published
+  void publishInternal(const ros::Time & timestamp);
 
-	/// Subscriber - camera position
-	ros::Subscriber m_camPosSubscriber;
+  /// hook that is called when traversing occupied nodes of the updated Octree (does nothing here)
+  virtual void handleOccupiedNode(tButServerOcTree::iterator& it, const SMapWithParameters & mp);
 
-	// Mutex used to lock camera position parameters
-	boost::recursive_mutex m_camPosMutex;
+protected:
+  /// Should camera position and orientation be transformed?
+  bool m_bTransformCamera;
 
-	//! Spin out own input callback thread
-	bool m_bSpinThread;
+  /// Camera frame id
+  std::string m_cameraFrameId;
 
-	// these are needed when spinning up a dedicated thread
-	boost::scoped_ptr<boost::thread> spin_thread_;
-	ros::NodeHandle node_handle_;
-	ros::CallbackQueue callback_queue_;
-	volatile bool need_to_terminate_;
+  //! Output frame id
+  std::string m_pcFrameId;
 
-	/// Is camera model initialized?
-	bool m_bCamModelInitialized;
+  // Camera position topic name
+  std::string m_cameraInfoTopic;
 
-	/// Camera offsets
-	int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
+  /// Subscriber - camera position
+  ros::Subscriber m_camPosSubscriber;
 
-	/// Output point cloud data
-	tCloud m_cloud;
+  // Mutex used to lock camera position parameters
+  boost::recursive_mutex m_camPosMutex;
 
-	//! Should i publish pointcloud
-	bool m_bPublishCloud;
+  //! Spin out own input callback thread
+  bool m_bSpinThread;
 
-	/// Camera model
-	image_geometry::PinholeCameraModel m_camera_model, m_camera_model_buffer;
+  // these are needed when spinning up a dedicated thread
+  boost::scoped_ptr<boost::thread> spin_thread_;
+  ros::NodeHandle node_handle_;
+  ros::CallbackQueue callback_queue_;
+  volatile bool need_to_terminate_;
 
-	//! Camera info buffer
-	sensor_msgs::CameraInfo m_camera_info_buffer;
+  /// Is camera model initialized?
+  bool m_bCamModelInitialized;
 
-	/// Camera size
-	cv::Size m_camera_size, m_camera_size_buffer;
+  /// Camera offsets
+  int m_camera_stereo_offset_left, m_camera_stereo_offset_right;
 
-	//! Transform listener
-	tf::TransformListener m_tfListener;
+  /// Output point cloud data
+  tCloud m_cloud;
 
-	//! Cloud publishers
-	ros::Publisher m_pubConstrainedPC;
+  //! Should i publish pointcloud
+  bool m_bPublishCloud;
 
-	/// Crawled octomap frame id
-	std::string m_ocFrameId;
+  /// Camera model
+  image_geometry::PinholeCameraModel m_camera_model, m_camera_model_buffer;
 
-	/// Time stamp
-	ros::Time m_DataTimeStamp, m_time_stamp;
+  //! Camera info buffer
+  sensor_msgs::CameraInfo m_camera_info_buffer;
 
-	/// PC to sensor transformation
-	tf::Transform m_to_sensorTf;
+  /// Camera size
+  cv::Size m_camera_size, m_camera_size_buffer;
 
-	//! Fraction of the field of view taken from the octomap (x-direction)
-	double m_fracX;
+  //! Transform listener
+  tf::TransformListener m_tfListener;
 
-	//! Fraction of the field of view taken from the octomap (y-direction)
-	double m_fracY;
+  //! Cloud publishers
+  ros::Publisher m_pubConstrainedPC;
 
-	//! View fraction computation matrix
-	tf::Matrix3x3 m_fracMatrix;
+  /// Crawled octomap frame id
+  std::string m_ocFrameId;
+
+  /// Time stamp
+  ros::Time m_DataTimeStamp, m_time_stamp;
+
+  /// PC to sensor transformation
+  tf::Transform m_to_sensorTf;
+
+  //! Fraction of the field of view taken from the octomap (x-direction)
+  double m_fracX;
+
+  //! Fraction of the field of view taken from the octomap (y-direction)
+  double m_fracY;
+
+  //! View fraction computation matrix
+  tf::Matrix3x3 m_fracMatrix;
 
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class COcToPcl
 
@@ -177,46 +183,52 @@ public:
 class CPcToOcRegistration
 {
 public:
-	//! Used cloud
-	typedef sensor_msgs::PointCloud2 tCloud;
+  //! Used cloud
+  typedef sensor_msgs::PointCloud2 tCloud;
 
-	//! Registration module type
-	typedef CPclRegistration< tPclPoint, tPclPoint> tRegistrator;
+  //! Registration module type
+  typedef CPclRegistration< tPclPoint, tPclPoint> tRegistrator;
 
 public:
-	//! Constructor
-	CPcToOcRegistration();
+  //! Constructor
+  CPcToOcRegistration();
 
-	//! Initialize plugin - called in server constructor
-	virtual void init(ros::NodeHandle & node_handle);
+  //! Initialize plugin - called in server constructor
+  virtual void init(ros::NodeHandle & node_handle);
 
-	//! Register cloud to the octomap
-	bool registerCloud( tPointCloudPtr & cloud, const SMapWithParameters & map );
+  //! Register cloud to the octomap
+  bool registerCloud(tPointCloudPtr & cloud, const SMapWithParameters & map);
 
-	//! Get transform
-	Eigen::Matrix4f getTransform() { return m_registration.getTransform(); }
+  //! Get transform
+  Eigen::Matrix4f getTransform()
+  {
+    return m_registration.getTransform();
+  }
 
-	//! Is some registering mode set
-	bool isRegistering(){ return m_registration.isRegistering(); }
+  //! Is some registering mode set
+  bool isRegistering()
+  {
+    return m_registration.isRegistering();
+  }
 
 protected:
-	//! Patch maker
-	COcPatchMaker m_patchMaker;
+  //! Patch maker
+  COcPatchMaker m_patchMaker;
 
-	//! Registration module
-	tRegistrator m_registration;
+  //! Registration module
+  tRegistrator m_registration;
 
-	//! Voxel grid filter
-	//pcl::VoxelGrid<tCloud> m_gridFilter;
+  //! Voxel grid filter
+  //pcl::VoxelGrid<tCloud> m_gridFilter;
 
-	//! Cloud buffer
-	tCloud::Ptr m_resampledCloud;
+  //! Cloud buffer
+  tCloud::Ptr m_resampledCloud;
 
-	//! Transform listener
-	tf::TransformListener m_tfListener;
+  //! Transform listener
+  tf::TransformListener m_tfListener;
 
 public:
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 }; // class CPcToOcRegistration
 
