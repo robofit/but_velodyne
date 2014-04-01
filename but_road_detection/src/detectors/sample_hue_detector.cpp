@@ -26,9 +26,9 @@
  */
 
 
-#include "rt_road_detection/detectors/sample_hue_detector.h"
+#include "but_road_detection/detectors/sample_hue_detector.h"
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int sat_min, int median_blur_ks, double hit, double miss) {
 

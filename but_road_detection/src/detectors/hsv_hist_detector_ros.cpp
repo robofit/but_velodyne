@@ -5,10 +5,10 @@
  *      Author: zdenal
  */
 
-#include "rt_road_detection/detectors/hsv_hist_detector_ros.h"
+#include "but_road_detection/detectors/hsv_hist_detector_ros.h"
 
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 HSVHistDetectorRos::HSVHistDetectorRos(ros::NodeHandle private_nh) {
 
@@ -118,7 +118,7 @@ void HSVHistDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 }
 
-void HSVHistDetectorRos::reconfigureCallback(rt_road_detection::HSVHistDetectorConfig &config, uint32_t level) {
+void HSVHistDetectorRos::reconfigureCallback(but_road_detection::HSVHistDetectorConfig &config, uint32_t level) {
 
 
 	ROS_INFO("Reconfigure callback.");

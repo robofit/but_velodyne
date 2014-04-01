@@ -26,13 +26,13 @@
  */
 
 
-#include "rt_road_detection/detectors/hsv_hist_detector.h"
+#include "but_road_detection/detectors/hsv_hist_detector.h"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 using namespace std;
 using namespace cv;
 

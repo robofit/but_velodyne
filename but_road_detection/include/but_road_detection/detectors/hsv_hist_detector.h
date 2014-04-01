@@ -11,7 +11,7 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 
 	class HSVHistFeature {

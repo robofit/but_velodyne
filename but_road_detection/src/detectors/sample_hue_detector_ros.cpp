@@ -5,10 +5,10 @@
  *      Author: zdenal
  */
 
-#include "rt_road_detection/detectors/sample_hue_detector_ros.h"
+#include "but_road_detection/detectors/sample_hue_detector_ros.h"
 
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 SampleHueDetectorRos::SampleHueDetectorRos(ros::NodeHandle private_nh) {
 
@@ -93,7 +93,7 @@ void SampleHueDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) 
 
 }
 
-void SampleHueDetectorRos::reconfigureCallback(rt_road_detection::SampleHueDetectorConfig &config, uint32_t level) {
+void SampleHueDetectorRos::reconfigureCallback(but_road_detection::SampleHueDetectorConfig &config, uint32_t level) {
 
 
 	if (config.hue_min < config.hue_max && (config.median_ks%2 == 1)) {

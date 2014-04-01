@@ -1,4 +1,4 @@
-#include "rt_road_detection/WaypointCorrector.h"
+#include "but_road_detection/WaypointCorrector.h"
 
 #define OBSTACLE_THRESH 10
 #define UNKNOWN_THRESH 100
@@ -6,7 +6,7 @@
 using namespace cv;
 using namespace std;
 
-namespace rt_road_detection
+namespace but_road_detection
 {
 
 	WaypointCorrector::WaypointCorrector(void)
@@ -43,8 +43,8 @@ namespace rt_road_detection
 		wp_service = nh.advertiseService("wp_corrector", &WaypointCorrector::serviceCallback, this);
 	}
 
-	bool WaypointCorrector::serviceCallback(rt_road_detection::getCorrectedWaypoint::Request &reqest,
-			rt_road_detection::getCorrectedWaypoint::Response &response) {
+	bool WaypointCorrector::serviceCallback(but_road_detection::getCorrectedWaypoint::Request &reqest,
+			but_road_detection::getCorrectedWaypoint::Response &response) {
 
 		//extract destiation point
 		float dest_x = originX + reqest.wp_in.x / resolution;

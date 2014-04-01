@@ -26,9 +26,9 @@
  */
 
 #include <nodelet/nodelet.h>
-#include "rt_road_detection/costmap.h"
+#include "but_road_detection/costmap.h"
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 	class CostmapNodelet : public nodelet::Nodelet
 	   {
@@ -56,4 +56,4 @@ namespace rt_road_detection {
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_EXPORT_CLASS(rt_road_detection::CostmapNodelet,nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(but_road_detection::CostmapNodelet,nodelet::Nodelet)

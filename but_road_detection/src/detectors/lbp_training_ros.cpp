@@ -5,10 +5,10 @@
  *      Author: xgoldm03
  */
 
-#include "rt_road_detection/detectors/lbp_training_ros.h"
+#include "but_road_detection/detectors/lbp_training_ros.h"
 
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 LBPTrainingRos::LBPTrainingRos(ros::NodeHandle private_nh) {
 

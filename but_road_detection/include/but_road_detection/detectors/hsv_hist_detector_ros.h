@@ -13,11 +13,11 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "rt_road_detection/detectors/hsv_hist_detector.h"
+#include "but_road_detection/detectors/hsv_hist_detector.h"
 #include <dynamic_reconfigure/server.h>
-#include "rt_road_detection/HSVHistDetectorConfig.h"
+#include "but_road_detection/HSVHistDetectorConfig.h"
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 	class HSVHistDetectorRos
 	{

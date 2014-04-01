@@ -16,7 +16,7 @@
 */
 
 
-#include "rt_road_detection/detectors/lbp/lbp.h"
+#include "but_road_detection/detectors/lbp/lbp.h"
 
 
 using namespace std;

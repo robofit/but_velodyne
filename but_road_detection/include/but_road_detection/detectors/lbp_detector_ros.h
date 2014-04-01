@@ -8,11 +8,11 @@
 #ifndef LBP_DETECTOR_ROS_H_
 #define LBP_DETECTOR_ROS_H_
 
-#include "rt_road_detection/detectors/lbp_detector.h"
+#include "but_road_detection/detectors/lbp_detector.h"
 #include <dynamic_reconfigure/server.h>
-#include "rt_road_detection/LBPDetectorConfig.h"
+#include "but_road_detection/LBPDetectorConfig.h"
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 	class LBPDetectorRos
 	{

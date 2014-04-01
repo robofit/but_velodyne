@@ -6,9 +6,9 @@
  */
 
 
-#include "rt_road_detection/costmap.h"
+#include "but_road_detection/costmap.h"
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 using namespace std;
 
 int main(int argc, char **argv)

@@ -8,11 +8,11 @@
 #ifndef SAMPLE_HUE_DETECTOR_ROS_H_
 #define SAMPLE_HUE_DETECTOR_ROS_H_
 
-#include "rt_road_detection/detectors/sample_hue_detector.h"
+#include "but_road_detection/detectors/sample_hue_detector.h"
 #include <dynamic_reconfigure/server.h>
-#include "rt_road_detection/SampleHueDetectorConfig.h"
+#include "but_road_detection/SampleHueDetectorConfig.h"
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 class SampleHueDetectorRos
 	   {

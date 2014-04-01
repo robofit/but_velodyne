@@ -15,7 +15,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 
 	class SampleHueDetector {

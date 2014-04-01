@@ -29,7 +29,7 @@
 #include <opencv2/core/core.hpp>
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/contrib/contrib.hpp>
-#include "rt_road_detection/detectors/lbp/lbp.h"
+#include "but_road_detection/detectors/lbp/lbp.h"
 
 
 #define ONE_CHANNEL 0
@@ -41,7 +41,7 @@
 
 using namespace std;
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
   class LBPDetector
   {

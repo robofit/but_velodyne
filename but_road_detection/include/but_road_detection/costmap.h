@@ -32,7 +32,7 @@
 
 #include <visualization_msgs/Marker.h>
 
-namespace rt_road_detection {
+namespace but_road_detection {
 
 	typedef  message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::CameraInfo> ApproximatePolicyScan;
 	typedef message_filters::Synchronizer<ApproximatePolicyScan> ApproximateSyncScan;

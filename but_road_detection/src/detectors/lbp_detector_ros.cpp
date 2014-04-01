@@ -5,10 +5,10 @@
  *  Author: xgoldm03 <xgoldm03@stud.fit.vutbr.cz
  */
 
-#include "rt_road_detection/detectors/lbp_detector_ros.h"
+#include "but_road_detection/detectors/lbp_detector_ros.h"
 
 
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 LBPDetectorRos::LBPDetectorRos(ros::NodeHandle private_nh) {
 
@@ -124,7 +124,7 @@ void LBPDetectorRos::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 }
 
-void LBPDetectorRos::reconfigureCallback(rt_road_detection::LBPDetectorConfig &config, uint32_t level) {
+void LBPDetectorRos::reconfigureCallback(but_road_detection::LBPDetectorConfig &config, uint32_t level) {
 
 	
 	det_->setParams(config.width_cell,config.height_cell,config.width_block,config.height_block, config.svm_threshold,config.flat_surface_in_block);

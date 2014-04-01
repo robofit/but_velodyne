@@ -3,11 +3,11 @@
 
 #include <iostream>
 #include <fstream>
-#include "rt_road_detection/WaypointCorrector.h"
+#include "but_road_detection/WaypointCorrector.h"
 
 using namespace cv;
 using namespace std;
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 WaypointCorrector *wc;
 

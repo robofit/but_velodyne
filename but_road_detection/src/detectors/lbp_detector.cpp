@@ -8,7 +8,7 @@
  *  Created on: 15.8.2013
  *  Author: xgoldm03 <xgoldm03@stud.fit.vutbr.cz
  */
-#include "rt_road_detection/detectors/lbp_detector.h"
+#include "but_road_detection/detectors/lbp_detector.h"
 
 
 #include <iostream>
@@ -17,7 +17,7 @@
 
 using namespace std;
 using namespace cv;
-using namespace rt_road_detection;
+using namespace but_road_detection;
 
 
 LBPDetector::LBPDetector(int _width_cell=32,int _height_cell=32, int _width_block=64, int _height_block=64, double _prob_min=0.3, double _prob_max=0.7,double _flat_surface_in_block=0.7, double _prob_overexposure=0.5, double _svm_threshold=0.0,bool _hue_channel=false, string svm_file=""):lbp(ROTARY_INVARIANT_LBP)
