@@ -1,0 +1,19 @@
+<package>
+  <description brief="rt_traversability_layer">
+     TBD
+  </description>
+  <author>Robo@FIT</author>
+  <license>GPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>https://github.com/robofit/robotour</url>
+  <depend package="roscpp"/>
+  <depend package="nodelet"/>
+  <depend package="costmap_2d"/>
+  <depend package="nav_msgs"/>
+  <depend package="tf"/>
+  
+  <export>
+    <costmap_2d plugin="${prefix}/costmap_plugins.xml"/>
+  </export>
+
+</package>
