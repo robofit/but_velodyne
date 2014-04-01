@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node pkg="rt_road_detection" name="hsv_hist_detector_node" type="hsv_hist_detector_node" output="screen" ns="detectors">
+   
+   <param value="$(find rt_road_detection)/config/hsv_hist_model.yaml" name="filename" />
+   
+   <remap from="rgb_in" to="/cam3d/rgb/image_rect_color"/>
+   <remap from="det_out" to="/detectors/hsv_hist"/>
+   
+   <param name="prob_miss" value="0.55"/>
+   <param name="prob_hit" value="0.45"/>
+
+   <param name="wnd_size" value="45"/>
+   <param name="wnd_step" value="20"/>
+
+   <param name="frame_skip" value="2"/>
+
+  </node>
+
+</launch>
+

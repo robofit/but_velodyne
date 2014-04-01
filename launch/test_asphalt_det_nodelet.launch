@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name="manager_name" default="stereo_nodelet_manager"/>
+
+  <group ns="detectors">
+
+    <node pkg="nodelet" type="nodelet" name="SampleAsphaltDetectorNodelet" args="load rt_road_detection/SampleHueDetectorNodelet /$(arg manager_name)" output="screen">
+     <remap from="rgb_in" to="/stereo/left/image_rect_color"/>
+   <remap from="det_out" to="/detectors/sample_asphalt"/>
+   <param name="hue_min" value="52"/> <!-- hue values for asphalt (104) -->
+   <param name="hue_max" value="100"/>
+   <param name="median_ks" value="5"/>
+   <param name="prob_hit" value="0.3"/>
+   <param name="prob_miss" value="0.7"/>
+    </node>   
+  
+  </group>  
+
+</launch>

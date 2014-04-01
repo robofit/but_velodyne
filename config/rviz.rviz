@@ -1,0 +1,237 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 81
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /TF1/Frames1
+        - /TF1/Tree1
+      Splitter Ratio: 0.621019
+    Tree Height: 543
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.588679
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: Stereo/Left
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: ""
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /stereo/left/image_rect_color
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Stereo/Left
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /stereo/right/image_color
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: Stereo/Right
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Max Color: 255; 255; 255
+      Max Intensity: 255
+      Min Color: 0; 0; 0
+      Min Intensity: 55
+      Name: Velodyne/Scan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.01
+      Style: Flat Squares
+      Topic: /velodyne/scan
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Alpha: 0.7
+      Class: rviz/Map
+      Draw Behind: false
+      Enabled: true
+      Name: det/map
+      Topic: /det2costmap/occ_map
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /detectors/sample_grass
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: det/grass
+      Normalize Range: false
+      Queue Size: 1
+      Transport Hint: raw
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /detectors/lbp
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: det/lbp
+      Normalize Range: false
+      Queue Size: 1
+      Transport Hint: raw
+      Value: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 1
+      Name: Axes
+      Radius: 0.1
+      Reference Frame: /base_link
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /det2costmap/updated_area
+      Name: updated area
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: /odom
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 56.8096
+      Focal Point:
+        X: 85.3418
+        Y: 88.8336
+        Z: -42.5299
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 1.4348
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 4.65672
+    Saved: ~
+Window Geometry:
+  Camera:
+    collapsed: false
+  Displays:
+    collapsed: false
+  Height: 851
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000013c000002b1fc020000000afb0000001600530074006500720065006f002f004c0065006600740100000043000001250000000000000000fb000000100044006900730070006c0061007900730100000043000002b1000000e300fffffffb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006700fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d0065007200610000000000ffffffff0000001600000016000000010000016f000002b1fc0200000008fb0000001600530074006500720065006f002f004c0065006600740100000043000000df0000001600fffffffb00000012006400650074002f006700720061007300730100000128000000e50000001600fffffffb0000000e006400650074002f006c006200700100000213000000e10000001600fffffffb0000001800530074006500720065006f002f005200690067006800740000000136000001060000000000000000fb0000001800530074006500720065006f002f00520069006700680074000000014e000001a60000001600fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730000000041000003f3000000b300fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000500000001c9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006400000003bfc0100000002fb0000000800540069006d00650100000000000006400000023a00fffffffb0000000800540069006d0065010000000000000450000000000000000000000389000002b100000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Stereo/Left:
+    collapsed: false
+  Stereo/Right:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1600
+  X: 0
+  Y: 25
+  det/grass:
+    collapsed: false
+  det/lbp:
+    collapsed: false
