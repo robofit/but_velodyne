@@ -25,6 +25,7 @@ find_package(catkin
   but_interaction_primitives
   message_filters
   octomap_ros
+  roslint
 )
 
 find_package(PkgConfig REQUIRED)
@@ -112,4 +113,5 @@ target_link_libraries( but_cpc_node ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME
 
 # TODO install
 
+roslint_cpp()
 

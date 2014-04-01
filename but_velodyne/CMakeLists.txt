@@ -12,6 +12,7 @@ find_package(catkin
   velodyne_msgs
   velodyne_pointcloud
   costmap_2d
+  roslint
 )
 
 find_package(PkgConfig REQUIRED)
@@ -59,3 +60,6 @@ target_link_libraries( cloud_assembler butvelo )
 install(FILES 
   nodelets.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  
+roslint_cpp()
+
