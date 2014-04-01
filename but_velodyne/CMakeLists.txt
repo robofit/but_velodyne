@@ -12,6 +12,7 @@ find_package(catkin
   velodyne_msgs
   velodyne_pointcloud
   costmap_2d
+  roslint
 )
 
 find_package(PkgConfig REQUIRED)
@@ -22,10 +23,8 @@ include_directories( ${EIGEN_INCLUDE_DIRS})
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS})
 
-catkin_package(CATKIN_DEPENDS eigen opencv)
+catkin_package(CATKIN_DEPENDS eigen opencv nav_msgs sensor_msgs)
 include_directories(include ${catkin_INCLUDE_DIRS})
-link_directories(${catkin_LIBRARY_DIRS})
-
 
 add_library( butvelo 
              src/but_velodyne_lib/laser_scan.cpp
@@ -56,7 +55,11 @@ target_link_libraries( ground_map ${OpenCV_LIBRARIES} )
 add_executable( cloud_assembler src/cloud_assembler_node.cpp )
 target_link_libraries( cloud_assembler butvelo )
 
+# TODO install nodes etc.
 
 install(FILES 
   nodelets.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+  
+roslint_cpp()
+

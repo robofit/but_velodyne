@@ -24,19 +24,17 @@ find_package(catkin
   but_env_model_msgs
   but_interaction_primitives
   message_filters
+  octomap_ros
+  roslint
 )
 
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(OGRE OGRE)
-link_directories(${OGRE_LIBRARY_DIRS})
 include_directories(include ${OGRE_INCLUDE_DIRS})
 
 find_package( Eigen REQUIRED )
 include_directories( ${EIGEN_INCLUDE_DIRS})
-
-find_package( octomap REQUIRED )
-include_directories(${OCTOMAP_INCLUDE_DIRS})
 
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
@@ -51,9 +49,6 @@ link_libraries(${PCL_LIBRARIES})
 
 catkin_package(CATKIN_DEPENDS std_msgs std_msgs visualization_msgs actionlib_msgs shape_msgs std_srvs nav_msgs moveit_msgs but_env_model_msgs but_interaction_primitives message_filters pcl_ros)
 include_directories(include ${catkin_INCLUDE_DIRS})
-link_directories(${catkin_LIBRARY_DIRS})
-
-
 
 # BUT env. model server
 set( SERVER_SOURCES src/env_model/env_model_server.cpp
@@ -116,4 +111,7 @@ target_link_libraries( but_env_model_nodelet ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE
 add_executable( but_cpc_node ${CPC_SOURCES} )
 target_link_libraries( but_cpc_node ${SRS_ENV_MODEL_LIB_NAME} ${OBJTREE_LIB_NAME})
 
+# TODO install
+
+roslint_cpp()
 
