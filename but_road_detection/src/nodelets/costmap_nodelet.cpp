@@ -28,27 +28,29 @@
 #include <nodelet/nodelet.h>
 #include "but_road_detection/costmap.h"
 
-namespace but_road_detection {
+namespace but_road_detection
+{
 
-	class CostmapNodelet : public nodelet::Nodelet
-	   {
+class CostmapNodelet : public nodelet::Nodelet
+{
 
-		boost::shared_ptr<TraversabilityCostmap> costmap_;
+  boost::shared_ptr<TraversabilityCostmap> costmap_;
 
-		virtual void onInit();
+  virtual void onInit();
 
-	   };
+};
 
 
-	void CostmapNodelet::onInit() {
+void CostmapNodelet::onInit()
+{
 
-		ros::NodeHandle &private_nh = getPrivateNodeHandle();
+  ros::NodeHandle &private_nh = getPrivateNodeHandle();
 
-		costmap_.reset(new TraversabilityCostmap(private_nh));
+  costmap_.reset(new TraversabilityCostmap(private_nh));
 
-		NODELET_INFO("TraversabilityCostmapNodelet loaded.");
+  NODELET_INFO("TraversabilityCostmapNodelet loaded.");
 
-	}
+}
 
 } // namespace
 
@@ -56,4 +58,4 @@ namespace but_road_detection {
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_EXPORT_CLASS(but_road_detection::CostmapNodelet,nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(but_road_detection::CostmapNodelet, nodelet::Nodelet)

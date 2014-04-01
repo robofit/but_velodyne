@@ -30,7 +30,8 @@
 
 using namespace but_road_detection;
 
-SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int sat_min, int median_blur_ks, double hit, double miss) {
+SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int sat_min, int median_blur_ks, double hit, double miss)
+{
 
 
   hue_min_ = hsv_min;
@@ -44,82 +45,91 @@ SampleHueDetector::SampleHueDetector(int hsv_min, int hsv_max, int sat_min, int 
 
 }
 
-SampleHueDetector::~SampleHueDetector() {
+SampleHueDetector::~SampleHueDetector()
+{
 
 
 }
 
-bool SampleHueDetector::setProbs(double hit, double miss) {
+bool SampleHueDetector::setProbs(double hit, double miss)
+{
 
-	prob_hit_ = hit;
-	prob_miss_ = miss;
+  prob_hit_ = hit;
+  prob_miss_ = miss;
 
-	return true;
-
-}
-
-bool SampleHueDetector::setParams(int hue_min, int hue_max, int median_blur_ks) {
-
-	// TODO check param values
-	hue_min_ = hue_min;
-	hue_max_ = hue_max;
-	median_blur_ks_ = median_blur_ks;
-
-	return true;
+  return true;
 
 }
 
+bool SampleHueDetector::setParams(int hue_min, int hue_max, int median_blur_ks)
+{
+
+  // TODO check param values
+  hue_min_ = hue_min;
+  hue_max_ = hue_max;
+  median_blur_ks_ = median_blur_ks;
+
+  return true;
+
+}
 
 
-bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out) {
+
+bool SampleHueDetector::detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out)
+{
 
   cv::Mat hsv;
 
   // we don't need high level of details
-  cv::GaussianBlur(in->image, hsv,cv::Size(11,11),0);
+  cv::GaussianBlur(in->image, hsv, cv::Size(11, 11), 0);
 
-  if (in->encoding == "rgb8") cv::cvtColor( hsv, hsv, CV_RGB2HSV ); // Hue in range 0-360
-  else if ((in->encoding == "bgr8")) cv::cvtColor( hsv, hsv, CV_BGR2HSV );
-  else {
+  if (in->encoding == "rgb8") cv::cvtColor(hsv, hsv, CV_RGB2HSV);   // Hue in range 0-360
+  else if ((in->encoding == "bgr8")) cv::cvtColor(hsv, hsv, CV_BGR2HSV);
+  else
+  {
 
-    ROS_WARN_THROTTLE(1,"Strange encoding!");
+    ROS_WARN_THROTTLE(1, "Strange encoding!");
     return false;
   }
 
   std::vector<cv::Mat> hsv_vec;
-  cv::split(hsv,hsv_vec);
+  cv::split(hsv, hsv_vec);
 
   cv::Mat_<float> bin_mask(hsv_vec[0]);
 
   bin_mask.setTo(0.5);
 
-  for(int row = 0; row < hsv_vec[0].rows; row++)
-  for(int col = 0; col < hsv_vec[0].cols; col++) {
+  for (int row = 0; row < hsv_vec[0].rows; row++)
+    for (int col = 0; col < hsv_vec[0].cols; col++)
+    {
 
-    	int overexposed = 0;
+      int overexposed = 0;
 
-    	if (in->image.at<cv::Vec3b>(row,col)[0] > 247) overexposed++;
-    	if (in->image.at<cv::Vec3b>(row,col)[1] > 247) overexposed++;
-    	if (in->image.at<cv::Vec3b>(row,col)[2] > 247) overexposed++;
+      if (in->image.at<cv::Vec3b>(row, col)[0] > 247) overexposed++;
+      if (in->image.at<cv::Vec3b>(row, col)[1] > 247) overexposed++;
+      if (in->image.at<cv::Vec3b>(row, col)[2] > 247) overexposed++;
 
-    	// deal with overexposed areas
-    	if (overexposed > 1) {
+      // deal with overexposed areas
+      if (overexposed > 1)
+      {
 
-    		bin_mask.at<float>(row,col) = 0.5;
+        bin_mask.at<float>(row, col) = 0.5;
 
-    	} else {
+      }
+      else
+      {
 
-    		if (hsv_vec[0].at<uint8_t>(row,col) > hue_min_ && hsv_vec[0].at<uint8_t>(row,col) < hue_max_ && hsv_vec[1].at<uint8_t>(row,col) > 28) bin_mask.at<float>(row,col) = prob_hit_;
-    		else bin_mask.at<float>(row,col) = prob_miss_;
+        if (hsv_vec[0].at<uint8_t>(row, col) > hue_min_ && hsv_vec[0].at<uint8_t>(row, col) < hue_max_ && hsv_vec[1].at<uint8_t>(row, col) > 28) bin_mask.at<float>(row, col) = prob_hit_;
+        else bin_mask.at<float>(row, col) = prob_miss_;
 
 
-    	}
+      }
 
 
-  };
+    };
 
   // post-filter some small mess in mask
-  cv::medianBlur(bin_mask,bin_mask,median_blur_ks_);
+  cv::medianBlur(bin_mask, bin_mask, median_blur_ks_);
 
   out->encoding = sensor_msgs::image_encodings::TYPE_32FC1;
   //out->encoding = sensor_msgs::image_encodings::MONO8;

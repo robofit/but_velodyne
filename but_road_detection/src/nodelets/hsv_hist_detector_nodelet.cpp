@@ -28,27 +28,29 @@
 #include <nodelet/nodelet.h>
 #include "but_road_detection/detectors/hsv_hist_detector_ros.h"
 
-namespace but_road_detection {
+namespace but_road_detection
+{
 
-	class HSVHistDetectorNodelet : public nodelet::Nodelet
-	   {
+class HSVHistDetectorNodelet : public nodelet::Nodelet
+{
 
-		boost::shared_ptr<HSVHistDetectorRos> det_;
+  boost::shared_ptr<HSVHistDetectorRos> det_;
 
-		virtual void onInit();
+  virtual void onInit();
 
-	   };
+};
 
 
-	void HSVHistDetectorNodelet::onInit() {
+void HSVHistDetectorNodelet::onInit()
+{
 
-		ros::NodeHandle &private_nh = getPrivateNodeHandle();
+  ros::NodeHandle &private_nh = getPrivateNodeHandle();
 
-		det_.reset(new HSVHistDetectorRos(private_nh));
+  det_.reset(new HSVHistDetectorRos(private_nh));
 
-		NODELET_INFO("HSVHistDetectorNodelet loaded.");
+  NODELET_INFO("HSVHistDetectorNodelet loaded.");
 
-	}
+}
 
 } // namespace
 
@@ -56,4 +58,4 @@ namespace but_road_detection {
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_EXPORT_CLASS(but_road_detection::HSVHistDetectorNodelet,nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(but_road_detection::HSVHistDetectorNodelet, nodelet::Nodelet)

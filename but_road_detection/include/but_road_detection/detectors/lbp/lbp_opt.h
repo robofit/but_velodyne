@@ -1,8 +1,8 @@
-// 
+//
 //  lbp.cpp
 //  Roman Juranek, DCGM, FIT, BUT, Brno
 //  ijuranek@fit.vutbr.cz
-//  
+//
 //  NOTES
 //  Order of samples in LBP code
 //  0 1 2
@@ -28,16 +28,16 @@ extern "C" {
 /// The function calculates 8 bit LBP from 3x3 px local area. No post processing is done.
 /// \param src Source image
 /// \param dst Result LBP image
-void calc_LBP11_sse(IplImage * src, IplImage * dst);
+  void calc_LBP11_sse(IplImage * src, IplImage * dst);
 
 /// 'Stupid' calculation of LBP image of the 'src' and store it in 'dst'
 /// Both images should be one channel, IPL_DEPTH_8U and same size.
 /// The function calculates 8 bit LBP from 3x3 px local area. No post processing is done.
 /// \param src Source image
 /// \param dst Result LBP image
-void calc_LBP11_simple(IplImage * src, IplImage * dst);
+  void calc_LBP11_simple(IplImage * src, IplImage * dst);
 
-void calc_CSLBP11_simple(IplImage * src, IplImage * dst);
+  void calc_CSLBP11_simple(IplImage * src, IplImage * dst);
 
 #ifdef __cplusplus
 }

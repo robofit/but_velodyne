@@ -18,12 +18,13 @@
 #include <pmmintrin.h>
 
 /// SSE 128 bit integer.
-typedef union {
-    signed char i8[16];     ///< 8 bit signed integer array
-    unsigned char u8[16];   ///< 8 bit unsigned integer array
-    int i32[4];
-    unsigned u32[4];
-    __m128i q;              ///< The SSE 128 bit type
+typedef union
+{
+  signed char i8[16];     ///< 8 bit signed integer array
+  unsigned char u8[16];   ///< 8 bit unsigned integer array
+  int i32[4];
+  unsigned u32[4];
+  __m128i q;              ///< The SSE 128 bit type
 } int128;
 
 /// Table mapping

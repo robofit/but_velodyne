@@ -28,27 +28,29 @@
 #include <nodelet/nodelet.h>
 #include "but_road_detection/detectors/lbp_detector_ros.h"
 
-namespace but_road_detection {
+namespace but_road_detection
+{
 
-	class LBPDetectorNodelet : public nodelet::Nodelet
-	   {
+class LBPDetectorNodelet : public nodelet::Nodelet
+{
 
-		boost::shared_ptr<LBPDetectorRos> det_;
+  boost::shared_ptr<LBPDetectorRos> det_;
 
-		virtual void onInit();
+  virtual void onInit();
 
-	   };
+};
 
 
-	void LBPDetectorNodelet::onInit() {
+void LBPDetectorNodelet::onInit()
+{
 
-		ros::NodeHandle &private_nh = getPrivateNodeHandle();
+  ros::NodeHandle &private_nh = getPrivateNodeHandle();
 
-		det_.reset(new LBPDetectorRos(private_nh));
+  det_.reset(new LBPDetectorRos(private_nh));
 
-		NODELET_INFO("SampleHueDetectorNodelet loaded.");
+  NODELET_INFO("SampleHueDetectorNodelet loaded.");
 
-	}
+}
 
 } // namespace
 
@@ -56,4 +58,4 @@ namespace but_road_detection {
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_EXPORT_CLASS(but_road_detection::LBPDetectorNodelet,nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(but_road_detection::LBPDetectorNodelet, nodelet::Nodelet)

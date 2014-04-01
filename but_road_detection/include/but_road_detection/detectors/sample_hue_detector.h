@@ -15,33 +15,35 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-namespace but_road_detection {
+namespace but_road_detection
+{
 
 
-	class SampleHueDetector {
+class SampleHueDetector
+{
 
-		public:
+public:
 
-			SampleHueDetector(int hue_min, int hue_max, int sat_min, int median_blur_ks, double hit, double miss);
-			~SampleHueDetector();
-			bool detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out);
+  SampleHueDetector(int hue_min, int hue_max, int sat_min, int median_blur_ks, double hit, double miss);
+  ~SampleHueDetector();
+  bool detect(cv_bridge::CvImageConstPtr in, cv_bridge::CvImagePtr out);
 
-			bool setParams(int hue_min, int hue_max, int median_blur_ks);
-			bool setProbs(double hit, double miss);
+  bool setParams(int hue_min, int hue_max, int median_blur_ks);
+  bool setProbs(double hit, double miss);
 
-		protected:
+protected:
 
-			int hue_min_;
-			int hue_max_;
-			int sat_min_;
-			int median_blur_ks_;
+  int hue_min_;
+  int hue_max_;
+  int sat_min_;
+  int median_blur_ks_;
 
-			double prob_hit_;
-			double prob_miss_;
+  double prob_hit_;
+  double prob_miss_;
 
-		private:
+private:
 
-	};
+};
 
 
 };

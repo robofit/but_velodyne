@@ -43,9 +43,7 @@ generate_dynamic_reconfigure_options(
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS})
 
-catkin_package(CATKIN_DEPENDS message_runtime geometry_msgs nav_msgs sensor_msgs stereo_msgs
-               INCLUDE_DIRS include
-               LIBRARIES ${PROJECT_NAME})
+catkin_package(CATKIN_DEPENDS message_runtime geometry_msgs nav_msgs sensor_msgs stereo_msgs)
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
