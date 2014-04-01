@@ -6,7 +6,7 @@
  */
 
 
-#include<rt_traversability_layer/traversability_layer.h>
+#include<but_costmap_plugins/traversability_layer.h>
 #include<costmap_2d/costmap_math.h>
 
 using costmap_2d::NO_INFORMATION;
