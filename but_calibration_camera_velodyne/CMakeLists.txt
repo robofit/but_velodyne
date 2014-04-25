@@ -31,7 +31,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 find_package(PCL 1.7 REQUIRED) 
-include_directories(${PCL_INCLUDE_DIRS}) 
+include_directories(${PCL_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include/but_calibration_camera_velodyne )
 link_directories(${PCL_LIBRARY_DIRS}) 
 add_definitions(${PCL_DEFINITIONS}) 
 
