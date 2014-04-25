@@ -9,8 +9,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/io/pcd_io.h>
 
-#include <Velodyne.h>
-#include <Similarity.h>
+#include <but_calibration_camera_velodyne/Velodyne.h>
+#include <but_calibration_camera_velodyne/Similarity.h>
 
 namespace but_calibration_camera_velodyne
 {

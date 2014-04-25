@@ -20,9 +20,9 @@
 
 #include <ros/assert.h>
 
-#include <Exceptions.h>
-#include <Image.h>
-#include <Velodyne.h>
+#include <but_calibration_camera_velodyne/Exceptions.h>
+#include <but_calibration_camera_velodyne/Image.h>
+#include <but_calibration_camera_velodyne/Velodyne.h>
 
 namespace but_calibration_camera_velodyne {
 

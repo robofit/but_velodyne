@@ -23,9 +23,9 @@
 #include <pcl/sample_consensus/sac_model_sphere.h>
 #include <pcl/sample_consensus/sac_model.h>
 
-#include <Velodyne.h>
-#include <Image.h>
-#include <Calibration.h>
+#include <but_calibration_camera_velodyne/Velodyne.h>
+#include <but_calibration_camera_velodyne/Image.h>
+#include <but_calibration_camera_velodyne/Calibration.h>
 
 namespace but_calibration_camera_velodyne
 {

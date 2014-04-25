@@ -8,9 +8,9 @@
 #include <vector>
 #include <cmath>
 
-#include "Velodyne.h"
-#include "Exceptions.h"
-#include "Image.h"
+#include "but_calibration_camera_velodyne/Velodyne.h"
+#include "but_calibration_camera_velodyne/Exceptions.h"
+#include "but_calibration_camera_velodyne/Image.h"
 
 #include <pcl/common/eigen.h>
 #include <pcl/common/transforms.h>

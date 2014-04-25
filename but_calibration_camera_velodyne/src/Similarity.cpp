@@ -5,7 +5,7 @@
  *      Author: ivelas
  */
 
-#include "Similarity.h"
+#include "but_calibration_camera_velodyne/Similarity.h"
 
 using namespace std;
 using namespace cv;

@@ -25,10 +25,10 @@
 #include <pcl/common/eigen.h>
 #include <pcl/common/transforms.h>
 
-#include <Velodyne.h>
-#include <Calibration.h>
-#include <Calibration3DMarker.h>
-#include <Image.h>
+#include <but_calibration_camera_velodyne/Velodyne.h>
+#include <but_calibration_camera_velodyne/Calibration.h>
+#include <but_calibration_camera_velodyne/Calibration3DMarker.h>
+#include <but_calibration_camera_velodyne/Image.h>
 
 using namespace cv;
 using namespace std;

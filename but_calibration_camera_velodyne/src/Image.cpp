@@ -5,7 +5,7 @@
  *      Author: ivelas
  */
 
-#include "Image.h"
+#include "but_calibration_camera_velodyne/Image.h"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <algorithm>
 

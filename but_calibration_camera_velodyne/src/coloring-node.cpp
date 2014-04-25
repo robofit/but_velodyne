@@ -28,8 +28,8 @@
 #include <pcl/common/eigen.h>
 #include <pcl/common/transforms.h>
 
-#include <Image.h>
-#include <Velodyne.h>
+#include <but_calibration_camera_velodyne/Image.h>
+#include <but_calibration_camera_velodyne/Velodyne.h>
 
 using namespace std;
 using namespace cv;

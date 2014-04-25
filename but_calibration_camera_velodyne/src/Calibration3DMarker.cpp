@@ -5,7 +5,7 @@
  *      Author: ivelas
  */
 
-#include "Calibration3DMarker.h"
+#include "but_calibration_camera_velodyne/Calibration3DMarker.h"
 
 #include <ros/assert.h>
 
