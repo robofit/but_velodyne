@@ -25,9 +25,9 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <but_velodyne/cloud_assembler.h>
-#include <but_velodyne/parameters_list.h>
-#include <but_velodyne/topics_list.h>
+#include <but_velodyne_proc/cloud_assembler.h>
+#include <but_velodyne_proc/parameters_list.h>
+#include <but_velodyne_proc/topics_list.h>
 
 #include <cmath>
 
@@ -39,7 +39,7 @@
 
 #include <costmap_2d/cost_values.h>
 
-namespace but_velodyne
+namespace but_velodyne_proc
 {
 
 
@@ -230,4 +230,4 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 }
 
 
-} // namespace but_velodyne
+} // namespace but_velodyne_proc

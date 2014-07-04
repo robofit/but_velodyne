@@ -27,14 +27,14 @@
 
 #include <ros/ros.h>
 
-#include <but_velodyne/cloud_assembler.h>
+#include <but_velodyne_proc/cloud_assembler.h>
 
 
 /** Main node entry point. */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "but_velodyne_cloud_assembler_node");
-  but_velodyne::CloudAssembler scan(ros::NodeHandle(), ros::NodeHandle("~"));
+  ros::init(argc, argv, "but_velodyne_proc_cloud_assembler_node");
+  but_velodyne_proc::CloudAssembler scan(ros::NodeHandle(), ros::NodeHandle("~"));
   ros::spin();
 
   return 0;

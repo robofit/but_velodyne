@@ -29,10 +29,10 @@
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
 
-#include <but_velodyne/ground_map.h>
+#include <but_velodyne_proc/ground_map.h>
 
 
-namespace but_velodyne
+namespace but_velodyne_proc
 {
 
 class GroundMapNodelet: public nodelet::Nodelet
@@ -50,11 +50,11 @@ private:
   boost::shared_ptr<GroundMap> ground_map_;
 };
 
-} // namespace but_velodyne
+} // namespace but_velodyne_proc
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_DECLARE_CLASS(but_velodyne,
+PLUGINLIB_DECLARE_CLASS(but_velodyne_proc,
                         GroundMapNodelet,
-                        but_velodyne::GroundMapNodelet,
+                        but_velodyne_proc::GroundMapNodelet,
                         nodelet::Nodelet);

@@ -32,7 +32,7 @@
 #include <string>
 
 
-namespace but_velodyne
+namespace but_velodyne_proc
 {
 /**
   * laser scan - input topics

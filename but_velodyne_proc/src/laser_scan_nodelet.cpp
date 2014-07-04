@@ -29,10 +29,10 @@
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
 
-#include <but_velodyne/laser_scan.h>
+#include <but_velodyne_proc/laser_scan.h>
 
 
-namespace but_velodyne
+namespace but_velodyne_proc
 {
 
 class LaserScanNodelet: public nodelet::Nodelet
@@ -50,11 +50,11 @@ private:
   boost::shared_ptr<LaserScan> laser_scan_;
 };
 
-} // namespace but_velodyne
+} // namespace but_velodyne_proc
 
 
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_DECLARE_CLASS(but_velodyne,
+PLUGINLIB_DECLARE_CLASS(but_velodyne_proc,
                         LaserScanNodelet,
-                        but_velodyne::LaserScanNodelet,
+                        but_velodyne_proc::LaserScanNodelet,
                         nodelet::Nodelet);

@@ -27,14 +27,14 @@
 
 #include <ros/ros.h>
 
-#include <but_velodyne/ground_map.h>
+#include <but_velodyne_proc/ground_map.h>
 
 
 /** Main node entry point. */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "but_velodyne_groundmap_node");
-  but_velodyne::GroundMap scan(ros::NodeHandle(), ros::NodeHandle("~"));
+  ros::init(argc, argv, "but_velodyne_proc_groundmap_node");
+  but_velodyne_proc::GroundMap scan(ros::NodeHandle(), ros::NodeHandle("~"));
   ros::spin();
 
   return 0;

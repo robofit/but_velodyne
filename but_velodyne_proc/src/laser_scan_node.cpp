@@ -27,14 +27,14 @@
 
 #include <ros/ros.h>
 
-#include <but_velodyne/laser_scan.h>
+#include <but_velodyne_proc/laser_scan.h>
 
 
 /** Main node entry point. */
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "but_velodyne_laserscan_node");
-  but_velodyne::LaserScan scan(ros::NodeHandle(), ros::NodeHandle("~"));
+  ros::init(argc, argv, "but_velodyne_proc_laserscan_node");
+  but_velodyne_proc::LaserScan scan(ros::NodeHandle(), ros::NodeHandle("~"));
   ros::spin();
 
   return 0;

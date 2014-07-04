@@ -1,6 +1,6 @@
 <library path="lib/libbutvelo_laserscan_nodelet">
-  <class name="but_velodyne/LaserScanNodelet"
-         type="but_velodyne::LaserScanNodelet"
+  <class name="but_velodyne_proc/LaserScanNodelet"
+         type="but_velodyne_proc::LaserScanNodelet"
          base_class_type="nodelet::Nodelet">
     <description>
       Simulates a single laser scan from Velodyne 3D LIDAR point cloud.
@@ -8,8 +8,8 @@
   </class>
 </library>
 <library path="lib/libbutvelo_groundmap_nodelet">
-  <class name="but_velodyne/GroundMapNodelet"
-         type="but_velodyne::GroundMapNodelet"
+  <class name="but_velodyne_proc/GroundMapNodelet"
+         type="but_velodyne_proc::GroundMapNodelet"
          base_class_type="nodelet::Nodelet">
     <description>
       Estimates occupancy grid representing "safe ground" around robot from Velodyne 3D LIDAR point cloud.

@@ -12,12 +12,12 @@
   </include>
 
   <!-- start cloud nodelet -->
-  <include file="$(find but_velodyne)/launch/cloud_nodelet.launch">
+  <include file="$(find but_velodyne_proc)/launch/cloud_nodelet.launch">
     <arg name="calibration" value="$(arg calibration)"/>
   </include>
 
   <!-- start transform nodelet -->
-  <!--include file="$(find but_velodyne)/launch/transform_nodelet.launch">
+  <!--include file="$(find but_velodyne_proc)/launch/transform_nodelet.launch">
     <arg name="calibration" value="$(arg calibration)"/>
   </include-->
 

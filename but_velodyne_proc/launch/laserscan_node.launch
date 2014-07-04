@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="calibration" default="" />
-  <node pkg="but_velodyne" type="laser_scan" name="but_velodyne_laserscan_node" output="screen">
+  <node pkg="but_velodyne_proc" type="laser_scan" name="but_velodyne_proc_laserscan_node" output="screen">
     <remap from="points_in" to="/velodyne_points" />
     <remap from="scan_out" to="/velodyne/scan" />
     <param name="min_z" value="0.1" />

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Run velodyne publisher -->
-    <include file="$(find but_velodyne)/launch/32e_points.launch">
-        <arg name="calibration" value="$(find but_velodyne)/config/32db.yaml"/>
+    <include file="$(find but_velodyne_proc)/launch/32e_points.launch">
+        <arg name="calibration" value="$(find but_velodyne_proc)/config/32db.yaml"/>
     </include>
 </launch>
 

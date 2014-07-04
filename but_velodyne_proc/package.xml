@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>but_velodyne</name>
+  <name>but_velodyne_proc</name>
   <version>0.0.5</version>
   <description>ROS nodes and nodelets for Velodyne 3D LIDARs HDL-32e which provide point cloud publishing and processing.</description>
 
@@ -8,9 +8,9 @@
 
   <license>LGPL</license>
   
-  <url type="website">http://ros.org/wiki/but_velodyne</url>
-  <url type="repository">https://github.com/robofit/but_env_percp</url>
-  <url type="bugtracker">https://github.com/robofit/but_env_percp/issues</url>
+  <url type="website">http://ros.org/wiki/but_velodyne_proc</url>
+  <url type="repository">https://github.com/robofit/but_velodyne</url>
+  <url type="bugtracker">https://github.com/robofit/but_velodyne/issues</url>
   
   <author>Michal Spanel (spanel@fit.vutbr.cz)</author>
 

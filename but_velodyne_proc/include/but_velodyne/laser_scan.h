@@ -26,8 +26,8 @@
  */
 
 // Include guard
-#ifndef but_velodyne_laser_scan_H
-#define but_velodyne_laser_scan_H
+#ifndef but_velodyne_proc_laser_scan_H
+#define but_velodyne_proc_laser_scan_H
 
 #include <ros/ros.h>
 #include <tf/message_filter.h>
@@ -49,7 +49,7 @@ typedef pcl::PointCloud<VPoint> VPointCloud;
 template bool pcl_ros::transformPointCloud<VPoint>(const std::string &, const VPointCloud &, VPointCloud &, const tf::TransformListener &);
 
 
-namespace but_velodyne
+namespace but_velodyne_proc
 {
 
 /******************************************************************************
@@ -135,6 +135,6 @@ private:
 };
 
 
-} // namespace but_velodyne
+} // namespace but_velodyne_proc
 
-#endif // but_velodyne_laser_scan_H
+#endif // but_velodyne_proc_laser_scan_H

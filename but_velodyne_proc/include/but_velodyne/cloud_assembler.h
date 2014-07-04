@@ -26,8 +26,8 @@
  */
 
 // Include guard
-#ifndef but_velodyne_cloud_assembler_H
-#define but_velodyne_cloud_assembler_H
+#ifndef but_velodyne_proc_cloud_assembler_H
+#define but_velodyne_proc_cloud_assembler_H
 
 #include <ros/ros.h>
 #include <tf/message_filter.h>
@@ -68,7 +68,7 @@ typedef boost::circular_buffer<TPointCloud> CloudBuffer;
 template bool pcl_ros::transformPointCloud<TPoint>(const std::string &, const TPointCloud &, TPointCloud &, const tf::TransformListener &);
 
 
-namespace but_velodyne
+namespace but_velodyne_proc
 {
 
 /******************************************************************************
@@ -109,6 +109,6 @@ private:
 };
 
 
-} // namespace but_velodyne
+} // namespace but_velodyne_proc
 
-#endif // but_velodyne_cloud_assembler_H
+#endif // but_velodyne_proc_cloud_assembler_H
