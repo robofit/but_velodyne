@@ -1,0 +1,6 @@
+but_calibration_camera_velodyne:
+  camera_frame_topic: /cam3d/rgb/image_rect_color
+  camera_info_topic: /cam3d/rgb/camera_info
+  marker: {circles_distance: 0.23, circles_radius: 0.0825}
+  velodyne_topic: /velodyne_points
+
