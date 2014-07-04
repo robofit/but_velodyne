@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <rosparam command="load" file="$(find but_calibration_camera_velodyne)/conf/calibration.yaml" />
-  <node pkg="but_calibration_camera_velodyne" type="calibration" name="calibration_coarse" output="screen" args="-r">
-  </node>
-</launch>
-

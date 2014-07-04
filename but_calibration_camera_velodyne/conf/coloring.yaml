@@ -1,4 +1,0 @@
-but_calibration_camera_velodyne:
-  6DoF: [0.00558186, -0.088851, -0.0863633, 0, 0, 0]
-  velodyne_color_topic: /velodyne_colored_points
-

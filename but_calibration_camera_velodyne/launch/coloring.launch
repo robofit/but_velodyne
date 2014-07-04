@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <rosparam command="load" file="$(find but_calibration_camera_velodyne)/conf/calibration.yaml" />
-  <rosparam command="load" file="$(find but_calibration_camera_velodyne)/conf/coloring.yaml" />
-  <node pkg="but_calibration_camera_velodyne" type="coloring" name="coloring" output="screen">
-  </node>
-</launch>
-
