@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="calibration" default="" />
+  <node pkg="nodelet" type="nodelet" name="cloud_nodelet"
+        args="load velodyne_pointcloud/CloudNodelet velodyne_nodelet_manager" output="screen">
+    <param name="calibration" value="$(arg calibration)"/>
+    <param name="min_range" value="0.5"/>
+    <param name="max_range" value="50.0"/>
+  </node>
+</launch>
+

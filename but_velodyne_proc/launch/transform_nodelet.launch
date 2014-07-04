@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="calibration" default="" />
+  <node pkg="nodelet" type="nodelet" name="transform_nodelet"
+        args="load velodyne_pointcloud/TransformNodelet velodyne_nodelet_manager" >
+    <param name="calibration" value="$(arg calibration)"/>
+    <param name="frame_id" value="/velodyne"/>
+  </node>
+</launch>
+
