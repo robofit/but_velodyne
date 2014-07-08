@@ -7,8 +7,9 @@
  *
  * This file is part of software developed by Robo@FIT group.
  *
- * Author: Zdenek Materna (imaterna@fit.vutbr.cz)
+ * Author: Michal Spanel (spanel@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
+ * Date: 04/09/2013
  *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -28,32 +29,29 @@
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
 
-#include <but_velodyne_proc/ground_map.h>
+#include <but_velodyne_proc/cloud_assembler.h>
 
+namespace but_velodyne_proc {
 
-namespace but_velodyne_proc
-{
-
-class GroundMapNodelet: public nodelet::Nodelet
-{
+class CloudAssemblerNodelet: public nodelet::Nodelet {
 public:
-  GroundMapNodelet() {}
-  ~GroundMapNodelet() {}
+	CloudAssemblerNodelet() {
+	}
+	~CloudAssemblerNodelet() {
+	}
 
 private:
-  virtual void onInit()
-  {
-    ground_map_.reset(new GroundMap(getNodeHandle(), getPrivateNodeHandle()));
-  }
+	virtual void onInit() {
+		cloud_assembler_.reset(
+				new CloudAssembler(getNodeHandle(), getPrivateNodeHandle()));
+	}
 
-  boost::shared_ptr<GroundMap> ground_map_;
+	boost::shared_ptr<CloudAssembler> cloud_assembler_;
 };
 
 } // namespace but_velodyne_proc
 
-
 // Register this plugin with pluginlib. Names must match nodelets.xml.
-PLUGINLIB_DECLARE_CLASS(but_velodyne_proc,
-                        GroundMapNodelet,
-                        but_velodyne_proc::GroundMapNodelet,
-                        nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(but_velodyne_proc, CloudAssemblerNodelet,
+		but_velodyne_proc::CloudAssemblerNodelet, nodelet::Nodelet);
+

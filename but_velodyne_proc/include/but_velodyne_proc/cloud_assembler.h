@@ -106,6 +106,25 @@ private:
 
   bool getRobotPose(ros::Time time, geometry_msgs::PoseStamped& res);
 
+  int buffer_length_;
+  double dist_th_;
+  double max_dist_th_;
+
+  double min_x_;
+  double max_x_;
+  double min_y_;
+  double max_y_;
+  double min_z_;
+  double max_z_;
+
+  double filter_cloud_res_;
+
+  double filter_cloud_k_;
+  double filter_cloud_th_;
+
+  std::string fixed_frame_;
+  std::string robot_frame_;
+
 };
 
 
