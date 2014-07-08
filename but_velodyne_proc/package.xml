@@ -26,7 +26,6 @@
   <build_depend>velodyne_pointcloud</build_depend>
   <build_depend>costmap_2d</build_depend>
   <build_depend>cmake_modules</build_depend>
-  <build_depend>opencv</build_depend>
   <build_depend>roslint</build_depend>
 
   <run_depend>nodelet</run_depend>
@@ -37,8 +36,6 @@
   <run_depend>velodyne_msgs</run_depend>
   <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>costmap_2d</run_depend>
-  <run_depend>eigen</run_depend>
-  <run_depend>opencv</run_depend>
   
   <export>
     <nodelet plugin="${prefix}/nodelets.xml" />

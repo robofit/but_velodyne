@@ -24,7 +24,7 @@ include_directories( ${EIGEN_INCLUDE_DIRS})
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS})
 
-catkin_package(CATKIN_DEPENDS eigen opencv nav_msgs sensor_msgs)
+catkin_package(CATKIN_DEPENDS velodyne_msgs nav_msgs sensor_msgs)
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_library( butvelo 
