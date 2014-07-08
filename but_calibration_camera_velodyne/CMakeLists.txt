@@ -19,6 +19,7 @@ find_package(catkin
   image_geometry
   pcl_ros
   velodyne_pointcloud
+  roslint
 )
 
 catkin_package(CATKIN_DEPENDS std_msgs )
@@ -41,4 +42,5 @@ add_executable(coloring src/coloring-node.cpp src/Image.cpp src/Velodyne.cpp )
 target_link_libraries(coloring ${PCL_LIBRARIES}) 
 target_link_libraries(coloring ${catkin_LIBRARIES})
 
+roslint_cpp()
 
