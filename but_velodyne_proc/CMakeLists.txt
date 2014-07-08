@@ -55,6 +55,10 @@ target_link_libraries( ground_map ${OpenCV_LIBRARIES} )
 add_executable( cloud_assembler src/cloud_assembler_node.cpp )
 target_link_libraries( cloud_assembler butvelo )
 
+# cloud assembler map nodelet
+add_library( butvelo_cloudassembler_nodelet src/cloud_assembler_nodelet.cpp )
+target_link_libraries( butvelo_cloudassembler_nodelet butvelo )
+
 # TODO install nodes etc.
 
 install(FILES 
