@@ -3,6 +3,7 @@ project(but_velodyne_proc)
 
 find_package(catkin 
   REQUIRED COMPONENTS
+  cmake_modules
   roscpp
   nodelet
   pcl_ros
