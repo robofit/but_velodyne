@@ -18,6 +18,7 @@ find_package(catkin
   image_transport
   image_geometry
   pcl_ros
+  velodyne_pointcloud
 )
 
 catkin_package(CATKIN_DEPENDS std_msgs )
