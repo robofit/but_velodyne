@@ -7,9 +7,8 @@
  *
  * This file is part of software developed by Robo@FIT group.
  *
- * Author: Michal Spanel (spanel@fit.vutbr.cz)
+ * Author: Zdenek Materna (imaterna@fit.vutbr.cz)
  * Supervised by: Michal Spanel (spanel@fit.vutbr.cz)
- * Date: 04/09/2013
  *
  * This file is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
