@@ -27,9 +27,9 @@ catkin_package(CATKIN_DEPENDS eigen opencv nav_msgs sensor_msgs)
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_library( butvelo 
-             src/but_velodyne_proc_lib/laser_scan.cpp
-             src/but_velodyne_proc_lib/ground_map.cpp
-             src/but_velodyne_proc_lib/cloud_assembler.cpp )
+             src/but_velodyne_lib/laser_scan.cpp
+             src/but_velodyne_lib/ground_map.cpp
+             src/but_velodyne_lib/cloud_assembler.cpp )
              
 target_link_libraries(butvelo ${catkin_LIBRARIES} ${OGRE_LIBRARIES})
 
@@ -54,6 +54,10 @@ target_link_libraries( ground_map ${OpenCV_LIBRARIES} )
 # Cloud assembler node
 add_executable( cloud_assembler src/cloud_assembler_node.cpp )
 target_link_libraries( cloud_assembler butvelo )
+
+# cloud assembler map nodelet
+add_library( butvelo_cloudassembler_nodelet src/cloud_assembler_nodelet.cpp )
+target_link_libraries( butvelo_cloudassembler_nodelet butvelo )
 
 # TODO install nodes etc.
 

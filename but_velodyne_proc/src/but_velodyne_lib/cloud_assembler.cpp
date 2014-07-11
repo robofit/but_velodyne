@@ -45,18 +45,49 @@ namespace but_velodyne_proc
 
 CloudAssembler::CloudAssembler(ros::NodeHandle nh, ros::NodeHandle private_nh)
   : nh_(nh)
-  , private_nh_(private_nh)
+  , private_nh_(private_nh),
+  buffer_length_(20),
+  fixed_frame_("odom"),
+  robot_frame_("base_link"),
+  dist_th_(0.05),
+  max_dist_th_(1.0),
+  min_x_(-10),
+  max_x_(10),
+  min_y_(-10),
+  max_y_(10),
+  min_z_(-1),
+  max_z_(2),
+  filter_cloud_res_(0.01),
+  filter_cloud_k_(50),
+  filter_cloud_th_(1.0)
 
 {
 
-  points_sub_filtered_.subscribe(nh_, "/velodyne_points", 1);
-  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(points_sub_filtered_, listener_, "odom", 1);
+  private_nh_.param("buffer_length", buffer_length_, buffer_length_);
+  private_nh_.param<std::string>("fixed_frame", fixed_frame_, fixed_frame_);
+  private_nh_.param<std::string>("robot_frame", robot_frame_, robot_frame_);
+  private_nh_.param("dist_th", dist_th_, dist_th_);
+  private_nh_.param("max_dist_th", max_dist_th_, max_dist_th_);
+  private_nh_.param("min_x", min_x_, min_x_);
+  private_nh_.param("max_x", max_x_, max_x_);
+  private_nh_.param("min_y", min_y_, min_y_);
+  private_nh_.param("max_y", max_y_, max_y_);
+  private_nh_.param("min_z", min_z_, min_z_);
+  private_nh_.param("max_z", max_z_, max_z_);
+  private_nh_.param("filter_cloud_res", filter_cloud_res_, filter_cloud_res_);
+  private_nh_.param("filter_cloud_k", filter_cloud_k_, filter_cloud_k_);
+  private_nh_.param("filter_cloud_th", filter_cloud_th_, filter_cloud_th_);
+
+  // TODO add some checks for parameters
+
+  points_sub_filtered_.subscribe(private_nh_, "points_in", 1);
+  tf_filter_ = new tf::MessageFilter<sensor_msgs::PointCloud2>(points_sub_filtered_, listener_, fixed_frame_, 1);
   tf_filter_->registerCallback(boost::bind(&CloudAssembler::process, this, _1));
 
-  points_pub_ = nh_.advertise<sensor_msgs::PointCloud2> ("output", 1);
+  points_pub_ = private_nh_.advertise<sensor_msgs::PointCloud2> ("points_out", 1);
 
 
-  cloud_buff_.reset(new CloudBuffer(20));
+  cloud_buff_.reset(new CloudBuffer(buffer_length_));
 
 
 
@@ -70,7 +101,7 @@ bool CloudAssembler::getRobotPose(ros::Time time, geometry_msgs::PoseStamped& re
   geometry_msgs::PoseStamped out;
 
   p.header.stamp = time;
-  p.header.frame_id = "base_link";
+  p.header.frame_id = robot_frame_;
   p.pose.position.x = 0;
   p.pose.position.y = 0;
   p.pose.position.z = 0;
@@ -80,10 +111,10 @@ bool CloudAssembler::getRobotPose(ros::Time time, geometry_msgs::PoseStamped& re
   p.pose.orientation.z = 0;
   p.pose.orientation.w = 1;
 
-  if (listener_.waitForTransform("odom", p.header.frame_id, p.header.stamp, ros::Duration(0.25)))
+  if (listener_.waitForTransform(fixed_frame_, p.header.frame_id, p.header.stamp, ros::Duration(0.25)))
   {
 
-    listener_.transformPose("odom", p, out);
+    listener_.transformPose(fixed_frame_, p, out);
 
     res = out;
     return true;
@@ -112,12 +143,12 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
   double dist = sqrt(pow(robot_pose_.pose.position.x - p.pose.position.x, 2) + pow(robot_pose_.pose.position.y - p.pose.position.y, 2));
 
-  if (dist > 0.05)
+  if (dist > dist_th_)
   {
 
     robot_pose_ = p;
 
-    if (dist > 1.0)
+    if (dist > max_dist_th_)
     {
 
       cloud_buff_->clear();
@@ -139,29 +170,29 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
 
   pass.setInputCloud(tpcl);
   pass.setFilterFieldName("x");
-  pass.setFilterLimits(-10.0, 10.0);
+  pass.setFilterLimits(min_x_, max_x_);
   pass.filter(*tpcl);
 
   pass.setInputCloud(tpcl);
   pass.setFilterFieldName("y");
-  pass.setFilterLimits(-10.0, 10.0);
+  pass.setFilterLimits(min_y_, max_y_);
   pass.filter(*tpcl);
 
   pass.setInputCloud(tpcl);
   pass.setFilterFieldName("z");
-  pass.setFilterLimits(-1.0, 2.0);
+  pass.setFilterLimits(min_z_, max_z_);
   pass.filter(*tpcl);
 
   pcl::ApproximateVoxelGrid<TPoint> psor;
   psor.setInputCloud(tpcl);
   psor.setDownsampleAllData(false);
-  psor.setLeafSize(0.01, 0.01, 0.01);
+  psor.setLeafSize(filter_cloud_res_, filter_cloud_res_, filter_cloud_res_);
   psor.filter(*tpcl);
 
   pcl::StatisticalOutlierRemoval< TPoint > foutl;
   foutl.setInputCloud(tpcl);
-  foutl.setMeanK(50);
-  foutl.setStddevMulThresh(1.0);
+  foutl.setMeanK(filter_cloud_k_);
+  foutl.setStddevMulThresh(filter_cloud_th_);
   foutl.filter(*tpcl);
 
   pcl_ros::transformPointCloud("odom", *tpcl, *tpcl, listener_);
@@ -209,7 +240,7 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
   pcl::ApproximateVoxelGrid<TPoint> sor;
   sor.setInputCloud(pcl_out);
   sor.setDownsampleAllData(false);
-  sor.setLeafSize(0.01, 0.01, 0.01);
+  sor.setLeafSize(filter_cloud_res_, filter_cloud_res_, filter_cloud_res_);
 
   TPointCloudPtr pcl_filt(new TPointCloud());
 
@@ -222,7 +253,7 @@ void CloudAssembler::process(const sensor_msgs::PointCloud2::ConstPtr &cloud)
   //std::cout << "points: " << pcl_out->points.size() << std::endl;
 
   cloud_out->header.stamp = cloud->header.stamp;
-  cloud_out->header.frame_id = "odom";
+  cloud_out->header.frame_id = fixed_frame_;
 
   points_pub_.publish(cloud_out);
 

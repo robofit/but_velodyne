@@ -16,3 +16,12 @@
     </description>
   </class>
 </library>
+<library path="lib/libbutvelo_cloudassembler_nodelet">
+  <class name="but_velodyne_proc/CloudAssemblerNodelet"
+         type="but_velodyne_proc::CloudAssemblerNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Assembles few consequtive point clouds to create more dense cloud.
+    </description>
+  </class>
+</library>
