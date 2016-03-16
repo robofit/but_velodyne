@@ -1,0 +1,9 @@
+<library path="lib/libbutvelo_collar_line_odom_nodelet">
+  <class name="but_velodyne_odom/CollarLineOdomNodelet"
+         type="but_velodyne_odom::CollarLineOdomNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Estimates a odometry using collar line segments of Velodyne 3D LIDAR point cloud.
+    </description>
+  </class>
+</library>

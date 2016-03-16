@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="nodelet" type="nodelet" name="manager" args="manager" output="screen"/>
+    <node pkg="nodelet" type="nodelet" name="collar_line_odom_node" args="load but_velodyne_odom/CollarLineOdomNodelet manager">
+        <remap from="~input/cloud" to="/velodyne_points"/>
+        <remap from="~output/odom" to="/velodyen_odom"/>
+        <param name="save_file" value="false"/>
+    </node>
+</launch>
