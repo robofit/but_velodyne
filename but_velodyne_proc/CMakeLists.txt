@@ -15,6 +15,8 @@ find_package(catkin
   roslint
 )
 
+find_package(cmake_modules REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 
 find_package( Eigen REQUIRED )
