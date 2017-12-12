@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
+#include <cmath>
 
 #include "opencv2/opencv.hpp"
 #include <pcl/point_cloud.h>
@@ -50,7 +51,7 @@ public:
 
   bool isGood()
   {
-    return !isnan(value);
+    return !std::isnan(value);
   }
 
   void set(float x, float y, float z, float x_r, float y_r, float z_r, float val)
