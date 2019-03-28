@@ -150,7 +150,7 @@ bool Image::detect4Circles(float canny_thresh, float center_thresh, vector<Point
 
   Mat src_gray;
   this->img.copyTo(src_gray);
-
+  cv::GaussianBlur(src_gray, src_gray, cv::Size(9, 9), 2, 2);
   for (int thresh = center_thresh; circles.size() < 4 && thresh > 10; thresh -= 5)
   {
     HoughCircles(src_gray, circles, CV_HOUGH_GRADIENT, 1, src_gray.rows / 8, canny_thresh, thresh, 0, 0);
